@@ -162,20 +162,71 @@ export default function LeafletMap({ className, center, markers, zoom = 7 }: Pro
         zoomToBoundsOnClick: true,
         iconCreateFunction: (cluster) => {
           const childCount = cluster.getChildCount();
-          let className = 'marker-cluster-';
+          const markers = cluster.getAllChildMarkers();
           
-          if (childCount < 10) {
-            className += 'small';
-          } else if (childCount < 100) {
-            className += 'medium';
-          } else {
-            className += 'large';
+          // 클러스터 내 발전소 종류 카운트
+          const categoryCounts: Record<string, number> = {};
+          markers.forEach((marker: any) => {
+            const m = clusterMarkers.find(cm => 
+              cm.lat === marker.getLatLng().lat && cm.lng === marker.getLatLng().lng
+            );
+            if (m) {
+              const category = getPlantCategory(m.plant_type, m.fuel_type, m.title);
+              categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+            }
+          });
+          
+          // 가장 많은 종류 찾기
+          let dominantCategory = '기타';
+          let maxCount = 0;
+          Object.entries(categoryCounts).forEach(([category, count]) => {
+            if (count > maxCount) {
+              maxCount = count;
+              dominantCategory = category;
+            }
+          });
+          
+          // 색상 매핑
+          const colors: Record<string, string> = {
+            '석탄': '#111827',
+            'LNG': '#DC2626',
+            '경유': '#D97706',
+            '기타화력': '#EA580C',
+            '원자력': '#9333EA',
+            '열병합': '#EC4899',
+            '기타': '#6B7280'
+          };
+          
+          const color = colors[dominantCategory] || '#6B7280';
+          
+          // 크기 결정 (개수에 따라)
+          let size = 30;
+          if (childCount >= 50) {
+            size = 50;
+          } else if (childCount >= 20) {
+            size = 40;
+          } else if (childCount >= 10) {
+            size = 35;
           }
-
+          
           return L.divIcon({
-            html: `<div><span>${childCount}</span></div>`,
-            className: `marker-cluster ${className}`,
-            iconSize: L.point(40, 40)
+            html: `<div style="
+              background-color: ${color};
+              width: ${size}px;
+              height: ${size}px;
+              border-radius: 50%;
+              border: 3px solid white;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: white;
+              font-size: ${size > 40 ? '14px' : '12px'};
+              font-weight: bold;
+            "><span>${childCount}</span></div>`,
+            className: 'custom-cluster-icon',
+            iconSize: L.point(size, size),
+            iconAnchor: [size / 2, size / 2]
           });
         }
       });
