@@ -1,26 +1,221 @@
 @import "tailwindcss";
 
+@theme {
+  --color-red-100: #fee2e2;
+  --color-red-800: #991b1b;
+  --color-orange-100: #ffedd5;
+  --color-orange-800: #9a3412;
+  --color-yellow-100: #fef3c7;
+  --color-yellow-800: #92400e;
+  --color-gray-100: #f3f4f6;
+  --color-gray-800: #1f2937;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --popover: #ffffff;
+  --popover-foreground: #171717;
+  --primary: #171717;
+  --primary-foreground: #fafafa;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #171717;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --accent: #f5f5f5;
+  --accent-foreground: #171717;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --border: #e5e5e5;
+  --input: #e5e5e5;
+  --ring: #171717;
+  --radius: 0.5rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --card: #0a0a0a;
+  --card-foreground: #fafafa;
+  --popover: #0a0a0a;
+  --popover-foreground: #fafafa;
+  --primary: #fafafa;
+  --primary-foreground: #0a0a0a;
+  --secondary: #262626;
+  --secondary-foreground: #fafafa;
+  --muted: #262626;
+  --muted-foreground: #a3a3a3;
+  --accent: #262626;
+  --accent-foreground: #fafafa;
+  --destructive: #7f1d1d;
+  --destructive-foreground: #fafafa;
+  --border: #262626;
+  --input: #262626;
+  --ring: #d4d4d8;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: hsl(var(--border));
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+/* Safari 호환성을 위한 강력한 SVG 아이콘 크기 제한 */
+svg {
+  max-width: 24px !important;
+  max-height: 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  flex-shrink: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* 모든 SVG 요소에 강제 크기 제한 */
+* svg {
+  max-width: 24px !important;
+  max-height: 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  flex-shrink: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Safari 특화 규칙 */
+@supports (-webkit-appearance: none) {
+  svg {
+    max-width: 24px !important;
+    max-height: 24px !important;
+    width: 24px !important;
+    height: 24px !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    flex-shrink: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+  
+  * svg {
+    max-width: 24px !important;
+    max-height: 24px !important;
+    width: 24px !important;
+    height: 24px !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    flex-shrink: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* 특정 크기 클래스들 */
+.w-3 svg, .w-3 {
+  max-width: 12px !important;
+  max-height: 12px !important;
+  width: 12px !important;
+  height: 12px !important;
+}
+
+.w-4 svg, .w-4 {
+  max-width: 16px !important;
+  max-height: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.w-5 svg, .w-5 {
+  max-width: 20px !important;
+  max-height: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.w-6 svg, .w-6 {
+  max-width: 24px !important;
+  max-height: 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+}
+
+.w-8 svg, .w-8 {
+  max-width: 32px !important;
+  max-height: 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+}
+
+/* 컨테이너 크기 제한 */
+.icon-container {
+  width: 24px !important;
+  height: 24px !important;
+  display: inline-block !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Safari에서 SVG가 부모 요소를 벗어나지 않도록 */
+.icon-container svg {
+  max-width: 100% !important;
+  max-height: 100% !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* 마커 클러스터 스타일 (빨간색 계열) */
+.marker-cluster-small {
+  background-color: rgba(252, 165, 165, 0.6);
+}
+
+.marker-cluster-small div {
+  background-color: rgba(239, 68, 68, 0.8);
+}
+
+.marker-cluster-medium {
+  background-color: rgba(252, 165, 165, 0.6);
+}
+
+.marker-cluster-medium div {
+  background-color: rgba(220, 38, 38, 0.9);
+}
+
+.marker-cluster-large {
+  background-color: rgba(252, 165, 165, 0.6);
+}
+
+.marker-cluster-large div {
+  background-color: rgba(153, 27, 27, 1);
+}
+
+.marker-cluster {
+  background-clip: padding-box;
+  border-radius: 20px;
+}
+
+.marker-cluster div {
+  width: 30px;
+  height: 30px;
+  margin-left: 5px;
+  margin-top: 5px;
+  text-align: center;
+  border-radius: 15px;
+  font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marker-cluster span {
+  line-height: 30px;
 }

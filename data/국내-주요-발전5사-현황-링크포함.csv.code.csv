@@ -1,0 +1,39 @@
+발전사,분류,발전소명,위치,호기,시행사,설비용량(MW),준공일,사용연료,비고,정보 확인 링크
+한국남부발전(KOSPO),석탄,하동발전본부,경남 하동군 금성면,1~8호기,한국남부발전,4000,'97.03~'09.06,유연탄,,https://www.kospo.co.kr/kospo/20/subview.do
+한국남부발전(KOSPO),석탄,삼천포발전본부,경남 사천시 노례동,"5, 6호기",한국남부발전,1000,'97.10,유연탄,,https://www.kospo.co.kr/kospo/20/subview.do
+한국남부발전(KOSPO),석탄,고성하이발전소,경남 고성군 하이면,"1, 2호기",고성그린파워,2080,'21.05,유연탄,남부발전 지분 참여,https://www.kospo.co.kr/kospo/20/subview.do
+한국남부발전(KOSPO),LNG,신인천발전본부,인천 서구 청라동,복합,한국남부발전,1800,'16.11,LNG,,https://www.kospo.co.kr/kospo/20/subview.do
+한국남부발전(KOSPO),LNG,신세종빛드림,세종시 가람동,1호기,한국남부발전,630,'23.11,LNG,,https://www.kospo.co.kr/kospo/20/subview.do
+한국남부발전(KOSPO),LNG,안동발전본부,경북 안동시 풍산읍,1호기,한국남부발전,417,'13.03,LNG,,https://www.kospo.co.kr/kospo/20/subview.do
+한국남부발전(KOSPO),건설중,안동발전본부,경북 안동시 풍산읍,2호기,한국남부발전,501,'26.12(예정),LNG,하동 1호기 대체,https://www.kospo.co.kr/kospo/20/subview.do
+한국남동발전(KOEN),석탄,영흥발전본부,인천 옹진군 영흥면,1~6호기,한국남동발전,5080,'04.07~'14.12,유연탄,"1,2호기 LNG 대체 건설 예정",https://www.koenergy.kr/ko/content/166
+한국남동발전(KOEN),석탄,삼천포발전본부,경남 사천시 노례동,3~6호기,한국남동발전,2000,'93.12~'98.12,유연탄,"1,2호기 폐지, 3,4호기 '24년 폐지 예정",https://www.koenergy.kr/ko/content/166
+한국남동발전(KOEN),LNG,분당발전본부,경기 성남시 분당구,복합,한국남동발전,922,'92.06~'97.04,LNG,지역난방 열공급,https://www.koenergy.kr/ko/content/166
+한국남동발전(KOEN),건설중,영흥발전본부,인천 옹진군 영흥면,"LNG 1,2호기",한국남동발전,1120,'28.12(예정),LNG,영흥 1,2호기 대체,https://www.koenergy.kr/ko/content/166
+한국남동발전(KOEN),바이오/중유,영동에코발전본부,강원 강릉시 안인리,"1, 2호기",한국남동발전,375,"'17,'20(전환)",바이오매스,국내 최초 석탄→바이오 전환,https://www.koenergy.kr/ko/content/166
+한국남동발전(KOEN),바이오/중유,여수발전본부,전남 여수시 월내동,2호기,한국남동발전,350,'16.01,바이오,,https://www.koenergy.kr/ko/content/166
+한국남동발전(KOEN),바이오/중유,여수발전본부,전남 여수시 월내동,1호기,한국남동발전,323.4,'75.02,중유,,https://www.koenergy.kr/ko/content/166
+한국중부발전(KOMIPO),석탄,보령발전본부,충남 보령시 오천면,3~6호기,한국중부발전,2000,'93.04~'94.06,유연탄,"1,2호기 폐지",https://www.komipo.co.kr/kor/content/135/main.do
+한국중부발전(KOMIPO),석탄,신보령발전본부,충남 보령시 주교면,"1, 2호기",한국중부발전,2000,'16.06~'17.06,유연탄,,https://www.komipo.co.kr/kor/content/135/main.do
+한국중부발전(KOMIPO),LNG,보령발전본부,충남 보령시 오천면,"7, 8호기",한국중부발전,1000,'06.06,LNG,,https://www.komipo.co.kr/kor/content/135/main.do
+한국중부발전(KOMIPO),LNG,인천발전본부,인천 서구 원창동,"복합 3,4호기",한국중부발전,1038,'10.12~'11.06,LNG,,https://www.komipo.co.kr/kor/content/135/main.do
+한국중부발전(KOMIPO),LNG,서울발전본부,서울 마포구 당인동,"복합 1,2호기",한국중부발전,800,'19.11,LNG,,https://www.komipo.co.kr/kor/content/135/main.do
+한국중부발전(KOMIPO),LNG,제주발전본부,제주시 삼양일동,"복합 1,2호기",한국중부발전,240,'18.06,LNG,,https://www.komipo.co.kr/kor/content/135/main.do
+한국중부발전(KOMIPO),건설중,보령 신복합,충남 보령시 오천면,"1, 2호기",한국중부발전,1000,'26.12(예정),LNG,"보령 5,6호기 대체",https://www.komipo.co.kr/kor/content/135/main.do
+한국중부발전(KOMIPO),건설중,인천 신복합,인천 서구 원창동,"1, 2호기",한국중부발전,1000,'28.06(예정),LNG,"인천 복합 1,2호기 대체",https://www.komipo.co.kr/kor/content/135/main.do
+한국중부발전(KOMIPO),건설중,제주복합,제주시 삼양일동,3호기,한국중부발전,150,'27.12(예정),LNG,,https://www.komipo.co.kr/kor/content/135/main.do
+한국중부발전(KOMIPO),건설중,함안복합,경남 함안군 군북면,,한국중부발전,500,'27.12(예정),LNG,,https://www.komipo.co.kr/kor/content/135/main.do
+한국중부발전(KOMIPO),건설중,용인 반도체 클러스터 집단에너지,경기 용인시 처인구 원삼면,,한국중부발전,1200,'26.12(예정),LNG,SK하이닉스 반도체 클러스터 공급,https://www.komipo.co.kr/kor/content/135/main.do
+한국서부발전(KOWEPO),석탄,태안발전본부,충남 태안군 원북면,1~10호기,한국서부발전,6100,'95.06~'16.12,유연탄,IGCC 포함,https://www.iwest.co.kr/iwest/173/subview.do
+한국서부발전(KOWEPO),LNG,평택발전본부,경기 평택시 포승읍,복합,한국서부발전,868,'98.12~'06.07,LNG,,https://www.iwest.co.kr/iwest/173/subview.do
+한국서부발전(KOWEPO),LNG,서인천발전본부,인천 서구 청라동,복합,한국서부발전,1800,'92.06~'97.04,LNG,,https://www.iwest.co.kr/iwest/173/subview.do
+한국서부발전(KOWEPO),LNG,군산발전본부,전북 군산시 소룡동,복합,한국서부발전,718,'01.03~'01.12,LNG,,https://www.iwest.co.kr/iwest/173/subview.do
+한국서부발전(KOWEPO),LNG,김포열병합,경기 김포시 양촌읍,,한국서부발전,350,'12.07,LNG,,https://www.iwest.co.kr/iwest/173/subview.do
+한국서부발전(KOWEPO),건설중,구미복합,경북 구미시 구포동,,한국서부발전,501.4,'25.12(예정),LNG,,https://www.iwest.co.kr/iwest/173/subview.do
+한국서부발전(KOWEPO),건설중,공주복합,충남 공주시 이인면,,한국서부발전,500,'27.06(예정),LNG,,https://www.iwest.co.kr/iwest/173/subview.do
+한국동서발전(EWP),석탄,당진발전본부,충남 당진시 석문면,1~10호기,한국동서발전,6040,'01.03~'16.06,유연탄,,https://www.ewp.co.kr/kor/sub/content/52.do
+한국동서발전(EWP),LNG,울산발전본부,울산 남구 용연동,"복합 1~4호기",한국동서발전,2304,'82.06~'14.07,LNG/중유,,https://www.ewp.co.kr/kor/sub/content/52.do
+한국동서발전(EWP),LNG,호남발전본부,전남 여수시 월내동,"1,2호기",한국동서발전,1000,'78.12~'96.06,LNG/중유,,https://www.ewp.co.kr/kor/sub/content/52.do
+한국동서발전(EWP),LNG,일산발전본부,경기 고양시 일산동구,복합,한국동서발전,900,'93.06~'96.12,LNG,,https://www.ewp.co.kr/kor/sub/content/52.do
+한국동서발전(EWP),건설중,음성천연가스,충북 음성군 음성읍,"1,2호기",한국동서발전,1122,'26.12(예정),LNG,,https://www.ewp.co.kr/kor/sub/content/52.do
+한국동서발전(EWP),건설중,신호남천연가스,전남 여수시 월내동,,한국동서발전,500,'26.12(예정),LNG,,https://www.ewp.co.kr/kor/sub/content/52.do
