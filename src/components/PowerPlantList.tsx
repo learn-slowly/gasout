@@ -18,11 +18,19 @@ type PowerPlant = {
 
 type Props = {
   plants: PowerPlant[];
+  statusFilter: string;
+  setStatusFilter: (filter: string) => void;
+  plantTypeFilter: string;
+  setPlantTypeFilter: (filter: string) => void;
 };
 
-export default function PowerPlantList({ plants }: Props) {
-  const [statusFilter, setStatusFilter] = useState<string>("전체");
-  const [plantTypeFilter, setPlantTypeFilter] = useState<string>("전체");
+export default function PowerPlantList({ 
+  plants, 
+  statusFilter, 
+  setStatusFilter, 
+  plantTypeFilter, 
+  setPlantTypeFilter 
+}: Props) {
 
   const getStatusColorClasses = (status: string | null) => {
     switch (status) {

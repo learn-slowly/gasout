@@ -16,7 +16,12 @@ type Marker = {
   fuel_type?: string;
 };
 
-export default function MapSection() {
+type Props = {
+  statusFilter: string;
+  plantTypeFilter: string;
+};
+
+export default function MapSection({ statusFilter, plantTypeFilter }: Props) {
   const [markers, setMarkers] = useState<Marker[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -80,11 +85,52 @@ export default function MapSection() {
     );
   }
 
-  console.log("Rendering map with markers:", markers.length);
+  // 발전원 분류 함수
+  const getPlantCategory = (marker: Marker) => {
+    const plantType = marker.plant_type?.toLowerCase() || '';
+    const fuelType = marker.fuel_type?.toLowerCase() || '';
+    const name = marker.title.toLowerCase();
+    
+    if (plantType.includes('원자력') || fuelType.includes('농축u') || fuelType.includes('천연u')) {
+      return '원자력';
+    }
+    
+    if (name.includes('열병합') || name.includes('집단에너지') || plantType.includes('집단에너지')) {
+      return '열병합';
+    }
+    
+    if (fuelType.includes('유연탄') || fuelType.includes('무연탄') || fuelType.includes('역청탄')) {
+      return '석탄';
+    }
+    
+    if (fuelType.includes('lng')) {
+      return 'LNG';
+    }
+    
+    if (fuelType.includes('경유')) {
+      return '경유';
+    }
+    
+    if (fuelType.includes('중유') || fuelType.includes('바이오') || fuelType.includes('유류') || 
+        plantType.includes('기력') || plantType.includes('내연력') || plantType.includes('복합')) {
+      return '기타화력';
+    }
+    
+    return '기타';
+  };
+
+  // 필터링된 마커
+  const filteredMarkers = markers.filter(marker => {
+    const statusMatch = statusFilter === "전체" || marker.status === statusFilter;
+    const plantTypeMatch = plantTypeFilter === "전체" || getPlantCategory(marker) === plantTypeFilter;
+    return statusMatch && plantTypeMatch;
+  });
+
+  console.log("Rendering map with markers:", filteredMarkers.length, "/ Total:", markers.length);
 
   return (
     <div className="w-full h-[480px] rounded-md border">
-      <LeafletMap className="w-full h-full" markers={markers} />
+      <LeafletMap className="w-full h-full" markers={filteredMarkers} />
     </div>
   );
 }

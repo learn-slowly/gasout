@@ -1,8 +1,10 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { supabase } from "@/src/lib/supabase";
 import MapSection from "@/src/components/map/MapSection";
 import PowerPlantList from "@/src/components/PowerPlantList";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -15,13 +17,46 @@ type PowerPlant = {
   operator: string | null;
   plant_type: string | null;
   fuel_type: string | null;
+  latitude: number;
+  longitude: number;
 };
 
-export default async function Home() {
-  const { data, error } = await supabase
-    .from("power_plants")
-    .select("id,name,address,status,capacity_mw,operator,plant_type,fuel_type")
-    .order("name");
+export default function Home() {
+  const [plants, setPlants] = useState<PowerPlant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // 필터 상태
+  const [statusFilter, setStatusFilter] = useState("전체");
+  const [plantTypeFilter, setPlantTypeFilter] = useState("전체");
+
+  useEffect(() => {
+    async function loadPlants() {
+      const { data, error } = await supabase
+        .from("power_plants")
+        .select("id,name,address,status,capacity_mw,operator,plant_type,fuel_type,latitude,longitude")
+        .order("name");
+
+      if (error) {
+        setError(error.message);
+      } else {
+        setPlants((data ?? []) as PowerPlant[]);
+      }
+      setLoading(false);
+    }
+
+    loadPlants();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-lg text-gray-600">데이터를 불러오는 중...</div>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -31,15 +66,12 @@ export default async function Home() {
             <CardTitle className="text-red-600">로드 오류</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-red-600">{error.message}</p>
+            <p className="text-sm text-red-600">{error}</p>
           </CardContent>
         </Card>
       </div>
     );
   }
-
-  const plants = (data ?? []) as PowerPlant[];
-
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -106,12 +138,21 @@ export default async function Home() {
             </div>
           </div>
           <div className="h-80">
-            <MapSection />
+            <MapSection 
+              statusFilter={statusFilter} 
+              plantTypeFilter={plantTypeFilter}
+            />
           </div>
         </div>
 
         {/* 발전소 목록 - 카드 형태 */}
-        <PowerPlantList plants={plants} />
+        <PowerPlantList 
+          plants={plants}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          plantTypeFilter={plantTypeFilter}
+          setPlantTypeFilter={setPlantTypeFilter}
+        />
 
         {/* 통계 섹션 - 조밀한 디자인 */}
         <div className="bg-white border border-gray-200 rounded-lg">
