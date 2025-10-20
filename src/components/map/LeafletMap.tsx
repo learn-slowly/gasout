@@ -172,6 +172,19 @@ export default function LeafletMap({ className, center, markers, zoom = 7 }: Pro
 
       // 각 종류별로 별도의 클러스터 그룹 생성
       Object.entries(categoryGroups).forEach(([category, markers]) => {
+        // 색상 매핑
+        const colors: Record<string, string> = {
+          '석탄': '#111827',
+          'LNG': '#DC2626',
+          '경유': '#D97706',
+          '기타화력': '#EA580C',
+          '원자력': '#9333EA',
+          '열병합': '#EC4899',
+          '기타': '#6B7280'
+        };
+        
+        const categoryColor = colors[category] || '#6B7280';
+        
         const markerClusterGroup = L.markerClusterGroup({
           maxClusterRadius: 50,
           spiderfyOnMaxZoom: true,
@@ -179,19 +192,6 @@ export default function LeafletMap({ className, center, markers, zoom = 7 }: Pro
           zoomToBoundsOnClick: true,
           iconCreateFunction: (cluster) => {
             const childCount = cluster.getChildCount();
-            
-            // 색상 매핑
-            const colors: Record<string, string> = {
-              '석탄': '#111827',
-              'LNG': '#DC2626',
-              '경유': '#D97706',
-              '기타화력': '#EA580C',
-              '원자력': '#9333EA',
-              '열병합': '#EC4899',
-              '기타': '#6B7280'
-            };
-            
-            const color = colors[category] || '#6B7280';
             
             // 크기 결정 (개수에 따라)
             let size = 30;
@@ -205,7 +205,7 @@ export default function LeafletMap({ className, center, markers, zoom = 7 }: Pro
             
             return L.divIcon({
               html: `<div style="
-                background-color: ${color};
+                background-color: ${categoryColor};
                 width: ${size}px;
                 height: ${size}px;
                 border-radius: 50%;
