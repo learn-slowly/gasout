@@ -149,149 +149,145 @@ export default function LeafletMap({ className, center, markers, zoom = 7 }: Pro
 
   function MarkerClusterGroup({ markers: clusterMarkers }: { markers: typeof markersWithOffset }) {
     const map = useMap();
-    const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
+    const clusterGroupsRef = useRef<L.MarkerClusterGroup[]>([]);
 
     useEffect(() => {
       if (!map || !clusterMarkers) return;
 
-      // 마커 클러스터 그룹 생성
-      const markerClusterGroup = L.markerClusterGroup({
-        maxClusterRadius: 50, // 클러스터링 반경
-        spiderfyOnMaxZoom: true,
-        showCoverageOnHover: false,
-        zoomToBoundsOnClick: true,
-        iconCreateFunction: (cluster) => {
-          const childCount = cluster.getChildCount();
-          const markers = cluster.getAllChildMarkers();
-          
-          // 클러스터 내 발전소 종류 카운트
-          const categoryCounts: Record<string, number> = {};
-          markers.forEach((marker: any) => {
-            const m = clusterMarkers.find(cm => 
-              cm.lat === marker.getLatLng().lat && cm.lng === marker.getLatLng().lng
-            );
-            if (m) {
-              const category = getPlantCategory(m.plant_type, m.fuel_type, m.title);
-              categoryCounts[category] = (categoryCounts[category] || 0) + 1;
-            }
-          });
-          
-          // 가장 많은 종류 찾기
-          let dominantCategory = '기타';
-          let maxCount = 0;
-          Object.entries(categoryCounts).forEach(([category, count]) => {
-            if (count > maxCount) {
-              maxCount = count;
-              dominantCategory = category;
-            }
-          });
-          
-          // 색상 매핑
-          const colors: Record<string, string> = {
-            '석탄': '#111827',
-            'LNG': '#DC2626',
-            '경유': '#D97706',
-            '기타화력': '#EA580C',
-            '원자력': '#9333EA',
-            '열병합': '#EC4899',
-            '기타': '#6B7280'
-          };
-          
-          const color = colors[dominantCategory] || '#6B7280';
-          
-          // 크기 결정 (개수에 따라)
-          let size = 30;
-          if (childCount >= 50) {
-            size = 50;
-          } else if (childCount >= 20) {
-            size = 40;
-          } else if (childCount >= 10) {
-            size = 35;
-          }
-          
-          return L.divIcon({
-            html: `<div style="
-              background-color: ${color};
-              width: ${size}px;
-              height: ${size}px;
-              border-radius: 50%;
-              border: 3px solid white;
-              box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              color: white;
-              font-size: ${size > 40 ? '14px' : '12px'};
-              font-weight: bold;
-            "><span>${childCount}</span></div>`,
-            className: 'custom-cluster-icon',
-            iconSize: L.point(size, size),
-            iconAnchor: [size / 2, size / 2]
-          });
+      // 기존 클러스터 그룹들 제거
+      clusterGroupsRef.current.forEach(group => {
+        map.removeLayer(group);
+      });
+      clusterGroupsRef.current = [];
+
+      // 발전소 종류별로 그룹화
+      const categoryGroups: Record<string, typeof clusterMarkers> = {};
+      clusterMarkers.forEach(marker => {
+        const category = getPlantCategory(marker.plant_type, marker.fuel_type, marker.title);
+        if (!categoryGroups[category]) {
+          categoryGroups[category] = [];
         }
+        categoryGroups[category].push(marker);
       });
 
-      // 각 마커를 클러스터 그룹에 추가
-      clusterMarkers.forEach((m) => {
-        const marker = L.marker([m.lat, m.lng], {
-          icon: createPlantTypeIcon(m.plant_type, m.fuel_type, m.title)
+      // 각 종류별로 별도의 클러스터 그룹 생성
+      Object.entries(categoryGroups).forEach(([category, markers]) => {
+        const markerClusterGroup = L.markerClusterGroup({
+          maxClusterRadius: 50,
+          spiderfyOnMaxZoom: true,
+          showCoverageOnHover: false,
+          zoomToBoundsOnClick: true,
+          iconCreateFunction: (cluster) => {
+            const childCount = cluster.getChildCount();
+            
+            // 색상 매핑
+            const colors: Record<string, string> = {
+              '석탄': '#111827',
+              'LNG': '#DC2626',
+              '경유': '#D97706',
+              '기타화력': '#EA580C',
+              '원자력': '#9333EA',
+              '열병합': '#EC4899',
+              '기타': '#6B7280'
+            };
+            
+            const color = colors[category] || '#6B7280';
+            
+            // 크기 결정 (개수에 따라)
+            let size = 30;
+            if (childCount >= 50) {
+              size = 50;
+            } else if (childCount >= 20) {
+              size = 40;
+            } else if (childCount >= 10) {
+              size = 35;
+            }
+            
+            return L.divIcon({
+              html: `<div style="
+                background-color: ${color};
+                width: ${size}px;
+                height: ${size}px;
+                border-radius: 50%;
+                border: 3px solid white;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: ${size > 40 ? '14px' : '12px'};
+                font-weight: bold;
+              "><span>${childCount}</span></div>`,
+              className: 'custom-cluster-icon',
+              iconSize: L.point(size, size),
+              iconAnchor: [size / 2, size / 2]
+            });
+          }
         });
 
-        // 팝업 내용 생성
-        const popupContent = `
-          <div class="space-y-2 min-w-[200px]">
-            <div class="font-semibold text-lg">${m.title}</div>
-            <div class="space-y-1 text-sm">
-              <div class="flex justify-between">
-                <span class="text-gray-600">분류:</span>
-                <span class="font-medium">${getPlantCategory(m.plant_type, m.fuel_type, m.title)}</span>
-              </div>
-              ${m.fuel_type ? `
-                <div class="flex justify-between">
-                  <span class="text-gray-600">연료:</span>
-                  <span class="font-medium text-gray-800">${m.fuel_type}</span>
-                </div>
-              ` : ''}
-              <div class="flex justify-between">
-                <span class="text-gray-600">상태:</span>
-                <span class="font-medium">${m.status || '미정'}</span>
-              </div>
-              ${m.capacity_mw ? `
-                <div class="flex justify-between">
-                  <span class="text-gray-600">용량:</span>
-                  <span class="font-medium">${m.capacity_mw} MW</span>
-                </div>
-              ` : ''}
-              ${m.operator ? `
-                <div class="flex justify-between">
-                  <span class="text-gray-600">사업자:</span>
-                  <span class="font-medium">${m.operator}</span>
-                </div>
-              ` : ''}
-            </div>
-            <div class="pt-2 border-t">
-              <a 
-                href="/powerplant/${m.id}"
-                class="text-blue-600 hover:text-blue-800 text-sm font-medium"
-              >
-                상세 정보 보기 →
-              </a>
-            </div>
-          </div>
-        `;
+        // 해당 종류의 마커들만 클러스터에 추가
+        markers.forEach((m) => {
+          const marker = L.marker([m.lat, m.lng], {
+            icon: createPlantTypeIcon(m.plant_type, m.fuel_type, m.title)
+          });
 
-        marker.bindPopup(popupContent);
-        markerClusterGroup.addLayer(marker);
+          // 팝업 내용 생성
+          const popupContent = `
+            <div class="space-y-2 min-w-[200px]">
+              <div class="font-semibold text-lg">${m.title}</div>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">분류:</span>
+                  <span class="font-medium">${getPlantCategory(m.plant_type, m.fuel_type, m.title)}</span>
+                </div>
+                ${m.fuel_type ? `
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">연료:</span>
+                    <span class="font-medium text-gray-800">${m.fuel_type}</span>
+                  </div>
+                ` : ''}
+                <div class="flex justify-between">
+                  <span class="text-gray-600">상태:</span>
+                  <span class="font-medium">${m.status || '미정'}</span>
+                </div>
+                ${m.capacity_mw ? `
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">용량:</span>
+                    <span class="font-medium">${m.capacity_mw} MW</span>
+                  </div>
+                ` : ''}
+                ${m.operator ? `
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">사업자:</span>
+                    <span class="font-medium">${m.operator}</span>
+                  </div>
+                ` : ''}
+              </div>
+              <div class="pt-2 border-t">
+                <a 
+                  href="/powerplant/${m.id}"
+                  class="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
+                  상세 정보 보기 →
+                </a>
+              </div>
+            </div>
+          `;
+
+          marker.bindPopup(popupContent);
+          markerClusterGroup.addLayer(marker);
+        });
+
+        map.addLayer(markerClusterGroup);
+        clusterGroupsRef.current.push(markerClusterGroup);
       });
-
-      map.addLayer(markerClusterGroup);
-      clusterGroupRef.current = markerClusterGroup;
 
       // 클린업
       return () => {
-        if (clusterGroupRef.current) {
-          map.removeLayer(clusterGroupRef.current);
-        }
+        clusterGroupsRef.current.forEach(group => {
+          map.removeLayer(group);
+        });
+        clusterGroupsRef.current = [];
       };
     }, [map, clusterMarkers]);
 
