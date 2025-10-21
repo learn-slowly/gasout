@@ -1,71 +1,59 @@
 import { createClient } from '@supabase/supabase-js';
-import type { NextApiRequest, NextApiResponse } from 'next';
+import { NextResponse } from 'next/server';
 
-// app/api/inoreader-webhook/route.ts
-
-// ... import 문들 ...
-
-export async function POST(req: Request) { // App Router는 NextApiRequest 대신 Request를 씁니다.
-    try {
-      // 👇 이 줄을 추가! 들어온 데이터를 그대로 로그에 찍어봅니다.
-      console.log("Webhook payload received:", JSON.stringify(await req.clone().json(), null, 2));
-  
-      const payload = await req.json();
-  
-      // ... 나머지 코드 ...
-
-      
-// Supabase 클라이언트 생성. 환경 변수에서 URL과 서비스 키를 가져옵니다.
-// 서비스 키를 사용해야 RLS 규칙을 우회하고 서버사이드에서 안전하게 데이터를 삽입할 수 있습니다.
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
-
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  // Inoreader가 POST 방식으로 데이터를 보내므로, POST 요청이 아니면 거부합니다.
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
-    return res.status(405).end('Method Not Allowed');
-  }
+export async function POST(req: Request) {
+  console.log("--- Webhook received. Starting POST function. ---");
 
   try {
-    // Inoreader가 보낸 데이터(payload)를 받습니다.
-    const payload = req.body;
+    console.log("1. Parsing request JSON...");
+    const payload = await req.json();
+    // 들어온 데이터가 너무 길 수 있으니 앞부분만 살짝 보여줍니다.
+    console.log("2. JSON parsed successfully. Payload snippet:", JSON.stringify(payload).substring(0, 200));
 
-    // Inoreader는 보통 'items'라는 배열에 기사 목록을 담아 보냅니다.
-    if (payload && payload.items && Array.isArray(payload.items)) {
-      
-      // Supabase에 저장할 형태로 데이터를 가공합니다.
-      const articlesToInsert = payload.items.map(item => ({
-        title: item.title,
-        url: item.canonical[0].href, // 보통 canonical 링크가 원본 주소입니다.
-        source: item.origin.title,
-        published_at: new Date(item.published * 1000), // Inoreader는 Unix 타임스탬프(초)로 제공
-        summary: item.summary.content,
-      }));
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
-      // Supabase 'articles' 테이블에 데이터를 삽입(저장)합니다.
-      const { error } = await supabase.from('articles').insert(articlesToInsert);
-
-      if (error) {
-        // 데이터 삽입 중 에러가 발생하면 로그를 남기고 에러 응답을 보냅니다.
-        console.error('Supabase insert error:', error);
-        return res.status(500).json({ message: 'Error inserting data into Supabase', error });
-      }
-
-      // 성공적으로 처리되었음을 응답합니다.
-      return res.status(200).json({ message: 'Successfully received and processed webhook' });
-    } else {
-      // 예상치 못한 형식의 데이터가 오면 에러 응답을 보냅니다.
-      return res.status(400).json({ message: 'Invalid payload format from Inoreader' });
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("CRITICAL ERROR: Supabase URL or Service Key is NOT DEFINED in environment variables.");
+      // 환경 변수가 없으면 여기서 즉시 에러 응답을 보냅니다.
+      return new NextResponse(JSON.stringify({ error: 'Server configuration error: Missing Supabase credentials.' }), { status: 500 });
     }
-  } catch (e) {
-    // 그 외 예외 처리
-    console.error('Webhook handler error:', e);
-    return res.status(500).json({ message: 'An unexpected error occurred' });
+    console.log("3. Environment variables seem to be present.");
+
+    console.log("4. Initializing Supabase client...");
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    console.log("5. Supabase client initialized.");
+
+    const items = payload.items || [];
+    const articlesToInsert = items.map((item: any) => ({
+      title: item.title,
+      url: item.canonical?.[0]?.href || item.href || 'URL not found',
+      published_at: item.published ? new Date(item.published * 1000) : new Date(),
+      content: item.summary?.content || ''
+    }));
+
+    if (articlesToInsert.length === 0) {
+      console.log("No items to insert. This might be a test ping. Sending OK response.");
+      return new NextResponse(JSON.stringify({ status: 'ok', message: 'No items to insert' }), { status: 200 });
+    }
+
+    console.log(`6. ATTEMPTING to insert ${articlesToInsert.length} articles into Supabase... (If it stops here, the problem is DB connection or permissions)`);
+    const { error } = await supabase.from('articles').insert(articlesToInsert);
+    
+    // ❗❗❗ 만약 6번 로그는 찍혔는데 아래 7번 로그가 안 찍힌다면, Supabase 연결/쓰기 단계에서 멈춘 것입니다. ❗❗❗
+    
+    console.log("7. Supabase insert operation COMPLETED.");
+
+    if (error) {
+      console.error("Supabase insert returned an ERROR:", error);
+      return new NextResponse(JSON.stringify({ error: error.message }), { status: 500 });
+    }
+
+    console.log("8. Successfully inserted data. Sending final response.");
+    return new NextResponse(JSON.stringify({ status: 'ok' }), { status: 200 });
+
+  } catch (e: any) {
+    console.error("An UNEXPECTED error occurred in the main try-catch block:", e);
+    return new NextResponse(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
