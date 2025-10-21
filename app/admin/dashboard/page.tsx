@@ -13,6 +13,7 @@ type Stats = {
   totalPosts: number;
   recentPosts: number;
   operatingPlants: number;
+  pendingArticles: number;
 };
 
 type RecentPost = {
@@ -23,7 +24,7 @@ type RecentPost = {
 };
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<Stats>({ totalPlants: 0, totalPosts: 0, recentPosts: 0, operatingPlants: 0 });
+  const [stats, setStats] = useState<Stats>({ totalPlants: 0, totalPosts: 0, recentPosts: 0, operatingPlants: 0, pendingArticles: 0 });
   const [recentPosts, setRecentPosts] = useState<RecentPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -56,11 +57,12 @@ export default function AdminDashboard() {
   const loadData = async () => {
     try {
       // 통계 데이터 로드
-      const [plantsResult, postsResult, operatingResult, recentPostsResult] = await Promise.all([
+      const [plantsResult, postsResult, operatingResult, recentPostsResult, pendingArticlesResult] = await Promise.all([
         supabase.from("power_plants").select("id", { count: "exact" }),
         supabase.from("activity_posts").select("id", { count: "exact" }),
         supabase.from("power_plants").select("id", { count: "exact" }).eq("status", "운영중"),
-        supabase.from("activity_posts").select("id", { count: "exact" }).gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+        supabase.from("activity_posts").select("id", { count: "exact" }).gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
+        supabase.from("articles").select("id", { count: "exact" }).eq("status", "pending")
       ]);
 
       // 최근 게시물 로드
@@ -80,6 +82,7 @@ export default function AdminDashboard() {
         totalPosts: postsResult.count || 0,
         recentPosts: recentPostsResult.count || 0,
         operatingPlants: operatingResult.count || 0,
+        pendingArticles: pendingArticlesResult.count || 0,
       });
 
       setRecentPosts(
@@ -237,6 +240,39 @@ export default function AdminDashboard() {
 
         {/* 관리 메뉴 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 bg-gradient-to-br from-indigo-50 to-indigo-100/50 relative overflow-hidden">
+            {stats.pendingArticles > 0 && (
+              <div className="absolute top-4 right-4">
+                <Badge className="bg-red-500 text-white font-bold px-3 py-1 text-sm animate-pulse">
+                  {stats.pendingArticles}개 대기중
+                </Badge>
+              </div>
+            )}
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-indigo-500 rounded-lg">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                  </svg>
+                </div>
+                <CardTitle className="text-xl">기사 검토</CardTitle>
+              </div>
+              <CardDescription className="text-sm">
+                Inoreader로부터 수집된 기사를 검토하고 승인합니다
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link href="/admin/articles">
+                <Button className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200">
+                  {stats.pendingArticles > 0 ? `${stats.pendingArticles}개 기사 검토하기` : '기사 검토하기'}
+                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
           <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 bg-gradient-to-br from-blue-50 to-blue-100/50">
             <CardHeader className="pb-4">
               <div className="flex items-center gap-3 mb-2">
