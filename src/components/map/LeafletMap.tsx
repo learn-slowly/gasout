@@ -6,7 +6,8 @@ import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import L from "leaflet";
 import "leaflet.markercluster";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import PlantOverlay from "../PlantOverlay";
 
 // 발전원 분류 함수 (연료 기반)
 function getPlantCategory(plantType: string | undefined, fuelType: string | undefined, name: string) {
@@ -131,6 +132,20 @@ export default function LeafletMap({ className, center, markers, zoom = 7 }: Pro
   }, []);
 
   const c = center ?? { lat: 36.5, lng: 127.8 };
+  const [selectedPlant, setSelectedPlant] = useState<any>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // 모바일 감지
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   console.log("LeafletMap props:", { center: c, markers: markers?.length, zoom });
 
@@ -244,7 +259,23 @@ export default function LeafletMap({ className, center, markers, zoom = 7 }: Pro
           icon: createPlantTypeIcon(m.plant_type, m.fuel_type, m.title)
         });
 
-        // 팝업 내용 생성
+        // 마커 클릭 이벤트 추가
+        marker.on('click', () => {
+          setSelectedPlant({
+            id: m.id,
+            name: m.title,
+            address: m.address,
+            status: m.status,
+            capacity_mw: m.capacity_mw,
+            operator: m.operator,
+            plant_type: m.plant_type,
+            fuel_type: m.fuel_type,
+            latitude: m.lat,
+            longitude: m.lng
+          });
+        });
+
+        // 팝업 내용 생성 (기존 팝업은 유지하되 간소화)
         const popupContent = `
           <div class="space-y-2 min-w-[200px]">
             <div class="font-semibold text-lg">${m.title}</div>
@@ -253,36 +284,18 @@ export default function LeafletMap({ className, center, markers, zoom = 7 }: Pro
                 <span class="text-gray-600">분류:</span>
                 <span class="font-medium">${getPlantCategory(m.plant_type, m.fuel_type, m.title)}</span>
               </div>
-              ${m.fuel_type ? `
-                <div class="flex justify-between">
-                  <span class="text-gray-600">연료:</span>
-                  <span class="font-medium text-gray-800">${m.fuel_type}</span>
-                </div>
-              ` : ''}
               <div class="flex justify-between">
                 <span class="text-gray-600">상태:</span>
                 <span class="font-medium">${m.status || '미정'}</span>
               </div>
-              ${m.capacity_mw ? `
-                <div class="flex justify-between">
-                  <span class="text-gray-600">용량:</span>
-                  <span class="font-medium">${m.capacity_mw} MW</span>
-                </div>
-              ` : ''}
-              ${m.operator ? `
-                <div class="flex justify-between">
-                  <span class="text-gray-600">사업자:</span>
-                  <span class="font-medium">${m.operator}</span>
-                </div>
-              ` : ''}
             </div>
             <div class="pt-2 border-t">
-              <a 
-                href="/powerplant/${m.id}"
+              <button 
+                onclick="window.dispatchEvent(new CustomEvent('markerClick', { detail: { plantId: '${m.id}' } }))"
                 class="text-blue-600 hover:text-blue-800 text-sm font-medium"
               >
                 상세 정보 보기 →
-              </a>
+              </button>
             </div>
           </div>
         `;
@@ -307,29 +320,38 @@ export default function LeafletMap({ className, center, markers, zoom = 7 }: Pro
   }
 
   return (
-    <div className={className ?? "w-full h-[480px] rounded-md border"}>
-      <MapContainer 
-        center={[c.lat, c.lng]} 
-        zoom={zoom} 
-        style={{ height: "100%", width: "100%" }}
-        zoomControl={true}
-        scrollWheelZoom={true}
-        doubleClickZoom={true}
-        dragging={true}
-        touchZoom={true}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          crossOrigin={true}
-          referrerPolicy="no-referrer-when-downgrade"
-        />
-        {markersWithOffset && markersWithOffset.length > 0 ? (
-          <FitToMarkers points={markersWithOffset.map((m) => ({ lat: m.lat, lng: m.lng }))} />
-        ) : null}
-        <MarkerClusterGroup markers={markersWithOffset} />
-      </MapContainer>
-    </div>
+    <>
+      <div className={className ?? "w-full h-[480px] rounded-md border"}>
+        <MapContainer 
+          center={[c.lat, c.lng]} 
+          zoom={zoom} 
+          style={{ height: "100%", width: "100%" }}
+          zoomControl={true}
+          scrollWheelZoom={true}
+          doubleClickZoom={true}
+          dragging={true}
+          touchZoom={true}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            crossOrigin={true}
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+          {markersWithOffset && markersWithOffset.length > 0 ? (
+            <FitToMarkers points={markersWithOffset.map((m) => ({ lat: m.lat, lng: m.lng }))} />
+          ) : null}
+          <MarkerClusterGroup markers={markersWithOffset} />
+        </MapContainer>
+      </div>
+      
+      {/* 발전소 오버레이 */}
+      <PlantOverlay 
+        plant={selectedPlant} 
+        onClose={() => setSelectedPlant(null)} 
+        isMobile={isMobile}
+      />
+    </>
   );
 }
 
