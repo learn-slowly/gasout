@@ -168,24 +168,24 @@ export default function LeafletMap({
   function FitToMarkers({ points, preserveZoom = false }: { points: Array<{ lat: number; lng: number }>, preserveZoom?: boolean }) {
     const map = useMap();
     const [hasInitialized, setHasInitialized] = useState(false);
-    const [initialPoints, setInitialPoints] = useState<Array<{ lat: number; lng: number }> | null>(null);
     
     useEffect(() => {
       if (!points || points.length === 0) return;
       
-      // preserveZoom이 true이고 이미 초기화된 경우, 줌 레벨 유지
-      if (preserveZoom && hasInitialized) {
+      // preserveZoom이 true이면 완전히 비활성화
+      if (preserveZoom) {
         return;
       }
       
-      // 초기 포인트 저장 (한 번만)
-      if (!initialPoints) {
-        setInitialPoints([...points]);
-        const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng] as [number, number]));
-        map.fitBounds(bounds, { padding: [32, 32] });
-        setHasInitialized(true);
+      // 한 번만 실행
+      if (hasInitialized) {
+        return;
       }
-    }, [map, points, preserveZoom, hasInitialized, initialPoints]);
+      
+      const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng] as [number, number]));
+      map.fitBounds(bounds, { padding: [32, 32] });
+      setHasInitialized(true);
+    }, [map, points, preserveZoom, hasInitialized]);
     return null;
   }
 
@@ -314,14 +314,18 @@ export default function LeafletMap({
 
         // 마커 클릭 이벤트 추가
         marker.on('click', (e) => {
-          // 줌 변경 방지 - 더 강력한 방법
+          // 줌 변경 방지 - 모든 이벤트 차단
           e.originalEvent?.preventDefault?.();
           e.originalEvent?.stopPropagation?.();
           
-          // 지도 줌 변경 방지
+          // 지도 줌 변경 완전 차단
           map.doubleClickZoom.disable();
+          map.scrollWheelZoom.disable();
+          
+          // 짧은 시간 후 다시 활성화 (사용자 조작은 허용)
           setTimeout(() => {
             map.doubleClickZoom.enable();
+            map.scrollWheelZoom.enable();
           }, 100);
           
           setSelectedPlant({
@@ -391,11 +395,9 @@ export default function LeafletMap({
           style={{ height: "100%", width: "100%" }}
           zoomControl={true}
           scrollWheelZoom={true}
-          doubleClickZoom={false}
+          doubleClickZoom={true}
           dragging={true}
           touchZoom={true}
-          zoomSnap={1}
-          zoomDelta={1}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
