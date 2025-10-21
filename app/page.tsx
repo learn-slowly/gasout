@@ -40,6 +40,12 @@ export default function Home() {
   }>({});
   const [allNews, setAllNews] = useState<any[]>([]);
   const [loadingNews, setLoadingNews] = useState(false);
+  const [newsStats, setNewsStats] = useState({
+    national: 0,
+    regional: 0,
+    powerPlant: 0,
+    total: 0
+  });
 
   // HTML 엔티티 디코딩 함수
   const decodeHtmlEntities = (text: string): string => {
@@ -127,7 +133,32 @@ export default function Home() {
       setLoading(false);
     }
 
+    async function loadNewsStats() {
+      try {
+        const { data, error } = await supabase
+          .from("articles")
+          .select("location_type")
+          .eq("status", "approved");
+
+        if (error) {
+          console.error("Error loading news stats:", error);
+          return;
+        }
+
+        const stats = {
+          national: (data || []).filter(article => article.location_type === 'national').length,
+          regional: (data || []).filter(article => article.location_type === 'regional').length,
+          powerPlant: (data || []).filter(article => article.location_type === 'power_plant').length,
+          total: (data || []).length
+        };
+        setNewsStats(stats);
+      } catch (err) {
+        console.error("Error loading news stats:", err);
+      }
+    }
+
     loadPlants();
+    loadNewsStats();
   }, []);
 
   // 뉴스 로드 함수
@@ -154,6 +185,15 @@ export default function Home() {
       }
 
       setAllNews(data || []);
+      
+      // 뉴스 통계 계산
+      const stats = {
+        national: (data || []).filter(article => article.location_type === 'national').length,
+        regional: (data || []).filter(article => article.location_type === 'regional').length,
+        powerPlant: (data || []).filter(article => article.location_type === 'power_plant').length,
+        total: (data || []).length
+      };
+      setNewsStats(stats);
     } catch (error) {
       console.error('Error loading news:', error);
     } finally {
@@ -299,8 +339,8 @@ export default function Home() {
 
           {/* 사이드바 */}
           <div className="lg:col-span-1 space-y-4">
-            {/* 통계 카드 */}
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
+            {/* 통계 카드 (모바일에서는 발전소 정보가 켜졌을 때만 표시) */}
+            <div className={`bg-white border border-gray-200 rounded-lg p-4 ${showAllNews ? 'hidden lg:block' : ''}`}>
               <h3 className="text-sm font-medium text-gray-900 mb-3">발전소 현황</h3>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
@@ -318,6 +358,29 @@ export default function Home() {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">계획중</span>
                   <span className="font-bold text-purple-600">{plants.filter(p => p.status === '계획중').length}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 뉴스 현황 카드 (모바일에서는 뉴스가 켜졌을 때만 표시) */}
+            <div className={`bg-white border border-gray-200 rounded-lg p-4 ${showPowerPlantInfo ? 'hidden lg:block' : ''}`}>
+              <h3 className="text-sm font-medium text-gray-900 mb-3">뉴스 현황</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">총 뉴스</span>
+                  <span className="font-bold text-blue-600">{newsStats.total}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">전국 뉴스</span>
+                  <span className="font-bold text-green-600">{newsStats.national}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">지역 뉴스</span>
+                  <span className="font-bold text-orange-600">{newsStats.regional}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">발전소 뉴스</span>
+                  <span className="font-bold text-purple-600">{newsStats.powerPlant}</span>
                 </div>
               </div>
             </div>
