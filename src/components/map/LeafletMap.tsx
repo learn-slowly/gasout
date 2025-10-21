@@ -8,7 +8,6 @@ import L from "leaflet";
 import "leaflet.markercluster";
 import { useEffect, useRef, useState } from "react";
 import PlantOverlay from "../PlantOverlay";
-import NewsMarker from "./NewsMarker";
 
 // 발전원 분류 함수 (연료 기반)
 function getPlantCategory(plantType: string | undefined, fuelType: string | undefined, name: string) {
@@ -129,20 +128,13 @@ type Props = {
     fuel_type?: string;
   }>;
   zoom?: number;
-  showNewsMarkers?: boolean;
-  newsFilter?: {
-    locationType?: 'national' | 'regional' | 'power_plant';
-    powerPlantId?: string;
-  };
 };
 
 export default function LeafletMap({ 
   className, 
   center, 
   markers, 
-  zoom = 7, 
-  showNewsMarkers = true,
-  newsFilter 
+  zoom = 7
 }: Props) {
   useEffect(() => {
     fixDefaultIcon();
@@ -193,31 +185,6 @@ export default function LeafletMap({
     return null;
   }
 
-  // NewsMarker 래퍼 컴포넌트
-  function NewsMarkerWrapper({ 
-    showNewsMarkers, 
-    newsFilter 
-  }: { 
-    showNewsMarkers: boolean;
-    newsFilter?: {
-      locationType?: 'national' | 'regional' | 'power_plant';
-      powerPlantId?: string;
-    };
-  }) {
-    const map = useMap();
-    
-    return (
-      <NewsMarker 
-        map={map}
-        showNewsMarkers={showNewsMarkers}
-        newsFilter={newsFilter}
-        onNewsClick={(news) => {
-          console.log('News clicked:', news);
-          // 뉴스 클릭 시 처리 로직 추가 가능
-        }}
-      />
-    );
-  }
 
   function MarkerClusterGroup({ markers: clusterMarkers }: { markers: typeof markersWithOffset }) {
     const map = useMap();
@@ -414,12 +381,6 @@ export default function LeafletMap({
             />
           ) : null}
           <MarkerClusterGroup markers={markersWithOffset} />
-          {showNewsMarkers && (
-            <NewsMarkerWrapper 
-              showNewsMarkers={showNewsMarkers}
-              newsFilter={newsFilter}
-            />
-          )}
         </MapContainer>
       </div>
       

@@ -33,13 +33,26 @@ export default function Home() {
   const [plantTypeFilter, setPlantTypeFilter] = useState("전체");
   
   // 뉴스 관련 상태
-  const [showNewsMarkers, setShowNewsMarkers] = useState(true);
-  const [showNationalNews, setShowNationalNews] = useState(false);
-  const [nationalNewsCount, setNationalNewsCount] = useState(0);
+  const [showPowerPlantInfo, setShowPowerPlantInfo] = useState(false);
+  const [showAllNews, setShowAllNews] = useState(false);
   const [newsFilter, setNewsFilter] = useState<{
     locationType?: 'national' | 'regional' | 'power_plant';
-    powerPlantId?: string;
   }>({});
+  const [allNews, setAllNews] = useState<any[]>([]);
+  const [loadingNews, setLoadingNews] = useState(false);
+
+  // HTML 엔티티 디코딩 함수
+  const decodeHtmlEntities = (text: string): string => {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = text;
+    return textarea.value;
+  };
+
+  // HTML 태그 제거 함수
+  const stripHtmlTags = (html: string): string => {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || '';
+  };
 
   useEffect(() => {
     async function loadPlants() {
@@ -59,22 +72,44 @@ export default function Home() {
     loadPlants();
   }, []);
 
-  // 전국 뉴스 개수 로드
-  useEffect(() => {
-    async function loadNationalNewsCount() {
-      const { data, error } = await supabase
-        .from("articles")
-        .select("id")
-        .eq("status", "approved")
-        .eq("location_type", "national");
+  // 뉴스 로드 함수
+  const loadAllNews = async () => {
+    setLoadingNews(true);
+    try {
+      let query = supabase
+        .from('articles')
+        .select('*')
+        .eq('status', 'approved')
+        .order('published_at', { ascending: false })
+        .limit(50);
 
-      if (!error && data) {
-        setNationalNewsCount(data.length);
+      // 필터 적용
+      if (newsFilter.locationType) {
+        query = query.eq('location_type', newsFilter.locationType);
       }
-    }
 
-    loadNationalNewsCount();
-  }, []);
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error loading news:', error);
+        return;
+      }
+
+      setAllNews(data || []);
+    } catch (error) {
+      console.error('Error loading news:', error);
+    } finally {
+      setLoadingNews(false);
+    }
+  };
+
+  // 뉴스 필터 변경 시 로드
+  useEffect(() => {
+    if (showAllNews) {
+      loadAllNews();
+    }
+  }, [showAllNews, newsFilter]);
+
 
   if (loading) {
     return (
@@ -126,11 +161,11 @@ export default function Home() {
       </div>
 
       {/* 메인 컨텐츠 */}
-      <div className="flex-1 p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
+      <div className="flex-1 p-4 overflow-y-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* 지도 섹션 */}
           <div className="lg:col-span-3 flex flex-col">
-            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col flex-1">
+            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col h-[60vh] lg:h-[calc(100vh-12rem)]">
               <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -160,30 +195,46 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <div className="flex-1 relative">
+              <div className="flex-1 relative min-h-0">
                 <MapSection 
                   statusFilter={statusFilter} 
                   plantTypeFilter={plantTypeFilter}
-                  showNewsMarkers={showNewsMarkers}
-                  newsFilter={newsFilter}
                 />
                 
-                {/* 뉴스 컨트롤 */}
-                <NewsMapControls
-                  showNewsMarkers={showNewsMarkers}
-                  onToggleNewsMarkers={() => setShowNewsMarkers(!showNewsMarkers)}
-                  newsFilter={newsFilter}
-                  onFilterChange={setNewsFilter}
-                  nationalNewsCount={nationalNewsCount}
-                  onToggleNationalNews={() => setShowNationalNews(!showNationalNews)}
-                  showNationalNews={showNationalNews}
-                />
-                
-                {/* 전국 뉴스 패널 */}
-                <NationalNewsPanel
-                  isVisible={showNationalNews}
-                  onToggle={() => setShowNationalNews(!showNationalNews)}
-                />
+                {/* 지도 컨트롤 */}
+                <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+                  <button
+                    onClick={() => {
+                      setShowPowerPlantInfo(!showPowerPlantInfo);
+                      if (!showPowerPlantInfo) {
+                        setShowAllNews(false);
+                      }
+                    }}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      showPowerPlantInfo 
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-white text-gray-700 hover:bg-gray-50'
+                    } shadow-lg border`}
+                  >
+                    발전소 정보
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setShowAllNews(!showAllNews);
+                      if (!showAllNews) {
+                        setShowPowerPlantInfo(false);
+                      }
+                    }}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      showAllNews 
+                        ? 'bg-green-600 text-white' 
+                        : 'bg-white text-gray-700 hover:bg-gray-50'
+                    } shadow-lg border`}
+                  >
+                    뉴스
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -213,21 +264,122 @@ export default function Home() {
               </div>
             </div>
 
-            {/* 뉴스 카드 */}
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-gray-900 mb-3">뉴스 현황</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">전국 뉴스</span>
-                  <span className="font-bold text-blue-600">{nationalNewsCount}</span>
-                </div>
-                <div className="text-xs text-gray-500">
-                  뉴스 마커를 활성화하여 지도에서 확인하세요
+          </div>
+        </div>
+
+        {/* 발전소 정보 패널 */}
+        {showPowerPlantInfo && (
+          <div className="mt-6">
+            <div className="bg-white border border-gray-200 rounded-lg">
+              <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                <h3 className="text-sm font-medium text-gray-900">발전소 정보</h3>
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+                  {plants.map((plant) => (
+                    <div key={plant.id} className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
+                      <h4 className="font-medium text-sm text-gray-900 mb-1">{plant.name}</h4>
+                      <div className="text-xs text-gray-600 space-y-1">
+                        <div>위치: {plant.address}</div>
+                        <div>용량: {plant.capacity_mw}MW</div>
+                        <div>운영사: {plant.operator}</div>
+                        <div>타입: {plant.plant_type} • {plant.fuel_type}</div>
+                        <div className={`inline-block px-2 py-1 rounded text-xs ${
+                          plant.status === '운영중' ? 'bg-green-100 text-green-800' :
+                          plant.status === '건설중' ? 'bg-orange-100 text-orange-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {plant.status}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* 뉴스 패널 */}
+        {showAllNews && (
+          <div className="mt-6">
+            <div className="bg-white border border-gray-200 rounded-lg">
+              <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium text-gray-900">뉴스</h3>
+                  <div className="flex gap-2">
+                    <select 
+                      value={newsFilter.locationType || 'all'}
+                      onChange={(e) => setNewsFilter(prev => ({ 
+                        ...prev, 
+                        locationType: e.target.value === 'all' ? undefined : e.target.value as any 
+                      }))}
+                      className="text-xs border border-gray-300 rounded px-2 py-1"
+                    >
+                      <option value="all">전체</option>
+                      <option value="national">전국</option>
+                      <option value="regional">지역</option>
+                      <option value="power_plant">발전소</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4">
+                {loadingNews ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+                    <span className="ml-2 text-sm text-gray-600">뉴스를 불러오는 중...</span>
+                  </div>
+                ) : allNews.length === 0 ? (
+                  <div className="text-center text-gray-500 py-8">
+                    <p className="text-sm">뉴스가 없습니다</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {allNews.map((news) => (
+                      <div key={news.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className={`text-xs px-2 py-1 rounded ${
+                                news.location_type === 'national' ? 'bg-blue-100 text-blue-800' :
+                                news.location_type === 'regional' ? 'bg-green-100 text-green-800' :
+                                'bg-orange-100 text-orange-800'
+                              }`}>
+                                {news.location_type === 'national' ? '전국' :
+                                 news.location_type === 'regional' ? '지역' : '발전소'}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {new Date(news.published_at).toLocaleDateString('ko-KR')}
+                              </span>
+                            </div>
+                            <h4 className="font-medium text-sm text-gray-900 mb-2 line-clamp-2">
+                              {decodeHtmlEntities(news.title)}
+                            </h4>
+                            <p className="text-xs text-gray-600 line-clamp-3 mb-3">
+                              {stripHtmlTags(decodeHtmlEntities(news.content || '')).substring(0, 150)}...
+                            </p>
+                            {news.si_do && news.si_gun_gu && (
+                              <div className="text-xs text-gray-500">
+                                📍 {news.si_do} {news.si_gun_gu}
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => window.open(news.url, '_blank')}
+                            className="flex-shrink-0 px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors"
+                          >
+                            원문 보기
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

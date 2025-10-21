@@ -193,9 +193,24 @@ export default function NewsMarker({
         
         <div class="news-actions" style="text-align: center;">
           <button 
-            onclick="window.dispatchEvent(new CustomEvent('newsClick', { detail: { newsId: '${news.id}' } }))"
+            onclick="window.open('${news.url}', '_blank')"
             style="
               background-color: ${color};
+              color: white;
+              border: none;
+              padding: 4px 12px;
+              border-radius: 4px;
+              font-size: 11px;
+              cursor: pointer;
+              margin-right: 4px;
+            "
+          >
+            원문 보기
+          </button>
+          <button 
+            onclick="window.dispatchEvent(new CustomEvent('newsClick', { detail: { newsId: '${news.id}' } }))"
+            style="
+              background-color: #6B7280;
               color: white;
               border: none;
               padding: 4px 12px;
