@@ -118,6 +118,29 @@ export default function Home() {
     기타: '#6B7280',
   };
 
+  // 연료별 통계 계산
+  const getFuelStats = () => {
+    const stats = {
+      석탄: { count: 0, capacity: 0 },
+      LNG: { count: 0, capacity: 0 },
+      기타화력: { count: 0, capacity: 0 },
+      원자력: { count: 0, capacity: 0 },
+      기타: { count: 0, capacity: 0 }
+    };
+
+    plants.forEach(plant => {
+      if (plant.status === '운영중') {
+        const category = getPlantCategory(plant.plant_type, plant.fuel_type, plant.name);
+        stats[category].count++;
+        stats[category].capacity += plant.capacity_mw || 0;
+      }
+    });
+
+    return stats;
+  };
+
+  const fuelStats = getFuelStats();
+
   useEffect(() => {
     async function loadPlants() {
       const { data, error } = await supabase
@@ -358,6 +381,30 @@ export default function Home() {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">계획중</span>
                   <span className="font-bold text-purple-600">{plants.filter(p => p.status === '계획중').length}</span>
+                </div>
+              </div>
+              
+              {/* 연료별 통계 */}
+              <div className="mt-4 pt-3 border-t border-gray-200">
+                <h4 className="text-xs font-medium text-gray-700 mb-2">연료별 운영중 (개수/용량)</h4>
+                <div className="space-y-1.5">
+                  {Object.entries(fuelStats).map(([fuel, stats]) => (
+                    stats.count > 0 && (
+                      <div key={fuel} className="flex justify-between text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <div 
+                            className="w-2 h-2 rounded-full" 
+                            style={{ backgroundColor: categoryColors[fuel] }}
+                          />
+                          <span className="text-gray-600">{fuel}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-medium text-gray-900">{stats.count}개</span>
+                          <span className="text-gray-500 ml-1">({stats.capacity.toLocaleString()}MW)</span>
+                        </div>
+                      </div>
+                    )
+                  ))}
                 </div>
               </div>
             </div>
