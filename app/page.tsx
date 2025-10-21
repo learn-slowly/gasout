@@ -76,22 +76,19 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto">
-        {/* 헤더 - 미니멀하고 조밀한 디자인 */}
-        <div className="bg-white border-b border-gray-200 px-4 py-3">
+        {/* 헤더 - 최소화된 디자인 */}
+        <div className="bg-white border-b border-gray-200 px-4 py-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gray-600 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-gray-600 rounded flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900">전국 오염 발전소 현황</h1>
-                <p className="text-xs text-gray-500">전국 발전소 위치 및 상태</p>
-              </div>
+              <h1 className="text-sm font-semibold text-gray-900">전국 발전소 현황</h1>
             </div>
             <Link href="/admin/login">
-              <Button variant="outline" size="sm" className="text-xs">
+              <Button variant="outline" size="sm" className="text-xs px-2 py-1">
                 관리자
               </Button>
             </Link>
@@ -137,7 +134,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="h-80">
+          <div className="h-[90vh]">
             <MapSection 
               statusFilter={statusFilter} 
               plantTypeFilter={plantTypeFilter}
@@ -145,49 +142,25 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 발전소 목록 - 카드 형태 */}
-        <PowerPlantList 
-          plants={plants}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          plantTypeFilter={plantTypeFilter}
-          setPlantTypeFilter={setPlantTypeFilter}
-        />
+        {/* 발전소 목록 - 최소화된 형태 */}
+        <div className="mt-4">
+          <PowerPlantList 
+            plants={plants}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            plantTypeFilter={plantTypeFilter}
+            setPlantTypeFilter={setPlantTypeFilter}
+          />
+        </div>
 
-        {/* 통계 섹션 - 조밀한 디자인 */}
-        <div className="bg-white border border-gray-200 rounded-lg">
-          <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-            <div className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-              <h2 className="text-sm font-medium text-gray-900">발전소 현황</h2>
-            </div>
-          </div>
-          <div className="p-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{plants.length}</div>
-                <div className="text-xs text-gray-600">총 발전소</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  {plants.filter(p => p.status === '운영중').length}
-                </div>
-                <div className="text-xs text-gray-600">운영중</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600">
-                  {plants.filter(p => p.status === '건설중').length}
-                </div>
-                <div className="text-xs text-gray-600">건설중</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">
-                  {plants.filter(p => p.status === '계획중').length}
-                </div>
-                <div className="text-xs text-gray-600">계획중</div>
-              </div>
+        {/* 통계 섹션 - 간소화된 형태 */}
+        <div className="mt-4 bg-white border border-gray-200 rounded-lg p-4">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-4">
+              <span className="text-gray-600">총 발전소: <span className="font-bold text-blue-600">{plants.length}</span></span>
+              <span className="text-gray-600">운영중: <span className="font-bold text-green-600">{plants.filter(p => p.status === '운영중').length}</span></span>
+              <span className="text-gray-600">건설중: <span className="font-bold text-orange-600">{plants.filter(p => p.status === '건설중').length}</span></span>
+              <span className="text-gray-600">계획중: <span className="font-bold text-purple-600">{plants.filter(p => p.status === '계획중').length}</span></span>
             </div>
           </div>
         </div>
