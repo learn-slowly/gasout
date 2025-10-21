@@ -106,7 +106,7 @@ export default function PlantOverlay({ plant, onClose, isMobile }: PlantOverlayP
     return (
       <div 
         id="plant-overlay-mobile"
-        className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-end"
+        className="fixed inset-0 z-[9999] bg-black bg-opacity-50 flex items-end"
         onClick={onClose}
         style={{ transition: 'transform 0.3s ease-in-out' }}
       >
@@ -190,7 +190,7 @@ export default function PlantOverlay({ plant, onClose, isMobile }: PlantOverlayP
 
   // 데스크톱 사이드바
   return (
-    <div className="fixed right-0 top-0 h-full w-80 bg-white border-l border-gray-200 shadow-lg z-40 overflow-y-auto">
+    <div className="fixed right-0 top-0 h-full w-80 bg-white border-l border-gray-200 shadow-lg z-[9999] overflow-y-auto">
       <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">발전소 정보</h3>
         <Button variant="ghost" size="sm" onClick={onClose}>

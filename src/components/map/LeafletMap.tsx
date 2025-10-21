@@ -321,7 +321,7 @@ export default function LeafletMap({ className, center, markers, zoom = 7 }: Pro
 
   return (
     <>
-      <div className={className ?? "w-full h-[480px] rounded-md border"}>
+      <div className={`${className ?? "w-full h-[480px] rounded-md border"} relative z-10`}>
         <MapContainer 
           center={[c.lat, c.lng]} 
           zoom={zoom} 
