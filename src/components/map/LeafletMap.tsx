@@ -168,6 +168,7 @@ export default function LeafletMap({
   function FitToMarkers({ points, preserveZoom = false }: { points: Array<{ lat: number; lng: number }>, preserveZoom?: boolean }) {
     const map = useMap();
     const [hasInitialized, setHasInitialized] = useState(false);
+    const [initialPoints, setInitialPoints] = useState<Array<{ lat: number; lng: number }> | null>(null);
     
     useEffect(() => {
       if (!points || points.length === 0) return;
@@ -177,10 +178,14 @@ export default function LeafletMap({
         return;
       }
       
-      const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng] as [number, number]));
-      map.fitBounds(bounds, { padding: [32, 32] });
-      setHasInitialized(true);
-    }, [map, points, preserveZoom, hasInitialized]);
+      // 초기 포인트 저장 (한 번만)
+      if (!initialPoints) {
+        setInitialPoints([...points]);
+        const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng] as [number, number]));
+        map.fitBounds(bounds, { padding: [32, 32] });
+        setHasInitialized(true);
+      }
+    }, [map, points, preserveZoom, hasInitialized, initialPoints]);
     return null;
   }
 
@@ -309,8 +314,15 @@ export default function LeafletMap({
 
         // 마커 클릭 이벤트 추가
         marker.on('click', (e) => {
-          // 줌 변경 방지
+          // 줌 변경 방지 - 더 강력한 방법
           e.originalEvent?.preventDefault?.();
+          e.originalEvent?.stopPropagation?.();
+          
+          // 지도 줌 변경 방지
+          map.doubleClickZoom.disable();
+          setTimeout(() => {
+            map.doubleClickZoom.enable();
+          }, 100);
           
           setSelectedPlant({
             id: m.id,
@@ -379,9 +391,11 @@ export default function LeafletMap({
           style={{ height: "100%", width: "100%" }}
           zoomControl={true}
           scrollWheelZoom={true}
-          doubleClickZoom={true}
+          doubleClickZoom={false}
           dragging={true}
           touchZoom={true}
+          zoomSnap={1}
+          zoomDelta={1}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
