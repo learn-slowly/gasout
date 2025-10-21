@@ -14,6 +14,19 @@ import {
   Newspaper
 } from "lucide-react";
 
+// HTML 엔티티 디코딩 함수
+function decodeHtmlEntities(text: string): string {
+  const textarea = document.createElement('textarea');
+  textarea.innerHTML = text;
+  return textarea.value;
+}
+
+// HTML 태그 제거 함수
+function stripHtmlTags(html: string): string {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return doc.body.textContent || '';
+}
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -32,7 +45,6 @@ export default function NationalNewsPanel({
 }: NationalNewsPanelProps) {
   const [nationalNews, setNationalNews] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     if (isVisible) {
@@ -83,8 +95,8 @@ export default function NationalNewsPanel({
   if (!isVisible) return null;
 
   return (
-    <div className={`fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 z-20 ${className}`}>
-      <Card className="shadow-lg border-0 bg-white/95 backdrop-blur-sm">
+    <div className={`fixed bottom-4 left-4 right-4 z-20 ${className}`}>
+      <Card className="shadow-lg border-0 bg-white/95 backdrop-blur-sm w-full">
         <CardHeader 
           className="pb-3 cursor-pointer hover:bg-gray-50 transition-colors"
           onClick={onToggle}
@@ -102,20 +114,15 @@ export default function NationalNewsPanel({
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                setExpanded(!expanded);
+                onToggle();
               }}
             >
-              {expanded ? (
-                <ChevronUp className="w-4 h-4" />
-              ) : (
-                <ChevronDown className="w-4 h-4" />
-              )}
+              <ChevronUp className="w-4 h-4" />
             </Button>
           </div>
         </CardHeader>
 
-        {expanded && (
-          <CardContent className="pt-0 max-h-96 overflow-y-auto">
+        <CardContent className="pt-0 max-h-96 overflow-y-auto">
             {loading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
@@ -136,10 +143,10 @@ export default function NationalNewsPanel({
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         <h4 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
-                          {news.title}
+                          {decodeHtmlEntities(news.title)}
                         </h4>
                         <p className="text-xs text-gray-600 line-clamp-2 mb-2">
-                          {truncateText(news.content || '', 80)}
+                          {truncateText(stripHtmlTags(decodeHtmlEntities(news.content || '')), 80)}
                         </p>
                         <div className="flex items-center gap-2 text-xs text-gray-500">
                           <div className="flex items-center gap-1">
@@ -165,7 +172,6 @@ export default function NationalNewsPanel({
               </div>
             )}
           </CardContent>
-        )}
       </Card>
     </div>
   );

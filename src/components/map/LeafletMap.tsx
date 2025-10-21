@@ -21,9 +21,22 @@ function getPlantCategory(plantType: string | undefined, fuelType: string | unde
     return '원자력';
   }
   
-  // 열병합 (집단에너지)
+  // 열병합 (집단에너지) - 연료별 분류
   if (plantName.includes('열병합') || plantName.includes('집단에너지') || type.includes('집단에너지')) {
-    return '열병합';
+    // 석탄 열병합
+    if (fuel.includes('유연탄') || fuel.includes('역청탄')) {
+      return '석탄';
+    }
+    // LNG 열병합
+    if (fuel.includes('lng')) {
+      return 'LNG';
+    }
+    // 기타화력 열병합 (중유, 기타 연료)
+    if (fuel.includes('중유') || fuel.includes('기타')) {
+      return '기타화력';
+    }
+    // 기본적으로 LNG로 분류 (대부분이 LNG)
+    return 'LNG';
   }
   
   // 석탄
@@ -36,13 +49,8 @@ function getPlantCategory(plantType: string | undefined, fuelType: string | unde
     return 'LNG';
   }
   
-  // 경유
-  if (fuel.includes('경유')) {
-    return '경유';
-  }
-  
-  // 기타화력 (중유, 바이오중유, 유류 등)
-  if (fuel.includes('중유') || fuel.includes('바이오') || fuel.includes('유류') || 
+  // 기타화력 (경유, 중유, 바이오중유, 유류 등)
+  if (fuel.includes('경유') || fuel.includes('중유') || fuel.includes('바이오') || fuel.includes('유류') || 
       type.includes('기력') || type.includes('내연력') || type.includes('복합')) {
     return '기타화력';
   }
@@ -57,20 +65,16 @@ function createPlantTypeIcon(plantType: string | undefined, fuelType: string | u
   const colors = {
     '석탄': '#111827',     // 검정
     'LNG': '#DC2626',      // 빨간색
-    '경유': '#D97706',     // 주황-갈색
-    '기타화력': '#EA580C', // 주황색
+    '기타화력': '#D97706', // 주황색 (경유 포함)
     '원자력': '#9333EA',   // 보라색
-    '열병합': '#EC4899',   // 분홍색
     '기타': '#6B7280'      // 회색
   };
   
   const labels = {
     '석탄': '탄',
     'LNG': 'L',
-    '경유': '경',
     '기타화력': '화',
     '원자력': '원',
-    '열병합': '열',
     '기타': '?'
   };
   
@@ -265,10 +269,8 @@ export default function LeafletMap({
           const colors: Record<string, string> = {
             '석탄': '#111827',
             'LNG': '#DC2626',
-            '경유': '#D97706',
-            '기타화력': '#EA580C',
+            '기타화력': '#D97706',
             '원자력': '#9333EA',
-            '열병합': '#EC4899',
             '기타': '#6B7280'
           };
           

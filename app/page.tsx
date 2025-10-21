@@ -102,115 +102,133 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto">
-        {/* 헤더 - 최소화된 디자인 */}
-        <div className="bg-white border-b border-gray-200 px-4 py-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gray-600 rounded flex items-center justify-center">
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-              </div>
-              <h1 className="text-sm font-semibold text-gray-900">전국 발전소 현황</h1>
+    <div className="h-screen bg-gray-50 flex flex-col">
+      {/* 헤더 */}
+      <div className="bg-white border-b border-gray-200 px-4 py-3 flex-shrink-0">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
             </div>
-            <Link href="/admin/login">
-              <Button variant="outline" size="sm" className="text-xs px-2 py-1">
-                관리자
-              </Button>
-            </Link>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">전국 발전소 현황</h1>
+              <p className="text-sm text-gray-600">실시간 발전소 위치 및 뉴스 정보</p>
+            </div>
+          </div>
+          <Link href="/admin/login">
+            <Button variant="outline" size="sm">
+              관리자
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* 메인 컨텐츠 */}
+      <div className="flex-1 p-4">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
+          {/* 지도 섹션 */}
+          <div className="lg:col-span-3 flex flex-col">
+            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col flex-1">
+              <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <h2 className="text-sm font-medium text-gray-900">발전소 위치</h2>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-gray-600">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-gray-900 rounded-full"></div>
+                      <span>석탄</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-red-600 rounded-full"></div>
+                      <span>LNG</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-amber-600 rounded-full"></div>
+                      <span>기타화력</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
+                      <span>원자력</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 relative">
+                <MapSection 
+                  statusFilter={statusFilter} 
+                  plantTypeFilter={plantTypeFilter}
+                  showNewsMarkers={showNewsMarkers}
+                  newsFilter={newsFilter}
+                />
+                
+                {/* 뉴스 컨트롤 */}
+                <NewsMapControls
+                  showNewsMarkers={showNewsMarkers}
+                  onToggleNewsMarkers={() => setShowNewsMarkers(!showNewsMarkers)}
+                  newsFilter={newsFilter}
+                  onFilterChange={setNewsFilter}
+                  nationalNewsCount={nationalNewsCount}
+                  onToggleNationalNews={() => setShowNationalNews(!showNationalNews)}
+                  showNationalNews={showNationalNews}
+                />
+                
+                {/* 전국 뉴스 패널 */}
+                <NationalNewsPanel
+                  isVisible={showNationalNews}
+                  onToggle={() => setShowNationalNews(!showNationalNews)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 사이드바 */}
+          <div className="lg:col-span-1 space-y-4">
+            {/* 통계 카드 */}
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">발전소 현황</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">총 발전소</span>
+                  <span className="font-bold text-blue-600">{plants.length}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">운영중</span>
+                  <span className="font-bold text-green-600">{plants.filter(p => p.status === '운영중').length}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">건설중</span>
+                  <span className="font-bold text-orange-600">{plants.filter(p => p.status === '건설중').length}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">계획중</span>
+                  <span className="font-bold text-purple-600">{plants.filter(p => p.status === '계획중').length}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 뉴스 카드 */}
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">뉴스 현황</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">전국 뉴스</span>
+                  <span className="font-bold text-blue-600">{nationalNewsCount}</span>
+                </div>
+                <div className="text-xs text-gray-500">
+                  뉴스 마커를 활성화하여 지도에서 확인하세요
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* 지도 섹션 - 조밀한 디자인 */}
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <h2 className="text-sm font-medium text-gray-900">발전소 위치</h2>
-              </div>
-              <div className="flex items-center gap-3 text-xs text-gray-600">
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-gray-900 rounded-full"></div>
-                  <span>석탄</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-red-600 rounded-full"></div>
-                  <span>LNG</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-amber-600 rounded-full"></div>
-                  <span>경유</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-orange-600 rounded-full"></div>
-                  <span>기타화력</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
-                  <span>원자력</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-pink-600 rounded-full"></div>
-                  <span>열병합</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="h-[90vh] relative">
-            <MapSection 
-              statusFilter={statusFilter} 
-              plantTypeFilter={plantTypeFilter}
-              showNewsMarkers={showNewsMarkers}
-              newsFilter={newsFilter}
-            />
-            
-            {/* 뉴스 컨트롤 */}
-            <NewsMapControls
-              showNewsMarkers={showNewsMarkers}
-              onToggleNewsMarkers={() => setShowNewsMarkers(!showNewsMarkers)}
-              newsFilter={newsFilter}
-              onFilterChange={setNewsFilter}
-              nationalNewsCount={nationalNewsCount}
-              onToggleNationalNews={() => setShowNationalNews(!showNationalNews)}
-              showNationalNews={showNationalNews}
-            />
-            
-            {/* 전국 뉴스 패널 */}
-            <NationalNewsPanel
-              isVisible={showNationalNews}
-              onToggle={() => setShowNationalNews(!showNationalNews)}
-            />
-          </div>
-        </div>
-
-        {/* 발전소 목록 - 최소화된 형태 */}
-        <div className="mt-4">
-          <PowerPlantList 
-            plants={plants}
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
-            plantTypeFilter={plantTypeFilter}
-            setPlantTypeFilter={setPlantTypeFilter}
-          />
-        </div>
-
-        {/* 통계 섹션 - 간소화된 형태 */}
-        <div className="mt-4 bg-white border border-gray-200 rounded-lg p-4">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-4">
-              <span className="text-gray-600">총 발전소: <span className="font-bold text-blue-600">{plants.length}</span></span>
-              <span className="text-gray-600">운영중: <span className="font-bold text-green-600">{plants.filter(p => p.status === '운영중').length}</span></span>
-              <span className="text-gray-600">건설중: <span className="font-bold text-orange-600">{plants.filter(p => p.status === '건설중').length}</span></span>
-              <span className="text-gray-600">계획중: <span className="font-bold text-purple-600">{plants.filter(p => p.status === '계획중').length}</span></span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

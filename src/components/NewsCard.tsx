@@ -11,6 +11,19 @@ import {
   Globe
 } from "lucide-react";
 
+// HTML 엔티티 디코딩 함수
+function decodeHtmlEntities(text: string): string {
+  const textarea = document.createElement('textarea');
+  textarea.innerHTML = text;
+  return textarea.value;
+}
+
+// HTML 태그 제거 함수
+function stripHtmlTags(html: string): string {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return doc.body.textContent || '';
+}
+
 interface NewsCardProps {
   article: {
     id: string;
@@ -161,11 +174,11 @@ export default function NewsCard({
             </div>
             
             <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-              {article.title}
+              {decodeHtmlEntities(article.title)}
             </h3>
             
             <p className="text-gray-600 text-sm mb-3 line-clamp-3">
-              {truncateText(article.content, 200)}
+              {truncateText(stripHtmlTags(decodeHtmlEntities(article.content)), 200)}
             </p>
             
             <div className="flex items-center gap-4 text-xs text-gray-500">
