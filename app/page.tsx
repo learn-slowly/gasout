@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/src/lib/supabase";
 import MapSection from "@/src/components/map/MapSection";
 import PowerPlantList from "@/src/components/PowerPlantList";
+import NewsMapControls from "@/src/components/map/NewsMapControls";
+import NationalNewsPanel from "@/src/components/NationalNewsPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -29,6 +31,15 @@ export default function Home() {
   // 필터 상태
   const [statusFilter, setStatusFilter] = useState("전체");
   const [plantTypeFilter, setPlantTypeFilter] = useState("전체");
+  
+  // 뉴스 관련 상태
+  const [showNewsMarkers, setShowNewsMarkers] = useState(true);
+  const [showNationalNews, setShowNationalNews] = useState(false);
+  const [nationalNewsCount, setNationalNewsCount] = useState(0);
+  const [newsFilter, setNewsFilter] = useState<{
+    locationType?: 'national' | 'regional' | 'power_plant';
+    powerPlantId?: string;
+  }>({});
 
   useEffect(() => {
     async function loadPlants() {
@@ -46,6 +57,23 @@ export default function Home() {
     }
 
     loadPlants();
+  }, []);
+
+  // 전국 뉴스 개수 로드
+  useEffect(() => {
+    async function loadNationalNewsCount() {
+      const { data, error } = await supabase
+        .from("articles")
+        .select("id")
+        .eq("status", "approved")
+        .eq("location_type", "national");
+
+      if (!error && data) {
+        setNationalNewsCount(data.length);
+      }
+    }
+
+    loadNationalNewsCount();
   }, []);
 
   if (loading) {
@@ -134,10 +162,29 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="h-[90vh]">
+          <div className="h-[90vh] relative">
             <MapSection 
               statusFilter={statusFilter} 
               plantTypeFilter={plantTypeFilter}
+              showNewsMarkers={showNewsMarkers}
+              newsFilter={newsFilter}
+            />
+            
+            {/* 뉴스 컨트롤 */}
+            <NewsMapControls
+              showNewsMarkers={showNewsMarkers}
+              onToggleNewsMarkers={() => setShowNewsMarkers(!showNewsMarkers)}
+              newsFilter={newsFilter}
+              onFilterChange={setNewsFilter}
+              nationalNewsCount={nationalNewsCount}
+              onToggleNationalNews={() => setShowNationalNews(!showNationalNews)}
+              showNationalNews={showNationalNews}
+            />
+            
+            {/* 전국 뉴스 패널 */}
+            <NationalNewsPanel
+              isVisible={showNationalNews}
+              onToggle={() => setShowNationalNews(!showNationalNews)}
             />
           </div>
         </div>

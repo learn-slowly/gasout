@@ -19,9 +19,14 @@ type Marker = {
 type Props = {
   statusFilter: string;
   plantTypeFilter: string;
+  showNewsMarkers?: boolean;
+  newsFilter?: {
+    locationType?: 'national' | 'regional' | 'power_plant';
+    powerPlantId?: string;
+  };
 };
 
-export default function MapSection({ statusFilter, plantTypeFilter }: Props) {
+export default function MapSection({ statusFilter, plantTypeFilter, showNewsMarkers = true, newsFilter }: Props) {
   const [markers, setMarkers] = useState<Marker[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -130,7 +135,12 @@ export default function MapSection({ statusFilter, plantTypeFilter }: Props) {
 
   return (
     <div className="w-full h-[480px] rounded-md border">
-      <LeafletMap className="w-full h-full" markers={filteredMarkers} />
+      <LeafletMap 
+        className="w-full h-full" 
+        markers={filteredMarkers}
+        showNewsMarkers={showNewsMarkers}
+        newsFilter={newsFilter}
+      />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import L from "leaflet";
 import "leaflet.markercluster";
 import { useEffect, useRef, useState } from "react";
 import PlantOverlay from "../PlantOverlay";
+import NewsMarker from "./NewsMarker";
 
 // 발전원 분류 함수 (연료 기반)
 function getPlantCategory(plantType: string | undefined, fuelType: string | undefined, name: string) {
@@ -124,9 +125,21 @@ type Props = {
     fuel_type?: string;
   }>;
   zoom?: number;
+  showNewsMarkers?: boolean;
+  newsFilter?: {
+    locationType?: 'national' | 'regional' | 'power_plant';
+    powerPlantId?: string;
+  };
 };
 
-export default function LeafletMap({ className, center, markers, zoom = 7 }: Props) {
+export default function LeafletMap({ 
+  className, 
+  center, 
+  markers, 
+  zoom = 7, 
+  showNewsMarkers = true,
+  newsFilter 
+}: Props) {
   useEffect(() => {
     fixDefaultIcon();
   }, []);
@@ -152,14 +165,49 @@ export default function LeafletMap({ className, center, markers, zoom = 7 }: Pro
   // 마커를 그대로 사용 (오프셋 없음)
   const markersWithOffset = markers || [];
 
-  function FitToMarkers({ points }: { points: Array<{ lat: number; lng: number }> }) {
+  function FitToMarkers({ points, preserveZoom = false }: { points: Array<{ lat: number; lng: number }>, preserveZoom?: boolean }) {
     const map = useMap();
+    const [hasInitialized, setHasInitialized] = useState(false);
+    
     useEffect(() => {
       if (!points || points.length === 0) return;
+      
+      // preserveZoom이 true이고 이미 초기화된 경우, 줌 레벨 유지
+      if (preserveZoom && hasInitialized) {
+        return;
+      }
+      
       const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng] as [number, number]));
       map.fitBounds(bounds, { padding: [32, 32] });
-    }, [map, points]);
+      setHasInitialized(true);
+    }, [map, points, preserveZoom, hasInitialized]);
     return null;
+  }
+
+  // NewsMarker 래퍼 컴포넌트
+  function NewsMarkerWrapper({ 
+    showNewsMarkers, 
+    newsFilter 
+  }: { 
+    showNewsMarkers: boolean;
+    newsFilter?: {
+      locationType?: 'national' | 'regional' | 'power_plant';
+      powerPlantId?: string;
+    };
+  }) {
+    const map = useMap();
+    
+    return (
+      <NewsMarker 
+        map={map}
+        showNewsMarkers={showNewsMarkers}
+        newsFilter={newsFilter}
+        onNewsClick={(news) => {
+          console.log('News clicked:', news);
+          // 뉴스 클릭 시 처리 로직 추가 가능
+        }}
+      />
+    );
   }
 
   function MarkerClusterGroup({ markers: clusterMarkers }: { markers: typeof markersWithOffset }) {
@@ -180,7 +228,7 @@ export default function LeafletMap({ className, center, markers, zoom = 7 }: Pro
         maxClusterRadius: 50,
         spiderfyOnMaxZoom: true,
         showCoverageOnHover: false,
-        zoomToBoundsOnClick: true,
+        zoomToBoundsOnClick: false, // 클러스터 클릭 시 줌 변경 비활성화
         iconCreateFunction: (cluster) => {
           const childCount = cluster.getChildCount();
           const markers = cluster.getAllChildMarkers();
@@ -260,11 +308,14 @@ export default function LeafletMap({ className, center, markers, zoom = 7 }: Pro
         });
 
         // 마커 클릭 이벤트 추가
-        marker.on('click', () => {
+        marker.on('click', (e) => {
+          // 줌 변경 방지
+          e.originalEvent?.preventDefault?.();
+          
           setSelectedPlant({
             id: m.id,
             name: m.title,
-            address: m.address,
+            address: '', // address 속성이 없으므로 빈 문자열로 설정
             status: m.status,
             capacity_mw: m.capacity_mw,
             operator: m.operator,
@@ -339,9 +390,18 @@ export default function LeafletMap({ className, center, markers, zoom = 7 }: Pro
             referrerPolicy="no-referrer-when-downgrade"
           />
           {markersWithOffset && markersWithOffset.length > 0 ? (
-            <FitToMarkers points={markersWithOffset.map((m) => ({ lat: m.lat, lng: m.lng }))} />
+            <FitToMarkers 
+              points={markersWithOffset.map((m) => ({ lat: m.lat, lng: m.lng }))} 
+              preserveZoom={true}
+            />
           ) : null}
           <MarkerClusterGroup markers={markersWithOffset} />
+          {showNewsMarkers && (
+            <NewsMarkerWrapper 
+              showNewsMarkers={showNewsMarkers}
+              newsFilter={newsFilter}
+            />
+          )}
         </MapContainer>
       </div>
       
