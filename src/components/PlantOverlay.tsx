@@ -106,14 +106,19 @@ export default function PlantOverlay({ plant, onClose, isMobile }: PlantOverlayP
     return (
       <div 
         id="plant-overlay-mobile"
-        className="fixed inset-0 z-[9999] bg-black bg-opacity-50 flex items-end"
+        className="fixed inset-0 z-[9999] flex items-end"
         onClick={onClose}
         style={{ transition: 'transform 0.3s ease-in-out' }}
       >
         <div 
-          className="w-full bg-white rounded-t-lg max-h-[70vh] overflow-y-auto"
+          className="w-full bg-white rounded-t-lg max-h-[70vh] overflow-y-auto shadow-lg"
           onClick={(e) => e.stopPropagation()}
         >
+          {/* 드래그 핸들 */}
+          <div className="flex justify-center py-2">
+            <div className="w-8 h-1 bg-gray-300 rounded-full"></div>
+          </div>
+          
           <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900">발전소 정보</h3>
             <Button variant="ghost" size="sm" onClick={onClose}>
