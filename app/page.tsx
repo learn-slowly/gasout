@@ -54,6 +54,64 @@ export default function Home() {
     return doc.body.textContent || '';
   };
 
+  // 발전원 분류 함수 (지도와 동일한 기준 유지)
+  const getPlantCategory = (
+    plantType: string | null | undefined,
+    fuelType: string | null | undefined,
+    name: string | null | undefined
+  ): '석탄' | 'LNG' | '기타화력' | '원자력' | '기타' => {
+    const type = (plantType ?? '').toLowerCase();
+    const fuel = (fuelType ?? '').toLowerCase();
+    const plantName = (name ?? '').toLowerCase();
+
+    // 원자력
+    if (type.includes('원자력') || fuel.includes('농축u') || fuel.includes('천연u')) {
+      return '원자력';
+    }
+
+    // 열병합/집단에너지는 연료별로 재분류
+    if (plantName.includes('열병합') || plantName.includes('집단에너지') || type.includes('집단에너지')) {
+      if (fuel.includes('유연탄') || fuel.includes('역청탄')) return '석탄';
+      if (fuel.includes('lng')) return 'LNG';
+      if (fuel.includes('중유') || fuel.includes('기타')) return '기타화력';
+      return 'LNG';
+    }
+
+    // 석탄
+    if (fuel.includes('유연탄') || fuel.includes('무연탄') || fuel.includes('역청탄')) {
+      return '석탄';
+    }
+
+    // LNG
+    if (fuel.includes('lng')) {
+      return 'LNG';
+    }
+
+    // 기타화력 (경유/중유/바이오/유류 + 기력/내연력/복합 등)
+    if (
+      fuel.includes('경유') ||
+      fuel.includes('중유') ||
+      fuel.includes('바이오') ||
+      fuel.includes('유류') ||
+      type.includes('기력') ||
+      type.includes('내연력') ||
+      type.includes('복합')
+    ) {
+      return '기타화력';
+    }
+
+    return '기타';
+  };
+
+  // 지도 마커 색상과 동일한 팔레트
+  const categoryColors: Record<string, string> = {
+    석탄: '#111827',
+    LNG: '#DC2626',
+    기타화력: '#D97706',
+    원자력: '#9333EA',
+    기타: '#6B7280',
+  };
+
   useEffect(() => {
     async function loadPlants() {
       const { data, error } = await supabase
@@ -276,24 +334,36 @@ export default function Home() {
               </div>
               <div className="p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
-                  {plants.map((plant) => (
-                    <div key={plant.id} className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
-                      <h4 className="font-medium text-sm text-gray-900 mb-1">{plant.name}</h4>
-                      <div className="text-xs text-gray-600 space-y-1">
-                        <div>위치: {plant.address}</div>
-                        <div>용량: {plant.capacity_mw}MW</div>
-                        <div>운영사: {plant.operator}</div>
-                        <div>타입: {plant.plant_type} • {plant.fuel_type}</div>
-                        <div className={`inline-block px-2 py-1 rounded text-xs ${
-                          plant.status === '운영중' ? 'bg-green-100 text-green-800' :
-                          plant.status === '건설중' ? 'bg-orange-100 text-orange-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {plant.status}
+                  {plants.map((plant) => {
+                    const category = getPlantCategory(plant.plant_type, plant.fuel_type, plant.name);
+                    const color = categoryColors[category] ?? '#6B7280';
+                    return (
+                      <div key={plant.id} className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between mb-1">
+                          <h4 className="font-medium text-sm text-gray-900">{plant.name}</h4>
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center gap-1 text-[11px] text-gray-800">
+                              <span className="w-3 h-3 rounded-full border" style={{ backgroundColor: color, borderColor: color }} />
+                              <span className="hidden sm:inline">{category}</span>
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-xs text-gray-600 space-y-1">
+                          <div>위치: {plant.address}</div>
+                          <div>용량: {plant.capacity_mw}MW</div>
+                          <div>운영사: {plant.operator}</div>
+                          <div>타입: {plant.plant_type} • {plant.fuel_type}</div>
+                          <div className={`inline-block px-2 py-1 rounded text-xs ${
+                            plant.status === '운영중' ? 'bg-green-100 text-green-800' :
+                            plant.status === '건설중' ? 'bg-orange-100 text-orange-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {plant.status}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
