@@ -47,6 +47,11 @@ export default function Home() {
     total: 0
   });
 
+  // 패널 접기/펼치기 상태
+  const [isPlantStatsExpanded, setIsPlantStatsExpanded] = useState(false);
+  const [isFuelStatsExpanded, setIsFuelStatsExpanded] = useState(false);
+  const [isNewsStatsExpanded, setIsNewsStatsExpanded] = useState(false);
+
   // HTML 엔티티 디코딩 함수
   const decodeHtmlEntities = (text: string): string => {
     const textarea = document.createElement('textarea');
@@ -208,15 +213,6 @@ export default function Home() {
       }
 
       setAllNews(data || []);
-      
-      // 뉴스 통계 계산
-      const stats = {
-        national: (data || []).filter(article => article.location_type === 'national').length,
-        regional: (data || []).filter(article => article.location_type === 'regional').length,
-        powerPlant: (data || []).filter(article => article.location_type === 'power_plant').length,
-        total: (data || []).length
-      };
-      setNewsStats(stats);
     } catch (error) {
       console.error('Error loading news:', error);
     } finally {
@@ -269,15 +265,22 @@ export default function Home() {
               </svg>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">전국 발전소 현황</h1>
-              <p className="text-sm text-gray-600">실시간 발전소 위치 및 뉴스 정보</p>
+              <h1 className="text-xl font-bold text-gray-900">화력 발전 현황</h1>
+              <p className="text-sm text-gray-600">발전소 및 뉴스와 정보</p>
             </div>
           </div>
-          <Link href="/admin/login">
-            <Button variant="outline" size="sm">
-              관리자
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/about">
+              <Button variant="outline" size="sm">
+                GasOut이란?
+              </Button>
+            </Link>
+            <Link href="/admin/login">
+              <Button variant="outline" size="sm">
+                관리자
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -364,72 +367,283 @@ export default function Home() {
           <div className="lg:col-span-1 space-y-4">
             {/* 통계 카드 (모바일에서는 발전소 정보가 켜졌을 때만 표시) */}
             <div className={`bg-white border border-gray-200 rounded-lg p-4 ${showAllNews ? 'hidden lg:block' : ''}`}>
-              <h3 className="text-sm font-medium text-gray-900 mb-3">발전소 현황</h3>
-              <div className="space-y-2">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-gray-900">발전소 현황</h3>
+                <button
+                  onClick={() => setIsPlantStatsExpanded(!isPlantStatsExpanded)}
+                  className="text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  <svg 
+                    className={`w-4 h-4 transition-transform ${isPlantStatsExpanded ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </div>
+              {isPlantStatsExpanded && (
+                <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">총 발전소</span>
-                  <span className="font-bold text-blue-600">{plants.length}</span>
+                  <button
+                    onClick={() => {
+                      setStatusFilter("전체");
+                      setPlantTypeFilter("전체");
+                      setShowPowerPlantInfo(true);
+                      setShowAllNews(false);
+                    }}
+                    className="font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                  >
+                    {plants.length}
+                  </button>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">운영중</span>
-                  <span className="font-bold text-green-600">{plants.filter(p => p.status === '운영중').length}</span>
+                  <button
+                    onClick={() => {
+                      setStatusFilter("운영중");
+                      setPlantTypeFilter("전체");
+                      setShowPowerPlantInfo(true);
+                      setShowAllNews(false);
+                    }}
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                  >
+                    운영중
+                  </button>
+                  <button
+                    onClick={() => {
+                      setStatusFilter("운영중");
+                      setPlantTypeFilter("전체");
+                      setShowPowerPlantInfo(true);
+                      setShowAllNews(false);
+                    }}
+                    className="font-bold text-green-600 hover:text-green-800 hover:bg-green-50 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                  >
+                    {plants.filter(p => p.status === '운영중').length}
+                  </button>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">건설중</span>
-                  <span className="font-bold text-orange-600">{plants.filter(p => p.status === '건설중').length}</span>
+                  <button
+                    onClick={() => {
+                      setStatusFilter("건설중");
+                      setPlantTypeFilter("전체");
+                      setShowPowerPlantInfo(true);
+                      setShowAllNews(false);
+                    }}
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                  >
+                    건설중
+                  </button>
+                  <button
+                    onClick={() => {
+                      setStatusFilter("건설중");
+                      setPlantTypeFilter("전체");
+                      setShowPowerPlantInfo(true);
+                      setShowAllNews(false);
+                    }}
+                    className="font-bold text-orange-600 hover:text-orange-800 hover:bg-orange-50 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                  >
+                    {plants.filter(p => p.status === '건설중').length}
+                  </button>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">계획중</span>
-                  <span className="font-bold text-purple-600">{plants.filter(p => p.status === '계획중').length}</span>
+                  <button
+                    onClick={() => {
+                      setStatusFilter("계획중");
+                      setPlantTypeFilter("전체");
+                      setShowPowerPlantInfo(true);
+                      setShowAllNews(false);
+                    }}
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                  >
+                    계획중
+                  </button>
+                  <button
+                    onClick={() => {
+                      setStatusFilter("계획중");
+                      setPlantTypeFilter("전체");
+                      setShowPowerPlantInfo(true);
+                      setShowAllNews(false);
+                    }}
+                    className="font-bold text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                  >
+                    {plants.filter(p => p.status === '계획중').length}
+                  </button>
                 </div>
-              </div>
+                </div>
+              )}
               
               {/* 연료별 통계 */}
               <div className="mt-4 pt-3 border-t border-gray-200">
-                <h4 className="text-xs font-medium text-gray-700 mb-2">연료별 운영중 (개수/용량)</h4>
-                <div className="space-y-1.5">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-xs font-medium text-gray-700">연료별 운영중 (개수/용량)</h4>
+                  <button
+                    onClick={() => setIsFuelStatsExpanded(!isFuelStatsExpanded)}
+                    className="text-gray-500 hover:text-gray-700 transition-colors"
+                  >
+                    <svg 
+                      className={`w-3 h-3 transition-transform ${isFuelStatsExpanded ? 'rotate-180' : ''}`} 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </div>
+                {isFuelStatsExpanded && (
+                  <div className="space-y-1.5">
                   {Object.entries(fuelStats).map(([fuel, stats]) => (
                     stats.count > 0 && (
                       <div key={fuel} className="flex justify-between text-xs">
-                        <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => {
+                            setStatusFilter("운영중");
+                            setPlantTypeFilter(fuel);
+                            setShowPowerPlantInfo(true);
+                            setShowAllNews(false);
+                          }}
+                          className="flex items-center gap-1.5 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                        >
                           <div 
                             className="w-2 h-2 rounded-full" 
                             style={{ backgroundColor: categoryColors[fuel] }}
                           />
-                          <span className="text-gray-600">{fuel}</span>
-                        </div>
+                          <span className="text-gray-600 hover:text-gray-800">{fuel}</span>
+                        </button>
                         <div className="text-right">
-                          <span className="font-medium text-gray-900">{stats.count}개</span>
+                          <button
+                            onClick={() => {
+                              setStatusFilter("운영중");
+                              setPlantTypeFilter(fuel);
+                              setShowPowerPlantInfo(true);
+                              setShowAllNews(false);
+                            }}
+                            className="font-medium text-gray-900 hover:text-gray-700 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                          >
+                            {stats.count}개
+                          </button>
                           <span className="text-gray-500 ml-1">({stats.capacity.toLocaleString()}MW)</span>
                         </div>
                       </div>
                     )
                   ))}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* 뉴스 현황 카드 (모바일에서는 뉴스가 켜졌을 때만 표시) */}
             <div className={`bg-white border border-gray-200 rounded-lg p-4 ${showPowerPlantInfo ? 'hidden lg:block' : ''}`}>
-              <h3 className="text-sm font-medium text-gray-900 mb-3">뉴스 현황</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">총 뉴스</span>
-                  <span className="font-bold text-blue-600">{newsStats.total}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">전국 뉴스</span>
-                  <span className="font-bold text-green-600">{newsStats.national}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">지역 뉴스</span>
-                  <span className="font-bold text-orange-600">{newsStats.regional}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">발전소 뉴스</span>
-                  <span className="font-bold text-purple-600">{newsStats.powerPlant}</span>
-                </div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-gray-900">뉴스 현황</h3>
+                <button
+                  onClick={() => setIsNewsStatsExpanded(!isNewsStatsExpanded)}
+                  className="text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  <svg 
+                    className={`w-4 h-4 transition-transform ${isNewsStatsExpanded ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
               </div>
+              {isNewsStatsExpanded && (
+                <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <button
+                    onClick={() => {
+                      setNewsFilter({});
+                      setShowAllNews(true);
+                      setShowPowerPlantInfo(false);
+                    }}
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                  >
+                    총 뉴스
+                  </button>
+                  <button
+                    onClick={() => {
+                      setNewsFilter({});
+                      setShowAllNews(true);
+                      setShowPowerPlantInfo(false);
+                    }}
+                    className="font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                  >
+                    {newsStats.total}
+                  </button>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <button
+                    onClick={() => {
+                      setNewsFilter({ locationType: 'national' });
+                      setShowAllNews(true);
+                      setShowPowerPlantInfo(false);
+                    }}
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                  >
+                    전국 뉴스
+                  </button>
+                  <button
+                    onClick={() => {
+                      setNewsFilter({ locationType: 'national' });
+                      setShowAllNews(true);
+                      setShowPowerPlantInfo(false);
+                    }}
+                    className="font-bold text-green-600 hover:text-green-800 hover:bg-green-50 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                  >
+                    {newsStats.national}
+                  </button>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <button
+                    onClick={() => {
+                      setNewsFilter({ locationType: 'regional' });
+                      setShowAllNews(true);
+                      setShowPowerPlantInfo(false);
+                    }}
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                  >
+                    지역 뉴스
+                  </button>
+                  <button
+                    onClick={() => {
+                      setNewsFilter({ locationType: 'regional' });
+                      setShowAllNews(true);
+                      setShowPowerPlantInfo(false);
+                    }}
+                    className="font-bold text-orange-600 hover:text-orange-800 hover:bg-orange-50 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                  >
+                    {newsStats.regional}
+                  </button>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <button
+                    onClick={() => {
+                      setNewsFilter({ locationType: 'power_plant' });
+                      setShowAllNews(true);
+                      setShowPowerPlantInfo(false);
+                    }}
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                  >
+                    발전소 뉴스
+                  </button>
+                  <button
+                    onClick={() => {
+                      setNewsFilter({ locationType: 'power_plant' });
+                      setShowAllNews(true);
+                      setShowPowerPlantInfo(false);
+                    }}
+                    className="font-bold text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                  >
+                    {newsStats.powerPlant}
+                  </button>
+                </div>
+                </div>
+              )}
             </div>
 
           </div>
@@ -440,11 +654,42 @@ export default function Home() {
           <div className="mt-6">
             <div className="bg-white border border-gray-200 rounded-lg">
               <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-                <h3 className="text-sm font-medium text-gray-900">발전소 정보</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium text-gray-900">발전소 정보</h3>
+                  <div className="flex gap-2">
+                    <select 
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="text-xs border border-gray-300 rounded px-2 py-1"
+                    >
+                      <option value="전체">전체</option>
+                      <option value="운영중">운영중</option>
+                      <option value="건설중">건설중</option>
+                      <option value="계획중">계획중</option>
+                    </select>
+                    <select 
+                      value={plantTypeFilter}
+                      onChange={(e) => setPlantTypeFilter(e.target.value)}
+                      className="text-xs border border-gray-300 rounded px-2 py-1"
+                    >
+                      <option value="전체">전체</option>
+                      <option value="석탄">석탄</option>
+                      <option value="LNG">LNG</option>
+                      <option value="기타화력">기타화력</option>
+                      <option value="원자력">원자력</option>
+                    </select>
+                  </div>
+                </div>
               </div>
               <div className="p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
-                  {plants.map((plant) => {
+                  {plants
+                    .filter(plant => {
+                      const statusMatch = statusFilter === "전체" || plant.status === statusFilter;
+                      const plantTypeMatch = plantTypeFilter === "전체" || getPlantCategory(plant.plant_type, plant.fuel_type, plant.name) === plantTypeFilter;
+                      return statusMatch && plantTypeMatch;
+                    })
+                    .map((plant) => {
                     const category = getPlantCategory(plant.plant_type, plant.fuel_type, plant.name);
                     const color = categoryColors[category] ?? '#6B7280';
                     return (
