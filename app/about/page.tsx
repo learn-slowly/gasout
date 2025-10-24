@@ -3,6 +3,115 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+
+// 스크롤 애니메이션을 위한 컴포넌트
+function ScrollAnimate({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => setIsVisible(true), delay);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, [delay]);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-1000 ease-out ${
+        isVisible 
+          ? 'opacity-100 translate-y-0' 
+          : 'opacity-0 translate-y-8'
+      }`}
+    >
+      {children}
+    </div>
+  );
+}
+
+// 왼쪽에서 등장하는 애니메이션 컴포넌트
+function SlideInLeft({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => setIsVisible(true), delay);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, [delay]);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-800 ease-out ${
+        isVisible 
+          ? 'opacity-100 translate-x-0' 
+          : 'opacity-0 -translate-x-8'
+      }`}
+    >
+      {children}
+    </div>
+  );
+}
+
+// 순차적으로 나타나는 애니메이션 컴포넌트
+function StaggeredFadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => setIsVisible(true), delay);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, [delay]);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${
+        isVisible 
+          ? 'opacity-100 translate-y-0' 
+          : 'opacity-0 translate-y-4'
+      }`}
+    >
+      {children}
+    </div>
+  );
+}
 
 export default function AboutPage() {
   return (
@@ -33,57 +142,76 @@ export default function AboutPage() {
       <div className="max-w-4xl mx-auto p-6">
         <div className="space-y-6">
           {/* GasOut이란? */}
-          <Card>
+          <ScrollAnimate delay={0}>
+            <Card>
             <CardHeader>
               <CardTitle className="text-2xl text-blue-600">GasOut이란?</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-gray-700 leading-relaxed">
-                우리는 경남기후위기비상행동에서 전국의 탈가스 탈 LNG 운동을 고민하고 있는 활동가들입니다.
-              </p>
-              
-              <div className="py-4">
-              <p className="text-2xl font-bold text-yellow-600 leading-relaxed text-center">
-                  왜 "경남" 기후위기비상행동이 "전국"의 탈가스 운동을 고민하는지 궁금하실겁니다.
-                </p>
-              </div>
-              
-              <p className="text-gray-700 leading-relaxed">
-                우리는 지난 2023년, 하동석탄화력발전소 1호기가 폐지되는 대신, 한국남부발전이 안동에 LNG 복합화력발전소 2호기를 건설하겠다는 계획을 밝히는 장면을 목격했습니다. 우리 지역의 오염과 위험을 다른 지역이 떠안게 되는 광경을 말입니다. 
-              </p>
-              
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <p className="text-gray-700 leading-relaxed font-medium">
-                  결국 전국적인 운동만이 실제로 기후위기를 해결할 수 있다는 것을 알게 되었습니다.
-                </p>
-              </div>
-              
-              <div className="py-4">
-                <p className="text-2xl font-bold text-yellow-600 leading-relaxed text-center">
-                  왜 하필 LNG냐 궁금하실겁니다.
-                </p>
-              </div>
-              
-              <p className="text-gray-700 leading-relaxed">
-                우리는 석탄발전소를 빠른 시일내에 꺼야한다는 것에 대해서는 시민적 합의가 이루어졌다고 믿습니다. 재생에너지가 지구의 미래라는 것에 대해서도 이견이 없다고 생각합니다. 하지만 지금 당장 석탄발전소를 재생에너지로 바로 이어가지 못하고, 굳이 브릿지 전원이라는 이름으로 LNG발전을 경유하려는 것에 대해서 우려를 갖고 있습니다.
-              </p>
-              
-              <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
+              <StaggeredFadeIn delay={0}>
                 <p className="text-gray-700 leading-relaxed">
-                  LNG발전은 여전히 탄소를 발생시키며, 메탄가스가 샙니다. 절대로 탄소중립을 가능하게 하는 발전원이 아닙니다. 연료는 수입해야하고, 비쌉니다. 더구나 11차 전력수급기본계획에 따르면 LNG발전 설비는 터무니 없이 증가하는데, 지금도 이미 LNG발전의 가동량은 전체 설비의 절반 수준이고, 2036년에는 11%대로 내려갑니다.
+                  우리는 경남기후위기비상행동에서 전국의 탈가스 탈 LNG 운동을 고민하고 있는 활동가들입니다.
                 </p>
-              </div>
+              </StaggeredFadeIn>
               
-              <div className="bg-gray-100 p-4 rounded-lg">
-                <p className="text-gray-700 leading-relaxed font-medium text-center">
-                  LNG발전은 우리의 미래가 아니며, 발전산업의 이해관계가 얽혀 일어난 산물입니다.
+              <SlideInLeft delay={300}>
+                <div className="py-4">
+                  <p className="text-2xl font-bold text-yellow-600 leading-relaxed text-center">
+                    왜 "경남" 기후위기비상행동이 "전국"의 탈가스 운동을 고민하는지 궁금하실겁니다.
+                  </p>
+                </div>
+              </SlideInLeft>
+              
+              <StaggeredFadeIn delay={600}>
+                <p className="text-gray-700 leading-relaxed">
+                  우리는 지난 2023년, 하동석탄화력발전소 1호기가 폐지되는 대신, 한국남부발전이 안동에 LNG 복합화력발전소 2호기를 건설하겠다는 계획을 밝히는 장면을 목격했습니다. 우리 지역의 오염과 위험을 다른 지역이 떠안게 되는 광경을 말입니다. 
                 </p>
-              </div>
+              </StaggeredFadeIn>
+              
+              <StaggeredFadeIn delay={900}>
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <p className="text-gray-700 leading-relaxed font-medium">
+                    결국 전국적인 운동만이 실제로 기후위기를 해결할 수 있다는 것을 알게 되었습니다.
+                  </p>
+                </div>
+              </StaggeredFadeIn>
+              
+              <SlideInLeft delay={1200}>
+                <div className="py-4">
+                  <p className="text-2xl font-bold text-yellow-600 leading-relaxed text-center">
+                    왜 하필 LNG냐 궁금하실겁니다.
+                  </p>
+                </div>
+              </SlideInLeft>
+              
+              <StaggeredFadeIn delay={1500}>
+                <p className="text-gray-700 leading-relaxed">
+                  우리는 석탄발전소를 빠른 시일내에 꺼야한다는 것에 대해서는 시민적 합의가 이루어졌다고 믿습니다. 재생에너지가 지구의 미래라는 것에 대해서도 이견이 없다고 생각합니다. 하지만 지금 당장 석탄발전소를 재생에너지로 바로 이어가지 못하고, 굳이 브릿지 전원이라는 이름으로 LNG발전을 경유하려는 것에 대해서 우려를 갖고 있습니다.
+                </p>
+              </StaggeredFadeIn>
+              
+              <StaggeredFadeIn delay={1800}>
+                <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
+                  <p className="text-gray-700 leading-relaxed">
+                    LNG발전은 여전히 탄소를 발생시키며, 메탄가스가 샙니다. 절대로 탄소중립을 가능하게 하는 발전원이 아닙니다. 연료는 수입해야하고, 비쌉니다. 더구나 11차 전력수급기본계획에 따르면 LNG발전 설비는 터무니 없이 증가하는데, 지금도 이미 LNG발전의 가동량은 전체 설비의 절반 수준이고, 2036년에는 11%대로 내려갑니다.
+                  </p>
+                </div>
+              </StaggeredFadeIn>
+              
+              <StaggeredFadeIn delay={2100}>
+                <div className="bg-gray-100 p-4 rounded-lg">
+                  <p className="text-gray-700 leading-relaxed font-medium text-center">
+                    LNG발전은 우리의 미래가 아니며, 발전산업의 이해관계가 얽혀 일어난 산물입니다.
+                  </p>
+                </div>
+              </StaggeredFadeIn>
             </CardContent>
           </Card>
+          </ScrollAnimate>
 
           {/* 주요 기능 */}
-          <Card>
+          <ScrollAnimate delay={200}>
+            <Card>
             <CardHeader>
               <CardTitle className="text-2xl text-green-600">주요 기능</CardTitle>
             </CardHeader>
@@ -140,9 +268,11 @@ export default function AboutPage() {
               </div>
             </CardContent>
           </Card>
+          </ScrollAnimate>
 
           {/* 데이터 현황 */}
-          <Card>
+          <ScrollAnimate delay={400}>
+            <Card>
             <CardHeader>
               <CardTitle className="text-2xl text-orange-600">데이터 현황</CardTitle>
             </CardHeader>
@@ -159,9 +289,11 @@ export default function AboutPage() {
               </div>
             </CardContent>
           </Card>
+          </ScrollAnimate>
 
           {/* 참여해 주세요 */}
-          <Card>
+          <ScrollAnimate delay={600}>
+            <Card>
             <CardHeader>
               <CardTitle className="text-2xl text-red-600">참여해 주세요</CardTitle>
             </CardHeader>
@@ -190,6 +322,7 @@ export default function AboutPage() {
               </div>
             </CardContent>
           </Card>
+          </ScrollAnimate>
         </div>
 
         {/* 하단 네비게이션 */}
