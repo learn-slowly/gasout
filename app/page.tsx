@@ -1,39 +1,38 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { supabase } from "@/src/lib/supabase";
-import MapSection from "@/src/components/map/MapSection";
-import PowerPlantList from "@/src/components/PowerPlantList";
-import NewsMapControls from "@/src/components/map/NewsMapControls";
-import NationalNewsPanel from "@/src/components/NationalNewsPanel";
+import type { GasPlant } from "@/src/types/gasPlant";
+import type { GasTerminal } from "@/src/types/gasTerminal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
 
-type PowerPlant = {
-  id: string;
-  name: string;
-  address: string;
-  status: string | null;
-  capacity_mw: number | null;
-  operator: string | null;
-  plant_type: string | null;
-  fuel_type: string | null;
-  latitude: number;
-  longitude: number;
-};
+const IntegratedGasMap = dynamic(() => import("@/src/components/gas/IntegratedGasMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center text-sm text-gray-500">
+      지도를 불러오는 중...
+    </div>
+  ),
+});
 
 export default function Home() {
-  const [plants, setPlants] = useState<PowerPlant[]>([]);
+  const [mounted, setMounted] = useState(false);
+  const [plants, setPlants] = useState<GasPlant[]>([]);
+  const [terminals, setTerminals] = useState<GasTerminal[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   
   // 필터 상태
-  const [statusFilter, setStatusFilter] = useState("전체");
-  const [plantTypeFilter, setPlantTypeFilter] = useState("전체");
-  
+  const [showPlants, setShowPlants] = useState(true);
+  const [showTerminals, setShowTerminals] = useState(true);
+  const [plantTypeFilter, setPlantTypeFilter] = useState<'복합발전' | '열병합발전' | 'all'>('all');
+  const [terminalCategoryFilter, setTerminalCategoryFilter] = useState<'가스공사' | '민간' | 'all'>('all');
+  const [statusFilter, setStatusFilter] = useState<'운영' | '건설' | '계획' | 'all'>('all');
+
   // 뉴스 관련 상태
-  const [showPowerPlantInfo, setShowPowerPlantInfo] = useState(false);
   const [showAllNews, setShowAllNews] = useState(false);
   const [newsFilter, setNewsFilter] = useState<{
     locationType?: 'national' | 'regional' | 'power_plant';
@@ -47,13 +46,9 @@ export default function Home() {
     total: 0
   });
 
-  // 패널 접기/펼치기 상태
-  const [isPlantStatsExpanded, setIsPlantStatsExpanded] = useState(false);
-  const [isFuelStatsExpanded, setIsFuelStatsExpanded] = useState(false);
-  const [isNewsStatsExpanded, setIsNewsStatsExpanded] = useState(false);
-
   // HTML 엔티티 디코딩 함수
   const decodeHtmlEntities = (text: string): string => {
+    if (typeof window === 'undefined') return text;
     const textarea = document.createElement('textarea');
     textarea.innerHTML = text;
     return textarea.value;
@@ -61,104 +56,42 @@ export default function Home() {
 
   // HTML 태그 제거 함수
   const stripHtmlTags = (html: string): string => {
+    if (typeof window === 'undefined') return html;
     const doc = new DOMParser().parseFromString(html, 'text/html');
     return doc.body.textContent || '';
   };
 
-  // 발전원 분류 함수 (지도와 동일한 기준 유지)
-  const getPlantCategory = (
-    plantType: string | null | undefined,
-    fuelType: string | null | undefined,
-    name: string | null | undefined
-  ): '석탄' | 'LNG' | '기타화력' | '원자력' | '기타' => {
-    const type = (plantType ?? '').toLowerCase();
-    const fuel = (fuelType ?? '').toLowerCase();
-    const plantName = (name ?? '').toLowerCase();
-
-    // 원자력
-    if (type.includes('원자력') || fuel.includes('농축u') || fuel.includes('천연u')) {
-      return '원자력';
-    }
-
-    // 열병합/집단에너지는 연료별로 재분류
-    if (plantName.includes('열병합') || plantName.includes('집단에너지') || type.includes('집단에너지')) {
-      if (fuel.includes('유연탄') || fuel.includes('역청탄')) return '석탄';
-      if (fuel.includes('lng')) return 'LNG';
-      if (fuel.includes('중유') || fuel.includes('기타')) return '기타화력';
-      return 'LNG';
-    }
-
-    // 석탄
-    if (fuel.includes('유연탄') || fuel.includes('무연탄') || fuel.includes('역청탄')) {
-      return '석탄';
-    }
-
-    // LNG
-    if (fuel.includes('lng')) {
-      return 'LNG';
-    }
-
-    // 기타화력 (경유/중유/바이오/유류 + 기력/내연력/복합 등)
-    if (
-      fuel.includes('경유') ||
-      fuel.includes('중유') ||
-      fuel.includes('바이오') ||
-      fuel.includes('유류') ||
-      type.includes('기력') ||
-      type.includes('내연력') ||
-      type.includes('복합')
-    ) {
-      return '기타화력';
-    }
-
-    return '기타';
-  };
-
-  // 지도 마커 색상과 동일한 팔레트
-  const categoryColors: Record<string, string> = {
-    석탄: '#111827',
-    LNG: '#DC2626',
-    기타화력: '#D97706',
-    원자력: '#9333EA',
-    기타: '#6B7280',
-  };
-
-  // 연료별 통계 계산
-  const getFuelStats = () => {
-    const stats = {
-      석탄: { count: 0, capacity: 0 },
-      LNG: { count: 0, capacity: 0 },
-      기타화력: { count: 0, capacity: 0 },
-      원자력: { count: 0, capacity: 0 },
-      기타: { count: 0, capacity: 0 }
-    };
-
-    plants.forEach(plant => {
-      if (plant.status === '운영중') {
-        const category = getPlantCategory(plant.plant_type, plant.fuel_type, plant.name);
-        stats[category].count++;
-        stats[category].capacity += plant.capacity_mw || 0;
-      }
-    });
-
-    return stats;
-  };
-
-  const fuelStats = getFuelStats();
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
-    async function loadPlants() {
-      const { data, error } = await supabase
-        .from("power_plants")
-        .select("id,name,address,status,capacity_mw,operator,plant_type,fuel_type,latitude,longitude")
-        .order("name");
+    async function loadData() {
+      try {
+        if (!supabase) {
+          setLoading(false);
+          return;
+        }
 
-      if (error) {
-        setError(error.message);
-      } else {
-        setPlants((data ?? []) as PowerPlant[]);
+        // 발전소 로드
+        const { data: plantData } = await supabase
+          .from('gas_plants')
+          .select('*')
+          .order('plant_name');
+
+        // 터미널 로드
+        const { data: terminalData } = await supabase
+          .from('gas_terminals')
+          .select('*')
+          .order('terminal_name');
+
+        setPlants((plantData || []) as GasPlant[]);
+        setTerminals((terminalData || []) as GasTerminal[]);
+      } catch (error: any) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
 
     async function loadNewsStats() {
@@ -185,7 +118,7 @@ export default function Home() {
       }
     }
 
-    loadPlants();
+    loadData();
     loadNewsStats();
   }, []);
 
@@ -227,6 +160,40 @@ export default function Home() {
     }
   }, [showAllNews, newsFilter]);
 
+  // 필터링된 발전소
+  const filteredPlants = plants.filter(plant => {
+    if (!showPlants) return false;
+    const typeMatch = plantTypeFilter === 'all' || plant.type === plantTypeFilter;
+    const statusMatch = statusFilter === 'all' || plant.status === statusFilter;
+    return typeMatch && statusMatch;
+  });
+
+  // 필터링된 터미널
+  const filteredTerminals = terminals.filter(terminal => {
+    if (!showTerminals) return false;
+    const categoryMatch = terminalCategoryFilter === 'all' || terminal.category === terminalCategoryFilter;
+    const statusMatch = statusFilter === 'all' || terminal.status === statusFilter;
+    return categoryMatch && statusMatch;
+  });
+
+  // 통계 계산
+  const stats = {
+    plants: {
+      total: plants.length,
+      complex: plants.filter(p => p.type === '복합발전').length,
+      cogen: plants.filter(p => p.type === '열병합발전').length,
+      totalCapacity: plants.reduce((sum, p) => sum + (p.capacity_mw || 0), 0),
+      operating: plants.filter(p => p.status === '운영').length,
+    },
+    terminals: {
+      total: terminals.length,
+      kogas: terminals.filter(t => t.category === '가스공사').length,
+      private: terminals.filter(t => t.category === '민간').length,
+      totalCapacity: terminals.reduce((sum, t) => sum + (t.capacity_kl || 0), 0),
+      operating: terminals.filter(t => t.status === '운영').length,
+    },
+    total: plants.length + terminals.length,
+  };
 
   if (loading) {
     return (
@@ -238,25 +205,10 @@ export default function Home() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="p-6 max-w-3xl mx-auto">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-red-600">로드 오류</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-red-600">{error}</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
-    <div className="h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50">
       {/* 헤더 */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3 flex-shrink-0">
+      <div className="bg-white border-b border-gray-200 px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -265,8 +217,8 @@ export default function Home() {
               </svg>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">화력 발전 현황</h1>
-              <p className="text-sm text-gray-600">발전소 및 뉴스와 정보</p>
+              <h1 className="text-xl font-bold text-gray-900">LNG 발전소 현황</h1>
+              <p className="text-sm text-gray-600">발전소 및 터미널 통합 지도</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -285,70 +237,55 @@ export default function Home() {
       </div>
 
       {/* 메인 컨텐츠 */}
-      <div className="flex-1 p-4 overflow-y-auto">
+      <div className="p-4 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* 지도 섹션 */}
-          <div className="lg:col-span-3 flex flex-col">
-            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col h-[60vh] lg:h-[calc(100vh-12rem)]">
-              <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex-shrink-0">
+          <div className="lg:col-span-3">
+            <Card className="h-[60vh] lg:h-[calc(100vh-12rem)]">
+              <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <h2 className="text-sm font-medium text-gray-900">발전소 위치</h2>
-                  </div>
+                  <CardTitle className="text-base">시설 위치</CardTitle>
                   <div className="flex items-center gap-3 text-xs text-gray-600">
                     <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-gray-900 rounded-full"></div>
-                      <span>석탄</span>
+                      <div className="w-2 h-2 bg-black rounded-full"></div>
+                      <span>복합발전</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                      <span>열병합</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-red-600 rounded-full"></div>
-                      <span>LNG</span>
+                      <span>터미널(가스공사)</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-amber-600 rounded-full"></div>
-                      <span>기타화력</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
-                      <span>원자력</span>
+                      <div className="w-2 h-2 bg-orange-600 rounded-full"></div>
+                      <span>터미널(민간)</span>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex-1 relative min-h-0">
-                <MapSection 
-                  statusFilter={statusFilter} 
-                  plantTypeFilter={plantTypeFilter}
-                />
-                
+              </CardHeader>
+              <CardContent className="p-0 h-[calc(100%-4rem)] relative">
+                <div className="h-full w-full">
+                  {mounted ? (
+                    <IntegratedGasMap
+                      showPlants={showPlants}
+                      showTerminals={showTerminals}
+                      plantTypeFilter={plantTypeFilter}
+                      terminalCategoryFilter={terminalCategoryFilter}
+                      statusFilter={statusFilter}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-sm text-gray-500">
+                      지도를 초기화하는 중...
+                    </div>
+                  )}
+                </div>
                 {/* 지도 컨트롤 */}
-                <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
-                  <button
-                    onClick={() => {
-                      setShowPowerPlantInfo(!showPowerPlantInfo);
-                      if (!showPowerPlantInfo) {
-                        setShowAllNews(false);
-                      }
-                    }}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      showPowerPlantInfo 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-white text-gray-700 hover:bg-gray-50'
-                    } shadow-lg border`}
-                  >
-                    발전소 정보
-                  </button>
-                  
+                <div className="absolute top-4 right-4 z-10">
                   <button
                     onClick={() => {
                       setShowAllNews(!showAllNews);
-                      if (!showAllNews) {
-                        setShowPowerPlantInfo(false);
-                      }
                     }}
                     className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                       showAllNews 
@@ -359,209 +296,173 @@ export default function Home() {
                     뉴스
                   </button>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* 사이드바 */}
           <div className="lg:col-span-1 space-y-4">
-            {/* 통계 카드 (모바일에서는 발전소 정보가 켜졌을 때만 표시) */}
-            <div className={`bg-white border border-gray-200 rounded-lg p-4 ${showAllNews ? 'hidden lg:block' : ''}`}>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-gray-900">발전소 현황</h3>
-                <button
-                  onClick={() => setIsPlantStatsExpanded(!isPlantStatsExpanded)}
-                  className="text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  <svg 
-                    className={`w-4 h-4 transition-transform ${isPlantStatsExpanded ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              </div>
-              {isPlantStatsExpanded && (
-                <div className="space-y-2">
+            {/* 통계 카드 */}
+            <Card>
+              <CardHeader className="pb-0 border-b-0">
+                <CardTitle className="text-sm">전체 현황</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1 pt-0 -mt-px">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">총 발전소</span>
-                  <button
-                    onClick={() => {
-                      setStatusFilter("전체");
-                      setPlantTypeFilter("전체");
-                      setShowPowerPlantInfo(true);
-                      setShowAllNews(false);
-                    }}
-                    className="font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded-md transition-colors cursor-pointer"
-                  >
-                    {plants.length}
-                  </button>
+                  <span className="text-gray-600">총 시설</span>
+                  <span className="font-bold text-gray-900">{stats.total}개</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <button
-                    onClick={() => {
-                      setStatusFilter("운영중");
-                      setPlantTypeFilter("전체");
-                      setShowPowerPlantInfo(true);
-                      setShowAllNews(false);
-                    }}
-                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
-                  >
-                    운영중
-                  </button>
-                  <button
-                    onClick={() => {
-                      setStatusFilter("운영중");
-                      setPlantTypeFilter("전체");
-                      setShowPowerPlantInfo(true);
-                      setShowAllNews(false);
-                    }}
-                    className="font-bold text-green-600 hover:text-green-800 hover:bg-green-50 px-2 py-1 rounded-md transition-colors cursor-pointer"
-                  >
-                    {plants.filter(p => p.status === '운영중').length}
-                  </button>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <button
-                    onClick={() => {
-                      setStatusFilter("건설중");
-                      setPlantTypeFilter("전체");
-                      setShowPowerPlantInfo(true);
-                      setShowAllNews(false);
-                    }}
-                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
-                  >
-                    건설중
-                  </button>
-                  <button
-                    onClick={() => {
-                      setStatusFilter("건설중");
-                      setPlantTypeFilter("전체");
-                      setShowPowerPlantInfo(true);
-                      setShowAllNews(false);
-                    }}
-                    className="font-bold text-orange-600 hover:text-orange-800 hover:bg-orange-50 px-2 py-1 rounded-md transition-colors cursor-pointer"
-                  >
-                    {plants.filter(p => p.status === '건설중').length}
-                  </button>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <button
-                    onClick={() => {
-                      setStatusFilter("계획중");
-                      setPlantTypeFilter("전체");
-                      setShowPowerPlantInfo(true);
-                      setShowAllNews(false);
-                    }}
-                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
-                  >
-                    계획중
-                  </button>
-                  <button
-                    onClick={() => {
-                      setStatusFilter("계획중");
-                      setPlantTypeFilter("전체");
-                      setShowPowerPlantInfo(true);
-                      setShowAllNews(false);
-                    }}
-                    className="font-bold text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-2 py-1 rounded-md transition-colors cursor-pointer"
-                  >
-                    {plants.filter(p => p.status === '계획중').length}
-                  </button>
-                </div>
-                </div>
-              )}
-              
-              {/* 연료별 통계 */}
-              <div className="mt-4 pt-3 border-t border-gray-200">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-xs font-medium text-gray-700">연료별 운영중 (개수/용량)</h4>
-                  <button
-                    onClick={() => setIsFuelStatsExpanded(!isFuelStatsExpanded)}
-                    className="text-gray-500 hover:text-gray-700 transition-colors"
-                  >
-                    <svg 
-                      className={`w-3 h-3 transition-transform ${isFuelStatsExpanded ? 'rotate-180' : ''}`} 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                </div>
-                {isFuelStatsExpanded && (
+                <div className="pt-2 border-t border-gray-200">
+                  <div className="text-xs font-medium text-gray-700 mb-2">발전소</div>
                   <div className="space-y-1.5">
-                  {Object.entries(fuelStats).map(([fuel, stats]) => (
-                    stats.count > 0 && (
-                      <div key={fuel} className="flex justify-between text-xs">
-                        <button
-                          onClick={() => {
-                            setStatusFilter("운영중");
-                            setPlantTypeFilter(fuel);
-                            setShowPowerPlantInfo(true);
-                            setShowAllNews(false);
-                          }}
-                          className="flex items-center gap-1.5 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
-                        >
-                          <div 
-                            className="w-2 h-2 rounded-full" 
-                            style={{ backgroundColor: categoryColors[fuel] }}
-                          />
-                          <span className="text-gray-600 hover:text-gray-800">{fuel}</span>
-                        </button>
-                        <div className="text-right">
-                          <button
-                            onClick={() => {
-                              setStatusFilter("운영중");
-                              setPlantTypeFilter(fuel);
-                              setShowPowerPlantInfo(true);
-                              setShowAllNews(false);
-                            }}
-                            className="font-medium text-gray-900 hover:text-gray-700 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
-                          >
-                            {stats.count}개
-                          </button>
-                          <span className="text-gray-500 ml-1">({stats.capacity.toLocaleString()}MW)</span>
-                        </div>
-                      </div>
-                    )
-                  ))}
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">전체</span>
+                      <span className="font-medium">{stats.plants.total}개</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">복합발전</span>
+                      <span className="font-medium text-blue-600">{stats.plants.complex}개</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">열병합발전</span>
+                      <span className="font-medium text-green-600">{stats.plants.cogen}개</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">총 용량</span>
+                      <span className="font-medium">{stats.plants.totalCapacity.toLocaleString()} MW</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">운영 중</span>
+                      <span className="font-medium text-green-600">{stats.plants.operating}개</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-gray-200">
+                  <div className="text-xs font-medium text-gray-700 mb-2">터미널</div>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">전체</span>
+                      <span className="font-medium">{stats.terminals.total}개</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">가스공사</span>
+                      <span className="font-medium text-red-600">{stats.terminals.kogas}개</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">민간</span>
+                      <span className="font-medium text-orange-600">{stats.terminals.private}개</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">총 용량</span>
+                      <span className="font-medium">{stats.terminals.totalCapacity.toLocaleString()} 만kl</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">운영 중</span>
+                      <span className="font-medium text-green-600">{stats.terminals.operating}개</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 필터 카드 */}
+            <Card>
+              <CardHeader className="pb-0 border-b-0">
+                <CardTitle className="text-sm">필터</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1 pt-0 -mt-px">
+                <div>
+                  <label className="text-xs text-gray-600 mb-0 block">시설 유형</label>
+                  <div className="flex gap-3">
+                    <label className="flex items-center gap-1.5 text-xs">
+                      <input
+                        type="checkbox"
+                        checked={showPlants}
+                        onChange={(e) => setShowPlants(e.target.checked)}
+                        className="rounded w-3.5 h-3.5"
+                      />
+                      <span>발전소</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 text-xs">
+                      <input
+                        type="checkbox"
+                        checked={showTerminals}
+                        onChange={(e) => setShowTerminals(e.target.checked)}
+                        className="rounded w-3.5 h-3.5"
+                      />
+                      <span>터미널</span>
+                    </label>
+                  </div>
+                </div>
+                {showPlants && (
+                  <div>
+                    <label className="text-xs text-gray-600 mb-0 block">발전소 유형</label>
+                    <Select
+                      value={plantTypeFilter}
+                      onValueChange={(value) => setPlantTypeFilter(value as any)}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white shadow-lg border">
+                        <SelectItem value="all">전체</SelectItem>
+                        <SelectItem value="복합발전">복합발전</SelectItem>
+                        <SelectItem value="열병합발전">열병합발전</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 )}
-              </div>
-            </div>
-
-            {/* 뉴스 현황 카드 (모바일에서는 뉴스가 켜졌을 때만 표시) */}
-            <div className={`bg-white border border-gray-200 rounded-lg p-4 ${showPowerPlantInfo ? 'hidden lg:block' : ''}`}>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-gray-900">뉴스 현황</h3>
-                <button
-                  onClick={() => setIsNewsStatsExpanded(!isNewsStatsExpanded)}
-                  className="text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  <svg 
-                    className={`w-4 h-4 transition-transform ${isNewsStatsExpanded ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
+                {showTerminals && (
+                  <div>
+                    <label className="text-xs text-gray-600 mb-0 block">터미널 분류</label>
+                    <Select
+                      value={terminalCategoryFilter}
+                      onValueChange={(value) => setTerminalCategoryFilter(value as any)}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white shadow-lg border">
+                        <SelectItem value="all">전체</SelectItem>
+                        <SelectItem value="가스공사">가스공사</SelectItem>
+                        <SelectItem value="민간">민간</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <div>
+                  <label className="text-xs text-gray-600 mb-0 block">운영 상태</label>
+                  <Select
+                    value={statusFilter}
+                    onValueChange={(value) => setStatusFilter(value as any)}
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              </div>
-              {isNewsStatsExpanded && (
-                <div className="space-y-2">
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white shadow-lg border">
+                      <SelectItem value="all">전체</SelectItem>
+                      <SelectItem value="운영">운영 중</SelectItem>
+                      <SelectItem value="건설">건설 중</SelectItem>
+                      <SelectItem value="계획">계획 중</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 뉴스 현황 카드 */}
+            <Card>
+              <CardHeader className="pb-0 border-b-0">
+                <CardTitle className="text-sm">뉴스 현황</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-0.5 pt-0 -mt-px">
                 <div className="flex justify-between text-sm">
                   <button
                     onClick={() => {
                       setNewsFilter({});
                       setShowAllNews(true);
-                      setShowPowerPlantInfo(false);
                     }}
-                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer text-left"
                   >
                     총 뉴스
                   </button>
@@ -569,7 +470,6 @@ export default function Home() {
                     onClick={() => {
                       setNewsFilter({});
                       setShowAllNews(true);
-                      setShowPowerPlantInfo(false);
                     }}
                     className="font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded-md transition-colors cursor-pointer"
                   >
@@ -581,9 +481,8 @@ export default function Home() {
                     onClick={() => {
                       setNewsFilter({ locationType: 'national' });
                       setShowAllNews(true);
-                      setShowPowerPlantInfo(false);
                     }}
-                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer text-left"
                   >
                     전국 뉴스
                   </button>
@@ -591,7 +490,6 @@ export default function Home() {
                     onClick={() => {
                       setNewsFilter({ locationType: 'national' });
                       setShowAllNews(true);
-                      setShowPowerPlantInfo(false);
                     }}
                     className="font-bold text-green-600 hover:text-green-800 hover:bg-green-50 px-2 py-1 rounded-md transition-colors cursor-pointer"
                   >
@@ -603,9 +501,8 @@ export default function Home() {
                     onClick={() => {
                       setNewsFilter({ locationType: 'regional' });
                       setShowAllNews(true);
-                      setShowPowerPlantInfo(false);
                     }}
-                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer text-left"
                   >
                     지역 뉴스
                   </button>
@@ -613,7 +510,6 @@ export default function Home() {
                     onClick={() => {
                       setNewsFilter({ locationType: 'regional' });
                       setShowAllNews(true);
-                      setShowPowerPlantInfo(false);
                     }}
                     className="font-bold text-orange-600 hover:text-orange-800 hover:bg-orange-50 px-2 py-1 rounded-md transition-colors cursor-pointer"
                   >
@@ -625,9 +521,8 @@ export default function Home() {
                     onClick={() => {
                       setNewsFilter({ locationType: 'power_plant' });
                       setShowAllNews(true);
-                      setShowPowerPlantInfo(false);
                     }}
-                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-md transition-colors cursor-pointer text-left"
                   >
                     발전소 뉴스
                   </button>
@@ -635,121 +530,166 @@ export default function Home() {
                     onClick={() => {
                       setNewsFilter({ locationType: 'power_plant' });
                       setShowAllNews(true);
-                      setShowPowerPlantInfo(false);
                     }}
                     className="font-bold text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-2 py-1 rounded-md transition-colors cursor-pointer"
                   >
                     {newsStats.powerPlant}
                   </button>
                 </div>
-                </div>
-              )}
-            </div>
-
+              </CardContent>
+            </Card>
           </div>
         </div>
 
-        {/* 발전소 정보 패널 */}
-        {showPowerPlantInfo && (
+        {/* 필터링된 시설 목록 */}
+        {(filteredPlants.length > 0 || filteredTerminals.length > 0) && (
           <div className="mt-6">
-            <div className="bg-white border border-gray-200 rounded-lg">
-              <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-gray-900">발전소 정보</h3>
-                  <div className="flex gap-2">
-                    <select 
-                      value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value)}
-                      className="text-xs border border-gray-300 rounded px-2 py-1"
-                    >
-                      <option value="전체">전체</option>
-                      <option value="운영중">운영중</option>
-                      <option value="건설중">건설중</option>
-                      <option value="계획중">계획중</option>
-                    </select>
-                    <select 
-                      value={plantTypeFilter}
-                      onChange={(e) => setPlantTypeFilter(e.target.value)}
-                      className="text-xs border border-gray-300 rounded px-2 py-1"
-                    >
-                      <option value="전체">전체</option>
-                      <option value="석탄">석탄</option>
-                      <option value="LNG">LNG</option>
-                      <option value="기타화력">기타화력</option>
-                      <option value="원자력">원자력</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div className="p-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
-                  {plants
-                    .filter(plant => {
-                      const statusMatch = statusFilter === "전체" || plant.status === statusFilter;
-                      const plantTypeMatch = plantTypeFilter === "전체" || getPlantCategory(plant.plant_type, plant.fuel_type, plant.name) === plantTypeFilter;
-                      return statusMatch && plantTypeMatch;
-                    })
-                    .map((plant) => {
-                    const category = getPlantCategory(plant.plant_type, plant.fuel_type, plant.name);
-                    const color = categoryColors[category] ?? '#6B7280';
-                    return (
-                      <div key={plant.id} className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
-                        <div className="flex items-center justify-between mb-1">
-                          <h4 className="font-medium text-sm text-gray-900">{plant.name}</h4>
-                          <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1 text-[11px] text-gray-800">
-                              <span className="w-3 h-3 rounded-full border" style={{ backgroundColor: color, borderColor: color }} />
-                              <span className="hidden sm:inline">{category}</span>
-                            </span>
-                          </div>
-                        </div>
-                        <div className="text-xs text-gray-600 space-y-1">
-                          <div>위치: {plant.address}</div>
-                          <div>용량: {plant.capacity_mw}MW</div>
-                          <div>운영사: {plant.operator}</div>
-                          <div>타입: {plant.plant_type} • {plant.fuel_type}</div>
-                          <div className={`inline-block px-2 py-1 rounded text-xs ${
-                            plant.status === '운영중' ? 'bg-green-100 text-green-800' :
-                            plant.status === '건설중' ? 'bg-orange-100 text-orange-800' :
-                            'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {plant.status}
-                          </div>
-                        </div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">
+                  필터링된 시설 목록 ({filteredPlants.length + filteredTerminals.length}개)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {/* 발전소 목록 */}
+                  {showPlants && filteredPlants.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-700 mb-3">
+                        발전소 ({filteredPlants.length}개)
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+                        {filteredPlants.map((plant) => {
+                          const color = plant.type === '복합발전' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800';
+                          return (
+                            <div
+                              key={plant.id}
+                              className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow"
+                            >
+                              <div className="flex items-center justify-between mb-1">
+                                <h4 className="font-medium text-sm text-gray-900">{plant.plant_name}</h4>
+                                <span className={`text-xs px-2 py-1 rounded ${color}`}>
+                                  {plant.type}
+                                </span>
+                              </div>
+                              <div className="text-xs text-gray-600 space-y-1">
+                                <div><strong>소유주:</strong> {plant.owner}</div>
+                                <div><strong>용량:</strong> {plant.capacity_mw?.toLocaleString()} MW</div>
+                                {plant.status && (
+                                  <div>
+                                    <strong>상태:</strong>{' '}
+                                    <span className={`inline-block px-2 py-0.5 rounded text-xs ${
+                                      plant.status === '운영' ? 'bg-green-100 text-green-800' :
+                                      plant.status === '건설' ? 'bg-orange-100 text-orange-800' :
+                                      'bg-blue-100 text-blue-800'
+                                    }`}>
+                                      {plant.status}
+                                    </span>
+                                  </div>
+                                )}
+                                {plant.location && (
+                                  <div><strong>위치:</strong> {plant.location}</div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
+                    </div>
+                  )}
+
+                  {/* 터미널 목록 */}
+                  {showTerminals && filteredTerminals.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-700 mb-3">
+                        터미널 ({filteredTerminals.length}개)
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+                        {filteredTerminals.map((terminal) => {
+                          const color = terminal.category === '가스공사' ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800';
+                          return (
+                            <div
+                              key={terminal.id}
+                              className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow"
+                            >
+                              <div className="flex items-center justify-between mb-1">
+                                <h4 className="font-medium text-sm text-gray-900">{terminal.terminal_name}</h4>
+                                <span className={`text-xs px-2 py-1 rounded ${color}`}>
+                                  {terminal.category}
+                                </span>
+                              </div>
+                              <div className="text-xs text-gray-600 space-y-1">
+                                <div><strong>소유주:</strong> {terminal.owner}</div>
+                                {terminal.capacity_kl && (
+                                  <div><strong>저장용량:</strong> {terminal.capacity_kl.toLocaleString()} 만kl</div>
+                                )}
+                                {terminal.tank_number && (
+                                  <div><strong>탱크:</strong> {terminal.tank_number}호기</div>
+                                )}
+                                {terminal.status && (
+                                  <div>
+                                    <strong>상태:</strong>{' '}
+                                    <span className={`inline-block px-2 py-0.5 rounded text-xs ${
+                                      terminal.status === '운영' ? 'bg-green-100 text-green-800' :
+                                      terminal.status === '건설' ? 'bg-orange-100 text-orange-800' :
+                                      'bg-blue-100 text-blue-800'
+                                    }`}>
+                                      {terminal.status}
+                                    </span>
+                                  </div>
+                                )}
+                                {terminal.location && (
+                                  <div><strong>위치:</strong> {terminal.location}</div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         )}
 
         {/* 뉴스 패널 */}
         {showAllNews && (
           <div className="mt-6">
-            <div className="bg-white border border-gray-200 rounded-lg">
-              <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+            <Card>
+              <CardHeader>
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-gray-900">뉴스</h3>
+                  <CardTitle>뉴스</CardTitle>
                   <div className="flex gap-2">
-                    <select 
+                    <Select
                       value={newsFilter.locationType || 'all'}
-                      onChange={(e) => setNewsFilter(prev => ({ 
+                      onValueChange={(value) => setNewsFilter(prev => ({ 
                         ...prev, 
-                        locationType: e.target.value === 'all' ? undefined : e.target.value as any 
+                        locationType: value === 'all' ? undefined : value as any 
                       }))}
-                      className="text-xs border border-gray-300 rounded px-2 py-1"
                     >
-                      <option value="all">전체</option>
-                      <option value="national">전국</option>
-                      <option value="regional">지역</option>
-                      <option value="power_plant">발전소</option>
-                    </select>
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white shadow-lg border">
+                        <SelectItem value="all">전체</SelectItem>
+                        <SelectItem value="national">전국</SelectItem>
+                        <SelectItem value="regional">지역</SelectItem>
+                        <SelectItem value="power_plant">발전소</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowAllNews(false)}
+                    >
+                      닫기
+                    </Button>
                   </div>
                 </div>
-              </div>
-              <div className="p-4">
+              </CardHeader>
+              <CardContent>
                 {loadingNews ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
@@ -801,11 +741,10 @@ export default function Home() {
                     ))}
                   </div>
                 )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         )}
-
       </div>
     </div>
   );
