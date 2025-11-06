@@ -27,6 +27,8 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats>({ totalPlants: 0, totalPosts: 0, recentPosts: 0, operatingPlants: 0, pendingArticles: 0 });
   const [recentPosts, setRecentPosts] = useState<RecentPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [uploadingGeocode, setUploadingGeocode] = useState(false);
+  const [geocodeResult, setGeocodeResult] = useState<{ success: boolean; message: string } | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -103,6 +105,53 @@ export default function AdminDashboard() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/admin/login");
+  };
+
+  // 좌표가 없는 항목 geocoding
+  const handleGeocodeMissing = async () => {
+    setUploadingGeocode(true);
+    setGeocodeResult(null);
+    try {
+      const response = await fetch('/api/gas-plants/geocode-missing', {
+        method: 'POST',
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        const geocodedCount = result.summary?.geocoded || 0;
+        const failedCount = result.summary?.failed || 0;
+        const totalCount = result.summary?.total || 0;
+        
+        let message = '';
+        if (geocodedCount > 0) {
+          message = `${geocodedCount}개 항목의 좌표를 자동으로 추가했습니다.`;
+          if (failedCount > 0) {
+            message += ` (실패: ${failedCount}개)`;
+          }
+        } else if (totalCount === 0) {
+          message = '좌표가 필요한 항목이 없습니다.';
+        } else {
+          message = `좌표 추가에 실패했습니다. (실패: ${failedCount}개)`;
+        }
+        
+        setGeocodeResult({
+          success: geocodedCount > 0,
+          message,
+        });
+      } else {
+        setGeocodeResult({
+          success: false,
+          message: result.error || 'Geocoding 실패',
+        });
+      }
+    } catch (error: any) {
+      setGeocodeResult({
+        success: false,
+        message: error.message || 'Geocoding 중 오류 발생',
+      });
+    } finally {
+      setUploadingGeocode(false);
+    }
   };
 
   if (isLoading) {
@@ -369,6 +418,55 @@ export default function AdminDashboard() {
                   </svg>
                   권한 관리 (준비중)
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 bg-gradient-to-br from-teal-50 to-teal-100/50">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-teal-500 rounded-lg">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <CardTitle className="text-xl">좌표 업데이트</CardTitle>
+              </div>
+              <CardDescription className="text-gray-600">좌표가 없는 발전소의 주소를 자동으로 geocoding합니다</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-3">
+                <Button 
+                  onClick={handleGeocodeMissing}
+                  disabled={uploadingGeocode}
+                  className="w-full bg-teal-600 hover:bg-teal-700 transition-colors"
+                >
+                  {uploadingGeocode ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      처리 중...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      좌표 자동 추가
+                    </>
+                  )}
+                </Button>
+                {geocodeResult && (
+                  <div className={`text-sm p-3 rounded-md ${
+                    geocodeResult.success ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
+                  }`}>
+                    {geocodeResult.message}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

@@ -18,49 +18,108 @@ export interface GeocodingError {
   message: string;
 }
 
-// 한국 주소를 좌표로 변환
+// 주소 정규화: 여러 번지, 괄호 설명 등을 정리
+function normalizeAddress(address: string): string[] {
+  const normalized: string[] = [];
+  
+  // 원본 주소 추가
+  normalized.push(address);
+  
+  // 콤마로 구분된 복수 번지 처리 (예: "1469-1, 1472" -> 첫 번째만 사용)
+  if (address.includes(',')) {
+    const parts = address.split(',');
+    if (parts.length > 1) {
+      // 첫 번째 주소만 사용
+      normalized.push(parts[0].trim());
+    }
+  }
+  
+  // 괄호 설명 제거 (예: "54(공단동)" -> "54")
+  const withoutParens = address.replace(/\([^)]*\)/g, '').trim();
+  if (withoutParens !== address) {
+    normalized.push(withoutParens);
+  }
+  
+  // 번지 정보 제거하고 단순화 (예: "신도산단길 65" -> "신도산단길")
+  const withoutNumber = address.replace(/\s+\d+[-\d,]*(\s*\([^)]*\))?/g, '').trim();
+  if (withoutNumber !== address && withoutNumber.length > 0) {
+    normalized.push(withoutNumber);
+  }
+  
+  // 시/군/구까지만 추출 (예: "전라남도 나주시 산포면 신도산단길 65" -> "전라남도 나주시 산포면")
+  const match = address.match(/^([가-힣]+도|[가-힣]+시)\s+([가-힣]+시|[가-힣]+군|[가-힣]+구)\s*([가-힣]+면|[가-힣]+읍|[가-힣]+동)?/);
+  if (match) {
+    const simplified = match[0].trim();
+    if (!normalized.includes(simplified)) {
+      normalized.push(simplified);
+    }
+  }
+  
+  // 중복 제거
+  return [...new Set(normalized)];
+}
+
+// 한국 주소를 좌표로 변환 (여러 번 시도)
 export async function geocodeKoreanAddress(address: string): Promise<GeocodingResult | GeocodingError> {
   try {
-    // Nominatim API 호출 (한국 주소에 최적화)
-    const encodedAddress = encodeURIComponent(address);
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodedAddress}&countrycodes=kr&format=json&limit=1&addressdetails=1`;
+    // 주소 정규화: 여러 변형 시도
+    const addressVariants = normalizeAddress(address);
     
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'GasOut-News-Mapping/1.0'
+    // 각 주소 변형에 대해 시도
+    for (const variant of addressVariants) {
+      try {
+        // Nominatim API 호출 (한국 주소에 최적화)
+        const encodedAddress = encodeURIComponent(variant);
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodedAddress}&countrycodes=kr&format=json&limit=1&addressdetails=1`;
+        
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': 'GasOut-News-Mapping/1.0'
+          }
+        });
+        
+        if (!response.ok) {
+          continue; // 다음 변형 시도
+        }
+        
+        const data = await response.json();
+        
+        if (data && data.length > 0) {
+          const result = data[0];
+          const lat = parseFloat(result.lat);
+          const lon = parseFloat(result.lon);
+          
+          // 주소 구성 요소 추출
+          const addressComponents = result.address || {};
+          
+          console.log(`✓ Geocoding success: "${variant}" -> ${lat}, ${lon}`);
+          
+          return {
+            latitude: lat,
+            longitude: lon,
+            address: {
+              si_do: extractSiDo(addressComponents),
+              si_gun_gu: extractSiGunGu(addressComponents),
+              eup_myeon_dong: extractEupMyeonDong(addressComponents),
+              full_address: result.display_name || variant
+            },
+            confidence: parseFloat(result.importance || '0.5')
+          };
+        }
+      } catch (variantError) {
+        // 다음 변형 시도
+        continue;
       }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      
+      // API rate limit 방지를 위한 짧은 지연
+      await new Promise(resolve => setTimeout(resolve, 200));
     }
     
-    const data = await response.json();
-    
-    if (!data || data.length === 0) {
-      return {
-        error: 'NO_RESULTS',
-        message: '주소를 찾을 수 없습니다.'
-      };
-    }
-    
-    const result = data[0];
-    const lat = parseFloat(result.lat);
-    const lon = parseFloat(result.lon);
-    
-    // 주소 구성 요소 추출
-    const addressComponents = result.address || {};
-    
+    // 모든 변형 실패
+    console.warn(`✗ Geocoding failed for all variants of: "${address}"`);
     return {
-      latitude: lat,
-      longitude: lon,
-      address: {
-        si_do: extractSiDo(addressComponents),
-        si_gun_gu: extractSiGunGu(addressComponents),
-        eup_myeon_dong: extractEupMyeonDong(addressComponents),
-        full_address: result.display_name || address
-      },
-      confidence: parseFloat(result.importance || '0.5')
+      error: 'NO_RESULTS',
+      message: `주소를 찾을 수 없습니다: ${address}`
     };
     
   } catch (error) {

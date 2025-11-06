@@ -32,6 +32,11 @@ export default function Home() {
   const [terminalCategoryFilter, setTerminalCategoryFilter] = useState<'가스공사' | '민간' | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<'운영' | '건설' | '계획' | 'all'>('all');
 
+  // 업로드 상태
+  const [uploadingPlants, setUploadingPlants] = useState(false);
+  const [uploadingTerminals, setUploadingTerminals] = useState(false);
+  const [uploadResult, setUploadResult] = useState<{ success: boolean; message: string } | null>(null);
+
   // 뉴스 관련 상태
   const [showAllNews, setShowAllNews] = useState(false);
   const [newsFilter, setNewsFilter] = useState<{
@@ -159,6 +164,134 @@ export default function Home() {
       loadAllNews();
     }
   }, [showAllNews, newsFilter]);
+
+  // 발전소 데이터 업로드
+  const handlePlantsUpload = async () => {
+    setUploadingPlants(true);
+    setUploadResult(null);
+    try {
+      const response = await fetch('/api/gas-plants/upload', {
+        method: 'POST',
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        setUploadResult({
+          success: true,
+          message: `발전소 ${result.summary.success}개 업로드 완료`,
+        });
+        // 데이터 재로드
+        const { data: plantData } = await supabase
+          .from('gas_plants')
+          .select('*')
+          .order('plant_name');
+        setPlants((plantData || []) as GasPlant[]);
+      } else {
+        setUploadResult({
+          success: false,
+          message: result.error || '업로드 실패',
+        });
+      }
+    } catch (error: any) {
+      setUploadResult({
+        success: false,
+        message: error.message || '업로드 중 오류 발생',
+      });
+    } finally {
+      setUploadingPlants(false);
+    }
+  };
+
+  // 터미널 데이터 업로드
+  const handleTerminalsUpload = async () => {
+    setUploadingTerminals(true);
+    setUploadResult(null);
+    try {
+      const response = await fetch('/api/gas-terminals/upload', {
+        method: 'POST',
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        setUploadResult({
+          success: true,
+          message: `터미널 ${result.summary.success}개 업로드 완료`,
+        });
+        // 데이터 재로드
+        const { data: terminalData } = await supabase
+          .from('gas_terminals')
+          .select('*')
+          .order('terminal_name');
+        setTerminals((terminalData || []) as GasTerminal[]);
+      } else {
+        setUploadResult({
+          success: false,
+          message: result.error || '업로드 실패',
+        });
+      }
+    } catch (error: any) {
+      setUploadResult({
+        success: false,
+        message: error.message || '업로드 중 오류 발생',
+      });
+    } finally {
+      setUploadingTerminals(false);
+    }
+  };
+
+  // 좌표가 없는 항목 geocoding
+  const handleGeocodeMissing = async () => {
+    setUploadingPlants(true);
+    setUploadResult(null);
+    try {
+      const response = await fetch('/api/gas-plants/geocode-missing', {
+        method: 'POST',
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        const geocodedCount = result.summary?.geocoded || 0;
+        const failedCount = result.summary?.failed || 0;
+        const totalCount = result.summary?.total || 0;
+        
+        let message = '';
+        if (geocodedCount > 0) {
+          message = `${geocodedCount}개 항목의 좌표를 자동으로 추가했습니다.`;
+          if (failedCount > 0) {
+            message += ` (실패: ${failedCount}개)`;
+          }
+        } else if (totalCount === 0) {
+          message = '좌표가 필요한 항목이 없습니다.';
+        } else {
+          message = `좌표 추가에 실패했습니다. (실패: ${failedCount}개)`;
+        }
+        
+        setUploadResult({
+          success: geocodedCount > 0,
+          message,
+        });
+        
+        // 데이터 재로드
+        const { data: plantData } = await supabase
+          .from('gas_plants')
+          .select('*')
+          .order('plant_name');
+        setPlants((plantData || []) as GasPlant[]);
+      } else {
+        setUploadResult({
+          success: false,
+          message: result.error || 'Geocoding 실패',
+        });
+      }
+    } catch (error: any) {
+      setUploadResult({
+        success: false,
+        message: error.message || 'Geocoding 중 오류 발생',
+      });
+    } finally {
+      setUploadingPlants(false);
+    }
+  };
 
   // 필터링된 발전소
   const filteredPlants = plants.filter(plant => {
@@ -450,6 +583,46 @@ export default function Home() {
               </CardContent>
             </Card>
 
+            {/* 데이터 관리 카드 */}
+            {(plants.length === 0 || terminals.length === 0) && (
+              <Card>
+                <CardHeader className="pb-0 border-b-0">
+                  <CardTitle className="text-sm">데이터 관리</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 pt-0 -mt-px">
+                  {plants.length === 0 && (
+                    <Button
+                      onClick={handlePlantsUpload}
+                      disabled={uploadingPlants}
+                      className="w-full text-xs h-7"
+                      size="sm"
+                    >
+                      {uploadingPlants ? '업로드 중...' : '발전소 데이터 업로드'}
+                    </Button>
+                  )}
+                  {terminals.length === 0 && (
+                    <Button
+                      onClick={handleTerminalsUpload}
+                      disabled={uploadingTerminals}
+                      className="w-full text-xs h-7"
+                      size="sm"
+                      variant="outline"
+                    >
+                      {uploadingTerminals ? '업로드 중...' : '터미널 데이터 업로드'}
+                    </Button>
+                  )}
+                  {uploadResult && (
+                    <div className={`text-xs p-2 rounded ${
+                      uploadResult.success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                    }`}>
+                      {uploadResult.message}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+
             {/* 뉴스 현황 카드 */}
             <Card>
               <CardHeader className="pb-0 border-b-0">
@@ -560,7 +733,7 @@ export default function Home() {
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
                         {filteredPlants.map((plant) => {
-                          const color = plant.type === '복합발전' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800';
+                          const color = plant.type === '복합발전' ? 'bg-black text-white' : 'bg-gray-600 text-white';
                           return (
                             <div
                               key={plant.id}

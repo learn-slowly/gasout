@@ -55,8 +55,10 @@ export async function POST(request: NextRequest) {
       throw new Error(`JSON 파싱 실패: ${parseError.message}. 파일에 유효하지 않은 값(NaN 등)이 있을 수 있습니다.`);
     }
     
-    // NaN 값이 있는 경우 추가로 정리
-    const cleanedPlants = plants.map((plant: any) => {
+    // NaN 값이 있는 경우 추가로 정리 + 좌표가 없으면 주소로 geocoding 시도
+    const { geocodeKoreanAddress } = await import('@/src/lib/geocoding');
+    
+    const cleanedPlants = await Promise.all(plants.map(async (plant: any) => {
       const cleaned: any = {};
       for (const [key, value] of Object.entries(plant)) {
         // NaN, Infinity, -Infinity를 null로 변환
@@ -66,8 +68,30 @@ export async function POST(request: NextRequest) {
           cleaned[key] = value;
         }
       }
+      
+      // 좌표가 없고 주소가 있으면 geocoding 시도
+      if ((!cleaned.latitude || !cleaned.longitude || cleaned.latitude === null || cleaned.longitude === null || cleaned.latitude === 0 || cleaned.longitude === 0) && cleaned.location) {
+        console.log(`Geocoding attempt for ${cleaned.plant_name} at ${cleaned.location}`);
+        try {
+          // 약간의 지연을 추가하여 API rate limit 방지
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          const geocodeResult = await geocodeKoreanAddress(cleaned.location);
+          if ('latitude' in geocodeResult && !('error' in geocodeResult)) {
+            cleaned.latitude = geocodeResult.latitude;
+            cleaned.longitude = geocodeResult.longitude;
+            cleaned.geocoded = true;
+            console.log(`✓ Geocoded ${cleaned.plant_name}: ${geocodeResult.latitude}, ${geocodeResult.longitude}`);
+          } else {
+            console.warn(`✗ Geocoding failed for ${cleaned.plant_name}:`, 'error' in geocodeResult ? geocodeResult.message : 'Unknown error');
+          }
+        } catch (error) {
+          console.error(`✗ Geocoding error for ${cleaned.plant_name}:`, error);
+        }
+      }
+      
       return cleaned;
-    });
+    }));
 
     // Supabase 클라이언트 생성
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);

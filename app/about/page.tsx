@@ -225,8 +225,8 @@ export default function AboutPage() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">전국 발전소 현황 지도</h3>
-                    <p className="text-sm text-gray-600">전국 615개 발전소를 연료 유형별 색상으로 구분하여 지도에 표시</p>
+                    <h3 className="font-semibold text-gray-900">LNG 발전소 및 터미널 현황 지도</h3>
+                    <p className="text-sm text-gray-600">전국 LNG 발전소와 터미널을 통합 지도에 표시. 발전소 유형(복합발전/열병합발전)과 터미널 분류(가스공사/민간)별로 구분</p>
                   </div>
                 </div>
 
@@ -237,8 +237,8 @@ export default function AboutPage() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">발전소별 관련 뉴스</h3>
-                    <p className="text-sm text-gray-600">각 발전소와 관련된 뉴스를 실시간으로 수집하고 분류하여 제공</p>
+                    <h3 className="font-semibold text-gray-900">LNG 인프라 관련 뉴스</h3>
+                    <p className="text-sm text-gray-600">LNG 발전소 및 터미널 관련 뉴스를 전국/지역/발전소별로 분류하여 실시간으로 제공</p>
                   </div>
                 </div>
 
@@ -250,19 +250,19 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">실시간 통계 대시보드</h3>
-                    <p className="text-sm text-gray-600">발전소 현황과 뉴스 현황을 실시간으로 집계하여 표시</p>
+                    <p className="text-sm text-gray-600">LNG 발전소와 터미널의 현황, 용량, 운영 상태 및 뉴스 현황을 실시간으로 집계하여 표시</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
                     <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">모바일 최적화</h3>
-                    <p className="text-sm text-gray-600">모바일 환경에서도 편리하게 사용할 수 있도록 최적화된 인터페이스</p>
+                    <h3 className="font-semibold text-gray-900">고급 필터링 기능</h3>
+                    <p className="text-sm text-gray-600">발전소 유형, 터미널 분류, 운영 상태별로 필터링하여 원하는 정보만 확인 가능</p>
                   </div>
                 </div>
               </div>
@@ -277,14 +277,26 @@ export default function AboutPage() {
               <CardTitle className="text-2xl text-orange-600">데이터 현황</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600">615개</div>
-                  <div className="text-sm text-gray-600">전국 발전소</div>
+                  <div className="text-3xl font-bold text-blue-600">267개</div>
+                  <div className="text-sm text-gray-600">총 시설</div>
+                  <div className="text-xs text-gray-500 mt-1">(발전소 + 터미널)</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-black">144개</div>
+                  <div className="text-sm text-gray-600">LNG 발전소</div>
+                  <div className="text-xs text-gray-500 mt-1">복합/열병합</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-red-600">123개</div>
+                  <div className="text-sm text-gray-600">LNG 터미널</div>
+                  <div className="text-xs text-gray-500 mt-1">가스공사/민간</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-green-600">실시간</div>
                   <div className="text-sm text-gray-600">뉴스 수집</div>
+                  <div className="text-xs text-gray-500 mt-1">전국/지역/발전소</div>
                 </div>
               </div>
             </CardContent>
@@ -301,15 +313,16 @@ export default function AboutPage() {
               <div className="space-y-4">
                 <p className="text-gray-700 leading-relaxed">
                   GasOut 프로젝트는 전국의 탈가스 탈 LNG 운동을 위한 정보 플랫폼입니다. 
+                  LNG 발전소와 터미널의 현황을 한눈에 파악하고, 관련 뉴스를 실시간으로 확인할 수 있습니다.
                   더 많은 시민들이 참여할 수 있도록 도와주세요.
                 </p>
                 
                 <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
                   <h3 className="font-semibold text-red-800 mb-2">참여 방법</h3>
                   <ul className="text-red-700 space-y-1">
-                    <li>• 발전소 관련 정보 제공</li>
-                    <li>• 뉴스 정보 공유</li>
-                    <li>• 지역별 활동 공유</li>
+                    <li>• LNG 발전소 및 터미널 관련 정보 제공</li>
+                    <li>• LNG 인프라 관련 뉴스 정보 공유</li>
+                    <li>• 지역별 탈가스 활동 공유</li>
                     <li>• 페이지 피드백 및 개선 제안</li>
                   </ul>
                 </div>

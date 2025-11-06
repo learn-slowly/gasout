@@ -113,38 +113,38 @@ export default function IntegratedGasMap({
           return;
         }
 
-        // 발전소 로드
-        if (showPlants) {
-          let plantQuery = supabase
-            .from('gas_plants')
-            .select('*')
-            .not('latitude', 'is', null)
-            .not('longitude', 'is', null);
+        // 발전소 로드 - 항상 로드하되, 필터링은 나중에
+        let plantQuery = supabase
+          .from('gas_plants')
+          .select('*')
+          .not('latitude', 'is', null)
+          .not('longitude', 'is', null);
 
-          const { data: plantData, error: plantError } = await plantQuery;
+        const { data: plantData, error: plantError } = await plantQuery;
 
-          if (plantError) {
-            console.error('Error loading gas plants:', plantError);
-          } else {
-            setPlants((plantData || []) as GasPlant[]);
-          }
+        if (plantError) {
+          console.error('Error loading gas plants:', plantError);
+        } else {
+          const loadedCount = plantData?.length || 0;
+          console.log(`IntegratedGasMap: Loaded ${loadedCount} plants with coordinates`);
+          setPlants((plantData || []) as GasPlant[]);
         }
 
-        // 터미널 로드
-        if (showTerminals) {
-          let terminalQuery = supabase
-            .from('gas_terminals')
-            .select('*')
-            .not('latitude', 'is', null)
-            .not('longitude', 'is', null);
+        // 터미널 로드 - 항상 로드하되, 필터링은 나중에
+        let terminalQuery = supabase
+          .from('gas_terminals')
+          .select('*')
+          .not('latitude', 'is', null)
+          .not('longitude', 'is', null);
 
-          const { data: terminalData, error: terminalError } = await terminalQuery;
+        const { data: terminalData, error: terminalError } = await terminalQuery;
 
-          if (terminalError) {
-            console.error('Error loading gas terminals:', terminalError);
-          } else {
-            setTerminals((terminalData || []) as GasTerminal[]);
-          }
+        if (terminalError) {
+          console.error('Error loading gas terminals:', terminalError);
+        } else {
+          const loadedCount = terminalData?.length || 0;
+          console.log(`IntegratedGasMap: Loaded ${loadedCount} terminals with coordinates`);
+          setTerminals((terminalData || []) as GasTerminal[]);
         }
       } catch (error: any) {
         console.error('Error loading data:', error);
@@ -153,11 +153,14 @@ export default function IntegratedGasMap({
       }
     }
 
-    loadData();
-  }, [showPlants, showTerminals]);
+    if (isClient) {
+      loadData();
+    }
+  }, [isClient]);
 
   // 필터링된 발전소
   const filteredPlants = plants.filter(plant => {
+    if (!showPlants) return false;
     const typeMatch = plantTypeFilter === 'all' || plant.type === plantTypeFilter;
     const statusMatch = statusFilter === 'all' || plant.status === statusFilter;
     return typeMatch && statusMatch;
@@ -165,6 +168,7 @@ export default function IntegratedGasMap({
 
   // 필터링된 터미널
   const filteredTerminals = terminals.filter(terminal => {
+    if (!showTerminals) return false;
     const categoryMatch = terminalCategoryFilter === 'all' || terminal.category === terminalCategoryFilter;
     const statusMatch = statusFilter === 'all' || terminal.status === statusFilter;
     return categoryMatch && statusMatch;
@@ -186,10 +190,62 @@ export default function IntegratedGasMap({
     );
   }
 
+  // 좌표 유효성 검사 헬퍼 함수
+  const isValidCoordinate = (value: any): boolean => {
+    if (value == null) return false;
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    if (isNaN(num) || !isFinite(num)) return false;
+    // 한국 좌표 범위: 위도 33-43, 경도 124-132
+    if (num === 0) return false;
+    return true;
+  };
+
+  // 좌표 정규화 헬퍼 함수
+  const normalizeCoordinate = (value: any): number | null => {
+    if (value == null) return null;
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    if (isNaN(num) || !isFinite(num) || num === 0) return null;
+    return num;
+  };
+
   const allPoints = [
-    ...filteredPlants.filter(p => p.latitude && p.longitude).map(p => ({ lat: p.latitude!, lng: p.longitude! })),
-    ...filteredTerminals.filter(t => t.latitude && t.longitude).map(t => ({ lat: t.latitude!, lng: t.longitude! }))
+    ...filteredPlants
+      .map(p => {
+        const lat = normalizeCoordinate(p.latitude);
+        const lng = normalizeCoordinate(p.longitude);
+        if (lat != null && lng != null && isValidCoordinate(lat) && isValidCoordinate(lng)) {
+          return { lat, lng };
+        }
+        return null;
+      })
+      .filter((p): p is { lat: number; lng: number } => p != null),
+    ...filteredTerminals
+      .map(t => {
+        const lat = normalizeCoordinate(t.latitude);
+        const lng = normalizeCoordinate(t.longitude);
+        if (lat != null && lng != null && isValidCoordinate(lat) && isValidCoordinate(lng)) {
+          return { lat, lng };
+        }
+        return null;
+      })
+      .filter((t): t is { lat: number; lng: number } => t != null)
   ];
+
+  const plantsWithCoords = filteredPlants.filter(p => {
+    const lat = normalizeCoordinate(p.latitude);
+    const lng = normalizeCoordinate(p.longitude);
+    return lat != null && lng != null && isValidCoordinate(lat) && isValidCoordinate(lng);
+  });
+
+  const terminalsWithCoords = filteredTerminals.filter(t => {
+    const lat = normalizeCoordinate(t.latitude);
+    const lng = normalizeCoordinate(t.longitude);
+    return lat != null && lng != null && isValidCoordinate(lat) && isValidCoordinate(lng);
+  });
+
+  console.log(`IntegratedGasMap: Filtered plants: ${filteredPlants.length}, terminals: ${filteredTerminals.length}`);
+  console.log(`IntegratedGasMap: Plants with valid coords: ${plantsWithCoords.length}, Terminals with valid coords: ${terminalsWithCoords.length}`);
+  console.log(`IntegratedGasMap: Total points for map: ${allPoints.length}`);
 
   return (
     <div className="w-full h-full">
@@ -209,11 +265,19 @@ export default function IntegratedGasMap({
           
           {/* 발전소 마커 */}
           {filteredPlants
-            .filter(p => p.latitude && p.longitude)
-            .map((plant) => (
+            .map(plant => {
+              const lat = normalizeCoordinate(plant.latitude);
+              const lng = normalizeCoordinate(plant.longitude);
+              if (lat != null && lng != null && isValidCoordinate(lat) && isValidCoordinate(lng)) {
+                return { plant, lat, lng };
+              }
+              return null;
+            })
+            .filter((item): item is { plant: GasPlant; lat: number; lng: number } => item != null)
+            .map(({ plant, lat, lng }) => (
               <Marker
                 key={`plant-${plant.id}`}
-                position={[plant.latitude!, plant.longitude!]}
+                position={[lat, lng]}
                 icon={createPlantIcon(plant)}
                 eventHandlers={{
                   click: () => onPlantClick?.(plant),
@@ -250,11 +314,19 @@ export default function IntegratedGasMap({
           
           {/* 터미널 마커 */}
           {filteredTerminals
-            .filter(t => t.latitude && t.longitude)
-            .map((terminal) => (
+            .map(terminal => {
+              const lat = normalizeCoordinate(terminal.latitude);
+              const lng = normalizeCoordinate(terminal.longitude);
+              if (lat != null && lng != null && isValidCoordinate(lat) && isValidCoordinate(lng)) {
+                return { terminal, lat, lng };
+              }
+              return null;
+            })
+            .filter((item): item is { terminal: GasTerminal; lat: number; lng: number } => item != null)
+            .map(({ terminal, lat, lng }) => (
               <Marker
                 key={`terminal-${terminal.id}`}
-                position={[terminal.latitude!, terminal.longitude!]}
+                position={[lat, lng]}
                 icon={createTerminalIcon(terminal)}
                 eventHandlers={{
                   click: () => onTerminalClick?.(terminal),
