@@ -8,7 +8,11 @@ import { supabase } from "@/src/lib/supabase";
 import type { GasPlant } from "@/src/types/gasPlant";
 import type { GasTerminal } from "@/src/types/gasTerminal";
 
-// Leaflet 기본 아이콘 설정
+/**
+ * Leaflet의 기본 마커 아이콘 경로 문제를 해결합니다.
+ * Next.js와 같은 번들링 환경에서 이미지 경로가 깨지는 것을 방지하기 위해
+ * CDN URL을 직접 지정합니다.
+ */
 const fixDefaultIcon = () => {
   delete (L.Icon.Default.prototype as any)._getIconUrl;
   L.Icon.Default.mergeOptions({
@@ -18,11 +22,16 @@ const fixDefaultIcon = () => {
   });
 };
 
-// 발전소 아이콘 생성
+/**
+ * 발전소 마커 아이콘을 생성합니다.
+ * 발전소 유형에 따라 색상을 다르게 하고, 용량에 따라 크기를 조절합니다.
+ * L.divIcon을 사용하여 CSS로 스타일링된 커스텀 마커를 만듭니다.
+ */
 function createPlantIcon(plant: GasPlant) {
   const color = plant.type === '복합발전' ? '#000000' : '#4b5563'; // 검정 / 어두운 회색
+  // 용량에 비례하여 마커 크기 계산 (최소 15px, 최대 30px)
   const size = Math.max(15, Math.min(30, Math.sqrt(plant.capacity_mw) / 2));
-  
+
   return L.divIcon({
     className: 'custom-gas-plant-marker',
     html: `<div style="
@@ -38,11 +47,15 @@ function createPlantIcon(plant: GasPlant) {
   });
 }
 
-// 터미널 아이콘 생성
+/**
+ * 터미널 마커 아이콘을 생성합니다.
+ * 운영 주체(가스공사/민간)에 따라 색상을 구분합니다.
+ * 마름모 형태(45도 회전)로 발전소와 시각적으로 구분합니다.
+ */
 function createTerminalIcon(terminal: GasTerminal) {
   const color = terminal.category === '가스공사' ? '#dc2626' : '#f97316';
   const size = 20;
-  
+
   return L.divIcon({
     className: 'custom-gas-terminal-marker',
     html: `<div style="
@@ -59,19 +72,25 @@ function createTerminalIcon(terminal: GasTerminal) {
   });
 }
 
-// 지도 범위 자동 조정
+/**
+ * 지도의 줌 레벨과 중심을 모든 마커가 보이도록 자동으로 조정하는 컴포넌트입니다.
+ * useMap 훅을 사용하여 Leaflet 지도 인스턴스에 접근합니다.
+ */
 function FitToMarkers({ points }: { points: Array<{ lat: number; lng: number }> }) {
   const map = useMap();
   const [hasInitialized, setHasInitialized] = useState(false);
-  
+
   useEffect(() => {
+    // 포인트가 없거나 이미 초기화되었다면 실행하지 않음
     if (!points || points.length === 0 || hasInitialized) return;
-    
+
+    // 모든 포인트를 포함하는 경계(bounds) 계산
     const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng] as [number, number]));
+    // 계산된 경계에 맞게 지도 뷰 조정 (padding으로 여백 추가)
     map.fitBounds(bounds, { padding: [32, 32] });
     setHasInitialized(true);
   }, [map, points, hasInitialized]);
-  
+
   return null;
 }
 
@@ -85,7 +104,7 @@ type Props = {
   onTerminalClick?: (terminal: GasTerminal) => void;
 };
 
-export default function IntegratedGasMap({ 
+export default function IntegratedGasMap({
   showPlants = true,
   showTerminals = true,
   plantTypeFilter = 'all',
@@ -99,11 +118,13 @@ export default function IntegratedGasMap({
   const [loading, setLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
 
+  // 클라이언트 사이드 렌더링 확인 및 아이콘 수정
   useEffect(() => {
     setIsClient(true);
     fixDefaultIcon();
   }, []);
 
+  // 데이터 로드
   useEffect(() => {
     async function loadData() {
       try {
@@ -113,7 +134,7 @@ export default function IntegratedGasMap({
           return;
         }
 
-        // 발전소 로드 - 항상 로드하되, 필터링은 나중에
+        // 발전소 데이터 로드 - 좌표가 있는 항목만 조회
         let plantQuery = supabase
           .from('gas_plants')
           .select('*')
@@ -130,7 +151,7 @@ export default function IntegratedGasMap({
           setPlants((plantData || []) as GasPlant[]);
         }
 
-        // 터미널 로드 - 항상 로드하되, 필터링은 나중에
+        // 터미널 데이터 로드 - 좌표가 있는 항목만 조회
         let terminalQuery = supabase
           .from('gas_terminals')
           .select('*')
@@ -262,7 +283,7 @@ export default function IntegratedGasMap({
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           {allPoints.length > 0 && <FitToMarkers points={allPoints} />}
-          
+
           {/* 발전소 마커 */}
           {filteredPlants
             .map(plant => {
@@ -294,11 +315,10 @@ export default function IntegratedGasMap({
                       {plant.status && (
                         <div>
                           <strong>상태:</strong>{' '}
-                          <span className={`inline-block px-2 py-0.5 rounded text-xs ${
-                            plant.status === '운영' ? 'bg-green-100 text-green-800' :
+                          <span className={`inline-block px-2 py-0.5 rounded text-xs ${plant.status === '운영' ? 'bg-green-100 text-green-800' :
                             plant.status === '건설' ? 'bg-orange-100 text-orange-800' :
-                            'bg-blue-100 text-blue-800'
-                          }`}>
+                              'bg-blue-100 text-blue-800'
+                            }`}>
                             {plant.status}
                           </span>
                         </div>
@@ -311,7 +331,7 @@ export default function IntegratedGasMap({
                 </Popup>
               </Marker>
             ))}
-          
+
           {/* 터미널 마커 */}
           {filteredTerminals
             .map(terminal => {
@@ -348,11 +368,10 @@ export default function IntegratedGasMap({
                       {terminal.status && (
                         <div>
                           <strong>상태:</strong>{' '}
-                          <span className={`inline-block px-2 py-0.5 rounded text-xs ${
-                            terminal.status === '운영' ? 'bg-green-100 text-green-800' :
+                          <span className={`inline-block px-2 py-0.5 rounded text-xs ${terminal.status === '운영' ? 'bg-green-100 text-green-800' :
                             terminal.status === '건설' ? 'bg-orange-100 text-orange-800' :
-                            'bg-blue-100 text-blue-800'
-                          }`}>
+                              'bg-blue-100 text-blue-800'
+                            }`}>
                             {terminal.status}
                           </span>
                         </div>

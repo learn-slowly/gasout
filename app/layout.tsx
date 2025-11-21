@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
 };
 
+import Header from "@/components/layout/Header";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,9 +29,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        {children}
+        <Header />
+        <main className="flex-1 pt-20">
+          {children}
+        </main>
       </body>
     </html>
   );
