@@ -124,6 +124,11 @@ export default function Home() {
 
     async function loadNewsStats() {
       try {
+        if (!supabase) {
+          console.warn("Supabase client not initialized");
+          return;
+        }
+
         // 승인된 뉴스 기사의 위치 유형만 조회하여 통계 계산
         const { data, error } = await supabase
           .from("articles")
@@ -131,19 +136,27 @@ export default function Home() {
           .eq("status", "approved");
 
         if (error) {
-          console.error("Error loading news stats:", error);
+          // 에러가 있지만 테이블이 없거나 RLS 문제일 수 있으므로 조용히 처리
+          console.warn("Could not load news stats:", error.message || error);
+          // 기본값 유지 (이미 0으로 초기화됨)
+          return;
+        }
+
+        // 데이터가 없을 수도 있으므로 안전하게 처리
+        if (!data) {
           return;
         }
 
         const stats = {
-          national: (data || []).filter(article => article.location_type === 'national').length,
-          regional: (data || []).filter(article => article.location_type === 'regional').length,
-          powerPlant: (data || []).filter(article => article.location_type === 'power_plant').length,
-          total: (data || []).length
+          national: data.filter(article => article.location_type === 'national').length,
+          regional: data.filter(article => article.location_type === 'regional').length,
+          powerPlant: data.filter(article => article.location_type === 'power_plant').length,
+          total: data.length
         };
         setNewsStats(stats);
       } catch (err) {
-        console.error("Error loading news stats:", err);
+        // 예상치 못한 에러는 조용히 처리 (뉴스 통계는 필수 기능이 아님)
+        console.warn("Error loading news stats:", err instanceof Error ? err.message : String(err));
       }
     }
 
@@ -158,6 +171,12 @@ export default function Home() {
   const loadAllNews = async () => {
     setLoadingNews(true);
     try {
+      if (!supabase) {
+        console.warn("Supabase client not initialized");
+        setAllNews([]);
+        return;
+      }
+
       let query = supabase
         .from('articles')
         .select('*')
@@ -173,13 +192,17 @@ export default function Home() {
       const { data, error } = await query;
 
       if (error) {
-        console.error('Error loading news:', error);
+        // 에러가 있지만 조용히 처리 (뉴스는 선택적 기능)
+        console.warn('Could not load news:', error.message || error);
+        setAllNews([]);
         return;
       }
 
       setAllNews(data || []);
     } catch (error) {
-      console.error('Error loading news:', error);
+      // 예상치 못한 에러 처리
+      console.warn('Error loading news:', error instanceof Error ? error.message : String(error));
+      setAllNews([]);
     } finally {
       setLoadingNews(false);
     }
@@ -757,28 +780,28 @@ export default function Home() {
                           return (
                             <div
                               key={plant.id}
-                              className="group bg-white border border-slate-200 rounded-xl p-4 hover:shadow-md hover:border-slate-300 transition-all duration-200"
+                              className="group bg-white border border-slate-200 rounded-xl p-4 hover:shadow-md hover:border-slate-300 transition-all duration-200 overflow-hidden w-full max-w-full"
                             >
-                              <div className="flex items-center justify-between mb-3">
-                                <h4 className="font-bold text-sm text-slate-900 group-hover:text-blue-700 transition-colors">{plant.plant_name}</h4>
-                                <span className={`text-[10px] px-2 py-1 rounded-full font-medium ${isComplex ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-600'
+                              <div className="flex items-start justify-between mb-3 gap-2 min-w-0 w-full max-w-full">
+                                <h4 className="font-bold text-sm text-slate-900 group-hover:text-blue-700 transition-colors break-words overflow-wrap-anywhere flex-1 min-w-0">{plant.plant_name}</h4>
+                                <span className={`text-[10px] px-2 py-1 rounded-full font-medium flex-shrink-0 whitespace-nowrap ${isComplex ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-600'
                                   }`}>
                                   {plant.type}
                                 </span>
                               </div>
-                              <div className="text-xs text-slate-500 space-y-1.5">
-                                <div className="flex justify-between">
-                                  <span className="text-slate-400">소유주</span>
-                                  <span className="font-medium text-slate-700">{plant.owner}</span>
+                              <div className="text-xs text-slate-500 space-y-1.5 w-full max-w-full">
+                                <div className="flex justify-between gap-2 min-w-0 w-full max-w-full">
+                                  <span className="text-slate-400 flex-shrink-0">소유주</span>
+                                  <span className="font-medium text-slate-700 break-words overflow-wrap-anywhere text-right min-w-0 flex-1">{plant.owner}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                  <span className="text-slate-400">용량</span>
-                                  <span className="font-medium text-slate-900">{plant.capacity_mw?.toLocaleString()} MW</span>
+                                <div className="flex justify-between gap-2 min-w-0 w-full max-w-full">
+                                  <span className="text-slate-400 flex-shrink-0">용량</span>
+                                  <span className="font-medium text-slate-900 break-words overflow-wrap-anywhere text-right">{plant.capacity_mw?.toLocaleString()} MW</span>
                                 </div>
                                 {plant.status && (
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-slate-400">상태</span>
-                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${plant.status === '운영' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                                  <div className="flex justify-between items-center gap-2">
+                                    <span className="text-slate-400 flex-shrink-0">상태</span>
+                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0 whitespace-nowrap ${plant.status === '운영' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
                                       plant.status === '건설' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
                                         'bg-blue-50 text-blue-700 border border-blue-100'
                                       }`}>
@@ -787,9 +810,9 @@ export default function Home() {
                                   </div>
                                 )}
                                 {plant.location && (
-                                  <div className="flex justify-between pt-2 border-t border-slate-100 mt-2">
-                                    <span className="text-slate-400">위치</span>
-                                    <span className="font-medium text-slate-600 truncate max-w-[120px]" title={plant.location}>{plant.location}</span>
+                                  <div className="flex justify-between pt-2 border-t border-slate-100 mt-2 gap-2 min-w-0 w-full max-w-full">
+                                    <span className="text-slate-400 flex-shrink-0">위치</span>
+                                    <span className="font-medium text-slate-600 break-words overflow-wrap-anywhere text-right min-w-0 flex-1" title={plant.location}>{plant.location}</span>
                                   </div>
                                 )}
                               </div>
@@ -813,36 +836,36 @@ export default function Home() {
                           return (
                             <div
                               key={terminal.id}
-                              className="group bg-white border border-slate-200 rounded-xl p-4 hover:shadow-md hover:border-slate-300 transition-all duration-200"
+                              className="group bg-white border border-slate-200 rounded-xl p-4 hover:shadow-md hover:border-slate-300 transition-all duration-200 overflow-hidden"
                             >
-                              <div className="flex items-center justify-between mb-3">
-                                <h4 className="font-bold text-sm text-slate-900 group-hover:text-blue-700 transition-colors">{terminal.terminal_name}</h4>
-                                <span className={`text-[10px] px-2 py-1 rounded-full font-medium ${isKogas ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-orange-50 text-orange-700 border border-orange-100'
+                              <div className="flex items-start justify-between mb-3 gap-2 min-w-0">
+                                <h4 className="font-bold text-sm text-slate-900 group-hover:text-blue-700 transition-colors break-words flex-1 min-w-0 overflow-wrap-anywhere">{terminal.terminal_name}</h4>
+                                <span className={`text-[10px] px-2 py-1 rounded-full font-medium flex-shrink-0 whitespace-nowrap ${isKogas ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-orange-50 text-orange-700 border border-orange-100'
                                   }`}>
                                   {terminal.category}
                                 </span>
                               </div>
                               <div className="text-xs text-slate-500 space-y-1.5">
-                                <div className="flex justify-between">
-                                  <span className="text-slate-400">소유주</span>
-                                  <span className="font-medium text-slate-700">{terminal.owner}</span>
+                                <div className="flex justify-between gap-2 min-w-0">
+                                  <span className="text-slate-400 flex-shrink-0">소유주</span>
+                                  <span className="font-medium text-slate-700 break-words text-right min-w-0 overflow-wrap-anywhere flex-1">{terminal.owner}</span>
                                 </div>
                                 {terminal.capacity_kl && (
-                                  <div className="flex justify-between">
-                                    <span className="text-slate-400">저장용량</span>
-                                    <span className="font-medium text-slate-900">{terminal.capacity_kl.toLocaleString()} <span className="text-slate-400 font-normal">만kl</span></span>
+                                  <div className="flex justify-between gap-2 min-w-0">
+                                    <span className="text-slate-400 flex-shrink-0">저장용량</span>
+                                    <span className="font-medium text-slate-900 break-words text-right overflow-wrap-anywhere">{terminal.capacity_kl.toLocaleString()} <span className="text-slate-400 font-normal">만kl</span></span>
                                   </div>
                                 )}
                                 {terminal.tank_number && (
-                                  <div className="flex justify-between">
-                                    <span className="text-slate-400">탱크</span>
-                                    <span className="font-medium text-slate-700">{terminal.tank_number}호기</span>
+                                  <div className="flex justify-between gap-2 min-w-0">
+                                    <span className="text-slate-400 flex-shrink-0">탱크</span>
+                                    <span className="font-medium text-slate-700 break-words text-right overflow-wrap-anywhere">{terminal.tank_number}호기</span>
                                   </div>
                                 )}
                                 {terminal.status && (
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-slate-400">상태</span>
-                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${terminal.status === '운영' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                                  <div className="flex justify-between items-center gap-2">
+                                    <span className="text-slate-400 flex-shrink-0">상태</span>
+                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0 whitespace-nowrap ${terminal.status === '운영' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
                                       terminal.status === '건설' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
                                         'bg-blue-50 text-blue-700 border border-blue-100'
                                       }`}>
@@ -851,9 +874,9 @@ export default function Home() {
                                   </div>
                                 )}
                                 {terminal.location && (
-                                  <div className="flex justify-between pt-2 border-t border-slate-100 mt-2">
-                                    <span className="text-slate-400">위치</span>
-                                    <span className="font-medium text-slate-600 truncate max-w-[120px]" title={terminal.location}>{terminal.location}</span>
+                                  <div className="flex justify-between pt-2 border-t border-slate-100 mt-2 gap-2 min-w-0">
+                                    <span className="text-slate-400 flex-shrink-0">위치</span>
+                                    <span className="font-medium text-slate-600 break-words text-right min-w-0 overflow-wrap-anywhere flex-1" title={terminal.location}>{terminal.location}</span>
                                   </div>
                                 )}
                               </div>
@@ -937,16 +960,16 @@ export default function Home() {
                               {new Date(news.published_at).toLocaleDateString('ko-KR')}
                             </span>
                           </div>
-                          <h4 className="font-bold text-sm text-slate-900 mb-2 line-clamp-2 group-hover:text-blue-700 transition-colors">
+                          <h4 className="font-bold text-sm text-slate-900 mb-2 line-clamp-2 group-hover:text-blue-700 transition-colors break-words">
                             {decodeHtmlEntities(news.title)}
                           </h4>
-                          <p className="text-xs text-slate-500 line-clamp-3 mb-4 flex-1 leading-relaxed">
+                          <p className="text-xs text-slate-500 line-clamp-3 mb-4 flex-1 leading-relaxed break-words">
                             {stripHtmlTags(decodeHtmlEntities(news.content || '')).substring(0, 150)}...
                           </p>
-                          <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-100">
+                          <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-100 gap-2">
                             {news.si_do && news.si_gun_gu ? (
-                              <div className="text-xs text-slate-500 flex items-center gap-1">
-                                <span>📍</span> {news.si_do} {news.si_gun_gu}
+                              <div className="text-xs text-slate-500 flex items-center gap-1 break-words min-w-0">
+                                <span className="flex-shrink-0">📍</span> <span className="break-words">{news.si_do} {news.si_gun_gu}</span>
                               </div>
                             ) : (
                               <div></div>

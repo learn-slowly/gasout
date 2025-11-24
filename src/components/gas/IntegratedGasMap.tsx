@@ -38,9 +38,15 @@ function createPlantIcon(plant: GasPlant) {
       background-color: ${color};
       width: ${size}px;
       height: ${size}px;
+      min-width: ${size}px;
+      min-height: ${size}px;
+      max-width: ${size}px;
+      max-height: ${size}px;
       border-radius: 50%;
       border: 2px solid white;
       box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      flex-shrink: 0;
+      box-sizing: border-box;
     "></div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
@@ -62,10 +68,16 @@ function createTerminalIcon(terminal: GasTerminal) {
       background-color: ${color};
       width: ${size}px;
       height: ${size}px;
+      min-width: ${size}px;
+      min-height: ${size}px;
+      max-width: ${size}px;
+      max-height: ${size}px;
       border-radius: 4px;
       border: 2px solid white;
       box-shadow: 0 2px 4px rgba(0,0,0,0.3);
       transform: rotate(45deg);
+      flex-shrink: 0;
+      box-sizing: border-box;
     "></div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
@@ -117,11 +129,20 @@ export default function IntegratedGasMap({
   const [terminals, setTerminals] = useState<GasTerminal[]>([]);
   const [loading, setLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   // 클라이언트 사이드 렌더링 확인 및 아이콘 수정
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     setIsClient(true);
     fixDefaultIcon();
+    
+    // DOM이 완전히 준비된 후에만 맵을 렌더링
+    // requestAnimationFrame을 사용하여 다음 프레임에서 렌더링 보장
+    requestAnimationFrame(() => {
+      setIsMounted(true);
+    });
   }, []);
 
   // 데이터 로드
@@ -195,7 +216,7 @@ export default function IntegratedGasMap({
     return categoryMatch && statusMatch;
   });
 
-  if (!isClient) {
+  if (!isClient || !isMounted) {
     return (
       <div className="w-full h-full flex items-center justify-center text-sm text-gray-500">
         지도를 초기화하는 중...
@@ -270,7 +291,7 @@ export default function IntegratedGasMap({
 
   return (
     <div className="w-full h-full">
-      {isClient && (
+      {isClient && isMounted && typeof window !== 'undefined' && (
         <MapContainer
           center={[36.5, 127.8]}
           zoom={7}

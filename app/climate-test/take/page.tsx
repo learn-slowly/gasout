@@ -1,0 +1,264 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { questions, miniFacts } from "@/src/data/climateQuestions";
+import { TestAnswer, MiniFact } from "@/src/types/climateTest";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { generateSessionId, getUTMParams, calculateMBTIType } from "@/src/lib/climateTest";
+
+export default function ClimateTestTake() {
+  const router = useRouter();
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<TestAnswer[]>([]);
+  const [sessionId, setSessionId] = useState<string>("");
+  const [showMiniFact, setShowMiniFact] = useState<MiniFact | null>(null);
+  const [isReady, setIsReady] = useState(false);
+
+  const currentQuestion = questions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+
+  useEffect(() => {
+    // 세션 ID 생성 및 준비 완료
+    const newSessionId = generateSessionId();
+    setSessionId(newSessionId);
+    
+    // 즉시 준비 완료로 설정
+    setTimeout(() => {
+      setIsReady(true);
+    }, 100);
+  }, []);
+
+  const handleAnswer = (answer: TestAnswer["answer"]) => {
+    if (!currentQuestion) return;
+    
+    const newAnswer: TestAnswer = {
+      questionId: currentQuestion.id,
+      answer,
+    };
+
+    const newAnswers = [...answers, newAnswer];
+    setAnswers(newAnswers);
+
+    // 답변한 질문 번호 (1부터 시작)
+    const answeredQuestionNumber = currentQuestionIndex + 1;
+    
+    console.log(`${answeredQuestionNumber}번째 질문에 답변함`);
+
+    // 마지막 질문(20번)이면 결과 페이지로
+    if (currentQuestionIndex === questions.length - 1) {
+      console.log("마지막 질문! 결과 페이지로 이동");
+      saveTestResult(newAnswers);
+      return;
+    }
+
+    // 5, 10, 15번째 질문 후에 미니 팩트 표시
+    const factCheckpoints = [5, 10, 15];
+    
+    if (factCheckpoints.includes(answeredQuestionNumber)) {
+      const factIndex = factCheckpoints.indexOf(answeredQuestionNumber);
+      console.log(`미니 팩트 ${factIndex + 1} 표시`);
+      setShowMiniFact(miniFacts[factIndex]);
+    } else {
+      // 미니 팩트가 없으면 바로 다음 질문으로
+      setTimeout(() => {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+      }, 300);
+    }
+  };
+
+  const saveTestResult = (finalAnswers: TestAnswer[]) => {
+    try {
+      // 클라이언트에서 결과 계산
+      const resultType = calculateMBTIType(finalAnswers);
+      
+      console.log("테스트 완료! 결과 타입:", resultType);
+      console.log("세션 ID:", sessionId);
+      
+      // 결과 페이지로 바로 이동
+      router.push(`/climate-test/result?session=${sessionId}&type=${resultType}`);
+      
+      // 백그라운드에서 DB 저장 시도 (실패해도 무시)
+      const utmParams = getUTMParams();
+      fetch("/api/climate-test/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sessionId,
+          answers: finalAnswers,
+          resultType,
+          ...utmParams,
+        }),
+      }).catch((saveError) => {
+        console.warn("Failed to save to database (non-critical):", saveError);
+      });
+    } catch (error) {
+      console.error("Error calculating test result:", error);
+      // 에러가 있어도 결과 페이지로 이동 (임시로 ENFP)
+      router.push(`/climate-test/result?session=${sessionId}&type=ENFP`);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+      setAnswers(answers.slice(0, -1));
+    }
+  };
+
+  const handleCloseMiniFact = () => {
+    setShowMiniFact(null);
+    // 다음 질문으로 이동
+    setCurrentQuestionIndex(currentQuestionIndex + 1);
+  };
+
+  if (showMiniFact) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-center justify-center p-4 pb-safe overflow-x-hidden w-full max-w-full">
+        <div className="w-full max-w-2xl max-w-full overflow-hidden">
+          <Card className="w-full max-w-full border-0 shadow-2xl overflow-hidden">
+            <CardContent className="p-6 sm:p-8 md:p-12 w-full max-w-full overflow-hidden">
+              <div className="space-y-5 sm:space-y-6 w-full max-w-full">
+                <div className="text-center w-full max-w-full">
+                  <div className="text-4xl sm:text-5xl mb-3 sm:mb-4">💡</div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 leading-tight px-2 break-words overflow-wrap-anywhere w-full max-w-full">
+                    {showMiniFact.title}
+                  </h2>
+                </div>
+                <div className="bg-blue-50 rounded-xl p-5 sm:p-6 w-full max-w-full overflow-hidden">
+                  <p className="text-gray-700 leading-relaxed text-sm sm:text-base break-words overflow-wrap-anywhere w-full max-w-full">
+                    {showMiniFact.content}
+                  </p>
+                  {showMiniFact.link && (
+                    <a
+                      href={showMiniFact.link}
+                      className="text-blue-600 hover:text-blue-800 active:text-blue-900 text-sm sm:text-base mt-4 inline-block touch-manipulation"
+                    >
+                      자세히 보기 →
+                    </a>
+                  )}
+                </div>
+                <Button
+                  onClick={handleCloseMiniFact}
+                  className="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold min-h-[56px] text-base sm:text-lg rounded-xl touch-manipulation"
+                  size="lg"
+                >
+                  계속하기
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // 준비 중이면 로딩 표시
+  if (!isReady) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-200 border-t-green-600 mx-auto"></div>
+          <p className="text-gray-600 text-sm">테스트를 준비하는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 질문이 없으면 에러
+  if (!currentQuestion) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <p className="text-red-600">질문을 불러올 수 없습니다.</p>
+          <Button onClick={() => router.push("/declaration")}>
+            처음으로 돌아가기
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-center justify-center p-4 pb-safe overflow-x-hidden w-full max-w-full">
+      <div className="w-full max-w-2xl max-w-full overflow-hidden">
+        <Card className="w-full max-w-full border-0 shadow-2xl overflow-hidden">
+          <CardContent className="p-5 sm:p-6 md:p-8 w-full max-w-full overflow-hidden">
+            {/* 진행률 바 */}
+            <div className="mb-5 sm:mb-6">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs sm:text-sm font-medium text-gray-600">
+                  {currentQuestionIndex + 1} / {questions.length}
+                </span>
+                <span className="text-xs sm:text-sm font-medium text-gray-600">
+                  {currentQuestion?.dimension || ''} 차원
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5 sm:h-3">
+                <div
+                  className="bg-green-600 h-2.5 sm:h-3 rounded-full transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+
+            {/* 질문 */}
+            <div className="space-y-5 sm:space-y-6 mb-6 sm:mb-8 w-full max-w-full overflow-hidden">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 text-center leading-tight px-2 break-words overflow-wrap-anywhere w-full max-w-full">
+                {currentQuestion.question}
+              </h2>
+
+              {/* 선택지 */}
+              <div className="space-y-3 sm:space-y-4 w-full max-w-full">
+                <Button
+                  onClick={() => handleAnswer(currentQuestion.optionA.value)}
+                  variant="outline"
+                  className="w-full max-w-full p-5 sm:p-6 h-auto text-left justify-start border-2 border-gray-300 hover:border-green-600 hover:bg-green-50 active:border-green-700 active:bg-green-100 transition-all touch-manipulation min-h-[72px] sm:min-h-[80px] rounded-xl overflow-hidden !whitespace-normal"
+                >
+                  <div className="flex items-start gap-3 sm:gap-4 w-full min-w-0">
+                    <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center mt-0.5">
+                      <span className="text-sm sm:text-base font-bold text-gray-700 whitespace-nowrap">A</span>
+                    </div>
+                    <span className="text-base sm:text-lg text-gray-900 leading-relaxed flex-1 break-words overflow-wrap-anywhere min-w-0 max-w-full whitespace-normal">
+                      {currentQuestion.optionA.text}
+                    </span>
+                  </div>
+                </Button>
+
+                <Button
+                  onClick={() => handleAnswer(currentQuestion.optionB.value)}
+                  variant="outline"
+                  className="w-full max-w-full p-5 sm:p-6 h-auto text-left justify-start border-2 border-gray-300 hover:border-green-600 hover:bg-green-50 active:border-green-700 active:bg-green-100 transition-all touch-manipulation min-h-[72px] sm:min-h-[80px] rounded-xl overflow-hidden !whitespace-normal"
+                >
+                  <div className="flex items-start gap-3 sm:gap-4 w-full min-w-0">
+                    <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center mt-0.5">
+                      <span className="text-sm sm:text-base font-bold text-gray-700 whitespace-nowrap">B</span>
+                    </div>
+                    <span className="text-base sm:text-lg text-gray-900 leading-relaxed flex-1 break-words overflow-wrap-anywhere min-w-0 max-w-full whitespace-normal">
+                      {currentQuestion.optionB.text}
+                    </span>
+                  </div>
+                </Button>
+              </div>
+            </div>
+
+            {/* 이전 버튼 */}
+            {currentQuestionIndex > 0 && (
+              <Button
+                onClick={handlePrevious}
+                variant="ghost"
+                className="w-full text-gray-600 hover:text-gray-900 active:text-gray-900 min-h-[44px] touch-manipulation"
+              >
+                ← 이전 질문
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+

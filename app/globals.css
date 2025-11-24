@@ -1,5 +1,64 @@
 @import "tailwindcss";
 
+/* 모바일 최적화 */
+@layer utilities {
+  /* 터치 최적화 */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Safe area 지원 (iPhone 노치 등) */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* 스크롤 최적화 */
+  .smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* 가로 스크롤 방지 */
+  .no-horizontal-scroll {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* 텍스트 줄바꿈 최적화 */
+  .break-words {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+    max-width: 100%;
+  }
+
+  /* 더 강력한 줄바꿈 */
+  .overflow-wrap-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    max-width: 100%;
+  }
+
+  /* Leaflet 마커 스타일 보호 */
+  .custom-gas-plant-marker,
+  .custom-gas-terminal-marker {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .custom-gas-plant-marker > div,
+  .custom-gas-terminal-marker > div {
+    flex-shrink: 0 !important;
+  }
+}
+
 @theme {
   --color-primary-50: #f0f9ff;
   --color-primary-100: #e0f2fe;
@@ -77,6 +136,32 @@
   border-color: hsl(var(--border));
 }
 
+* {
+  /* 모든 요소에 기본적으로 최대 너비 제한 */
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Leaflet 마커와 지도 요소는 max-width 제한 제외 */
+.leaflet-container,
+.leaflet-container *,
+.leaflet-marker-icon,
+.leaflet-marker-icon *,
+.leaflet-popup,
+.leaflet-popup *,
+.custom-gas-plant-marker,
+.custom-gas-plant-marker *,
+.custom-gas-terminal-marker,
+.custom-gas-terminal-marker * {
+  max-width: none !important;
+}
+
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
@@ -85,6 +170,67 @@ body {
     radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
     radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
   background-attachment: fixed;
+  /* 텍스트 줄바꿈 최적화 - 모바일 강화 */
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* 모든 텍스트 요소에 강력한 줄바꿈 적용 */
+p, h1, h2, h3, h4, h5, h6, span, div, a, label, input, textarea, li, td, th {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  overflow-wrap: anywhere; /* 더 강력한 줄바꿈 */
+  hyphens: auto;
+  max-width: 100%;
+}
+
+/* 모바일에서 더 강력한 줄바꿈 */
+@media (max-width: 768px) {
+  p, h1, h2, h3, h4, h5, h6, span, div, a, label, li {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
+}
+
+/* 긴 URL이나 단어가 있는 경우 강제 줄바꿈 */
+a, code, pre {
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+
+/* 버튼 텍스트는 줄바꿈 방지 (버튼 레이아웃 유지) */
+button:not([class*="whitespace-normal"]) {
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* 버튼 내부 텍스트는 줄바꿈 허용 (특별한 경우) */
+button.allow-wrap,
+button[class*="break-words"],
+button[class*="whitespace-normal"] {
+  white-space: normal !important;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* 제목은 적절한 줄바꿈 허용 */
+h1, h2, h3, h4, h5, h6 {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.2;
+  max-width: 100%;
+}
+
+/* 모바일에서 제목도 더 강력하게 줄바꿈 */
+@media (max-width: 768px) {
+  h1, h2, h3, h4, h5, h6 {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
 }
 
 /* Glassmorphism Utilities */

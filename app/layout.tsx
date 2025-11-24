@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 };
 
 import Header from "@/components/layout/Header";
+import KakaoScript from "@/components/KakaoScript";
 
 export default function RootLayout({
   children,
@@ -27,14 +28,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+        suppressHydrationWarning
       >
         <Header />
         <main className="flex-1 pt-20">
           {children}
         </main>
+        <KakaoScript />
       </body>
     </html>
   );
