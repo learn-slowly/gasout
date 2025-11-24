@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { testResults } from "@/src/data/climateResults";
 import { TestResult, MBTIType } from "@/src/types/climateTest";
@@ -16,7 +16,7 @@ interface Stats {
   sameTypePercentage: number;
 }
 
-export default function ClimateTestResult() {
+function ResultContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [result, setResult] = useState<TestResult | null>(null);
@@ -411,6 +411,21 @@ export default function ClimateTestResult() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ClimateTestResult() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-center justify-center p-4">
+        <div className="flex flex-col items-center justify-center gap-3 text-gray-500">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-green-600"></div>
+          <p className="text-sm font-medium">결과를 불러오는 중...</p>
+        </div>
+      </div>
+    }>
+      <ResultContent />
+    </Suspense>
   );
 }
 
