@@ -46,19 +46,19 @@ export default function ClimateTestTake() {
     
     console.log(`${answeredQuestionNumber}번째 질문에 답변함`);
 
-    // 마지막 질문(20번)이면 결과 페이지로
+    // 마지막 질문(12번)이면 결과 페이지로
     if (currentQuestionIndex === questions.length - 1) {
       console.log("마지막 질문! 결과 페이지로 이동");
       saveTestResult(newAnswers);
       return;
     }
 
-    // 5, 10, 15번째 질문 후에 미니 팩트 표시
-    const factCheckpoints = [5, 10, 15];
+    // 3, 6, 8번째 질문 후에 미니 팩트 표시 (4, 7, 9번 질문 앞)
+    const factCheckpoints = [3, 6, 8];
     
     if (factCheckpoints.includes(answeredQuestionNumber)) {
       const factIndex = factCheckpoints.indexOf(answeredQuestionNumber);
-      console.log(`미니 팩트 ${factIndex + 1} 표시`);
+      console.log(`미니 팩트 ${factIndex + 1} 표시 (${answeredQuestionNumber + 1}번 질문 앞)`);
       setShowMiniFact(miniFacts[factIndex]);
     } else {
       // 미니 팩트가 없으면 바로 다음 질문으로

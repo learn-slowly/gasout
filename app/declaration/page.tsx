@@ -20,48 +20,89 @@ export default function DeclarationPage() {
                         <div className="space-y-3 sm:space-y-4 w-full max-w-full overflow-hidden">
                             <div className="text-5xl sm:text-6xl mb-3 sm:mb-4">🌍</div>
                             <CardTitle className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 leading-tight break-words overflow-wrap-anywhere w-full max-w-full px-2">
-                                나의 기후행동 스타일은?
+                                지금, 기후시민으로서<br />행동할 수 있습니다!
                             </CardTitle>
-                            <p className="text-base sm:text-lg text-gray-600 leading-relaxed px-2 break-words overflow-wrap-anywhere w-full max-w-full">
-                                MBTI 스타일의 성향 테스트로<br className="hidden sm:block" />
-                                <span className="sm:hidden"> </span>당신에게 맞는 기후행동 방법을 찾아보세요
+                            <p className="text-base sm:text-lg text-gray-700 leading-relaxed px-2 break-words overflow-wrap-anywhere w-full max-w-full">
+                                경남기후위기비상행동이 함께하는<br />
+                                <strong className="text-green-700">'기후시민 선언'</strong>에 참여해<br />
+                                친환경 에너지 전환을 지지하고,<br />
+                                더 나은 지역의 미래를 함께 만들어주세요.
                             </p>
                         </div>
 
-                        {/* 정보 카드 */}
-                        <div className="bg-green-50 rounded-xl p-5 sm:p-6 space-y-4 sm:space-y-3 text-left w-full max-w-full overflow-hidden">
-                            <div className="flex items-start gap-3 w-full max-w-full min-w-0">
-                                <span className="text-xl sm:text-2xl flex-shrink-0">⏱️</span>
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base break-words overflow-wrap-anywhere">소요 시간</h3>
-                                    <p className="text-xs sm:text-sm text-gray-600 break-words overflow-wrap-anywhere">약 3분</p>
+                        {/* 왜 필요한가 */}
+                        <div className="bg-amber-50 border-l-4 border-amber-500 rounded-xl p-5 sm:p-6 text-left w-full max-w-full overflow-hidden">
+                            <h3 className="font-bold text-gray-900 mb-3 text-base sm:text-lg break-words overflow-wrap-anywhere">
+                                💡 왜 지금 '기후시민 선언'이 필요할까?
+                            </h3>
+                            <p className="text-sm sm:text-base text-gray-700 leading-relaxed break-words overflow-wrap-anywhere w-full max-w-full mb-3">
+                                기후위기는 더 이상 먼 미래의 문제가 아니야. 우리의 건강·경제·지역의 지속가능성을 좌우하는 현실적인 과제이지!
+                            </p>
+                            <p className="text-sm sm:text-base text-gray-700 leading-relaxed break-words overflow-wrap-anywhere w-full max-w-full">
+                                그 중심에 <strong className="text-green-700">정의로운 에너지 전환</strong>이 있어. 
+                                우리가 바라는 에너지 전환은 모두가 참여하는 정의로운 방식으로 친환경 재생에너지 중심의 체계로 이동하는 거야!
+                            </p>
+                        </div>
+
+                        {/* 핵심 요약 */}
+                        <div className="bg-green-50 rounded-xl p-5 sm:p-6 space-y-3 text-left w-full max-w-full overflow-hidden">
+                            <h3 className="font-bold text-gray-900 text-base sm:text-lg break-words overflow-wrap-anywhere">
+                                ✅ 핵심 요약
+                            </h3>
+                            <ul className="space-y-2 text-sm sm:text-base text-gray-700">
+                                <li className="flex items-start gap-2">
+                                    <span className="flex-shrink-0">✓</span>
+                                    <span className="break-words overflow-wrap-anywhere flex-1">기후위기 시대, 에너지 전환은 필수</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="flex-shrink-0">✓</span>
+                                    <span className="break-words overflow-wrap-anywhere flex-1">지역 주민이 배제되지 않는 정의로운 전환이 중요</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="flex-shrink-0">✓</span>
+                                    <span className="break-words overflow-wrap-anywhere flex-1">정부의 LNG 확대는 한계</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        {/* LNG 문제점 */}
+                        <div className="bg-red-50 rounded-xl p-5 sm:p-6 text-left w-full max-w-full overflow-hidden">
+                            <h3 className="font-bold text-gray-900 mb-3 text-base sm:text-lg break-words overflow-wrap-anywhere">
+                                ⚠️ LNG의 문제점
+                            </h3>
+                            <div className="space-y-3 text-sm sm:text-base text-gray-700">
+                                <div>
+                                    <strong className="text-red-700">화석연료:</strong>
+                                    <span className="ml-2 break-words overflow-wrap-anywhere">LNG는 화석연료로 탄소중립 역행</span>
                                 </div>
-                            </div>
-                            <div className="flex items-start gap-3 w-full max-w-full min-w-0">
-                                <span className="text-xl sm:text-2xl flex-shrink-0">❓</span>
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base break-words overflow-wrap-anywhere">질문 수</h3>
-                                    <p className="text-xs sm:text-sm text-gray-600 break-words overflow-wrap-anywhere">총 20개 질문</p>
+                                <div>
+                                    <strong className="text-red-700">경제적 손실:</strong>
+                                    <span className="ml-2 break-words overflow-wrap-anywhere">장기적 가동률이 매우 낮아져 경제적 손실이 전기요금과 세금 부담으로 이어짐</span>
                                 </div>
-                            </div>
-                            <div className="flex items-start gap-3 w-full max-w-full min-w-0">
-                                <span className="text-xl sm:text-2xl flex-shrink-0">🎯</span>
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base break-words overflow-wrap-anywhere">결과</h3>
-                                    <p className="text-xs sm:text-sm text-gray-600 break-words overflow-wrap-anywhere">
-                                        16가지 기후행동 유형 중 당신의 스타일
-                                    </p>
+                                <div>
+                                    <strong className="text-red-700">구조적 불평등:</strong>
+                                    <span className="ml-2 break-words overflow-wrap-anywhere">지역은 피해, 혜택은 외부인 구조 개선 필요</span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* 설명 */}
-                        <div className="bg-blue-50 rounded-xl p-5 sm:p-6 text-left w-full max-w-full overflow-hidden">
-                            <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base break-words overflow-wrap-anywhere">📢 기후시민 선언</h3>
-                            <p className="text-xs sm:text-sm text-gray-700 leading-relaxed break-words overflow-wrap-anywhere w-full max-w-full">
-                                테스트를 완료하시면 기후위기에 맞서 행동하겠다는 의지를 선언하실 수 있습니다.
-                                <br className="hidden sm:block" />
-                                <span className="sm:hidden"> </span>당신의 선언이 기후위기 대응에 큰 힘이 됩니다.
+                        {/* 우리에게 필요한 것 */}
+                        <div className="bg-blue-50 rounded-xl p-5 sm:p-6 text-center w-full max-w-full overflow-hidden">
+                            <h3 className="font-bold text-gray-900 mb-2 text-base sm:text-lg break-words overflow-wrap-anywhere">
+                                🌱 우리에게 필요한 건?
+                            </h3>
+                            <p className="text-lg sm:text-xl font-bold text-green-700 break-words overflow-wrap-anywhere w-full max-w-full">
+                                분산형·친환경<br />재생에너지 중심의 미래
+                            </p>
+                        </div>
+
+                        {/* MBTI 테스트 안내 */}
+                        <div className="bg-purple-50 rounded-xl p-5 sm:p-6 text-left w-full max-w-full overflow-hidden">
+                            <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base break-words overflow-wrap-anywhere">
+                                🎯 이어서 진행되는 나만의 기후시민 MBTI 테스트도 즐겨보세요!
+                            </h3>
+                            <p className="text-xs sm:text-sm text-gray-600 break-words overflow-wrap-anywhere w-full max-w-full">
+                                당신에게 맞는 기후행동 방법을 찾아보세요
                             </p>
                         </div>
 
@@ -72,11 +113,10 @@ export default function DeclarationPage() {
                                 size="lg"
                                 className="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white text-base sm:text-lg font-semibold py-5 sm:py-6 rounded-xl shadow-lg hover:shadow-xl active:shadow-md transition-all touch-manipulation min-h-[56px] whitespace-normal"
                             >
-                                테스트 시작하기
+                                기후시민 선언 & 테스트 시작
                             </Button>
                             <p className="text-xs sm:text-sm text-gray-500 leading-relaxed px-2 break-words overflow-wrap-anywhere w-full max-w-full">
-                                테스트를 통해 LNG 발전소의 진실과<br className="hidden sm:block" />
-                                <span className="sm:hidden"> </span>나에게 맞는 기후행동 방법을 알아보세요
+                                선언 후 나만의 기후시민 MBTI를 확인해보세요!
                             </p>
                         </div>
                     </CardContent>
@@ -85,3 +125,4 @@ export default function DeclarationPage() {
         </div>
     );
 }
+
