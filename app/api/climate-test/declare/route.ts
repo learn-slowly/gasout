@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       sessionId,
     } = body;
 
-    console.log("[Declare API] Received data:", { name, email, region, sessionId });
+    console.log("[Declare API] Received data:", { name, email, region, sessionId, testType });
 
     if (!name || !email || !consentPrivacy) {
       return NextResponse.json(
@@ -31,11 +31,13 @@ export async function POST(request: NextRequest) {
 
     // 세션 ID로 테스트 응답 찾기
     let testResponseId = null;
+    let resultType = testType || null; // URL에서 받은 type 사용
+    
     if (sessionId) {
       console.log("[Declare API] Looking up test response for session:", sessionId);
       const { data, error: lookupError } = await supabase
         .from("climate_test_responses")
-        .select("id")
+        .select("id, result_type")
         .eq("session_id", sessionId)
         .maybeSingle();
 
@@ -43,19 +45,21 @@ export async function POST(request: NextRequest) {
         console.error("[Declare API] Error looking up test response:", lookupError);
       } else if (data) {
         testResponseId = data.id;
-        console.log("[Declare API] Found test response ID:", testResponseId);
+        resultType = data.result_type; // DB에서 가져온 result_type 우선 사용
+        console.log("[Declare API] Found test response:", { id: testResponseId, resultType });
       } else {
         console.warn("[Declare API] No test response found for session:", sessionId);
       }
     }
 
-    // 기후시민 선언 저장
-    console.log("[Declare API] Saving declaration...");
+    // 기후시민 선언 저장 (MBTI 결과 포함)
+    console.log("[Declare API] Saving declaration with result type:", resultType);
     const { data, error } = await supabase
       .from("climate_declarations")
       .insert({
         test_response_id: testResponseId,
         session_id: sessionId || null,
+        result_type: resultType, // MBTI 결과 저장
         name,
         email,
         region: region || null,
@@ -74,10 +78,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("[Declare API] Declaration saved successfully:", data.id);
+    console.log("[Declare API] Declaration saved successfully:", { id: data.id, resultType });
     return NextResponse.json({
       success: true,
       id: data.id,
+      resultType,
     });
   } catch (error) {
     console.error("[Declare API] Unexpected error:", error);
