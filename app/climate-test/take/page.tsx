@@ -43,6 +43,7 @@ export default function ClimateTestTake() {
 
     // 답변한 질문 번호 (1부터 시작)
     const answeredQuestionNumber = currentQuestionIndex + 1;
+    const nextQuestionNumber = answeredQuestionNumber + 1;
     
     console.log(`${answeredQuestionNumber}번째 질문에 답변함`);
 
@@ -53,12 +54,14 @@ export default function ClimateTestTake() {
       return;
     }
 
-    // 3, 6, 8번째 질문 후에 미니 팩트 표시 (4, 7, 9번 질문 앞)
-    const factCheckpoints = [3, 6, 8];
+    // PRD에 따라 4, 7, 9번 질문 앞에 미니 팩트 표시
+    // = 3, 6, 8번 질문 후에 표시
+    const factBeforeQuestions = [4, 7, 9]; // 이 질문들 앞에 팩트를 보여줌
+    const factCheckpoints = [3, 6, 8]; // = 이 질문들 후에 팩트를 보여줌
     
     if (factCheckpoints.includes(answeredQuestionNumber)) {
       const factIndex = factCheckpoints.indexOf(answeredQuestionNumber);
-      console.log(`미니 팩트 ${factIndex + 1} 표시 (${answeredQuestionNumber + 1}번 질문 앞)`);
+      console.log(`미니 팩트 ${factIndex + 1} 표시 (${nextQuestionNumber}번 질문 앞)`);
       setShowMiniFact(miniFacts[factIndex]);
     } else {
       // 미니 팩트가 없으면 바로 다음 질문으로
@@ -123,19 +126,18 @@ export default function ClimateTestTake() {
             <CardContent className="p-6 sm:p-8 md:p-12 w-full max-w-full overflow-hidden">
               <div className="space-y-5 sm:space-y-6 w-full max-w-full">
                 <div className="text-center w-full max-w-full">
-                  <div className="text-4xl sm:text-5xl mb-3 sm:mb-4">💡</div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 leading-tight px-2 break-words overflow-wrap-anywhere w-full max-w-full">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 leading-tight px-2 break-words overflow-wrap-anywhere w-full max-w-full">
                     {showMiniFact.title}
                   </h2>
                 </div>
-                <div className="bg-blue-50 rounded-xl p-5 sm:p-6 w-full max-w-full overflow-hidden">
-                  <p className="text-gray-700 leading-relaxed text-sm sm:text-base break-words overflow-wrap-anywhere w-full max-w-full">
+                <div className="bg-amber-50 border-l-4 border-amber-500 rounded-xl p-5 sm:p-6 w-full max-w-full overflow-hidden">
+                  <p className="text-gray-800 leading-relaxed text-base sm:text-lg font-medium break-words overflow-wrap-anywhere w-full max-w-full">
                     {showMiniFact.content}
                   </p>
                   {showMiniFact.link && (
                     <a
                       href={showMiniFact.link}
-                      className="text-blue-600 hover:text-blue-800 active:text-blue-900 text-sm sm:text-base mt-4 inline-block touch-manipulation"
+                      className="text-amber-700 hover:text-amber-900 active:text-amber-950 font-semibold text-sm sm:text-base mt-4 inline-block touch-manipulation underline"
                     >
                       자세히 보기 →
                     </a>
@@ -207,9 +209,17 @@ export default function ClimateTestTake() {
 
             {/* 질문 */}
             <div className="space-y-5 sm:space-y-6 mb-6 sm:mb-8 w-full max-w-full overflow-hidden">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 text-center leading-tight px-2 break-words overflow-wrap-anywhere w-full max-w-full">
-                {currentQuestion.question}
-              </h2>
+              <div className="space-y-3">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 text-center leading-tight px-2 break-words overflow-wrap-anywhere w-full max-w-full">
+                  {currentQuestion.question}
+                </h2>
+                {/* 질문 10번에 제로웨이스트 설명 추가 */}
+                {currentQuestion.id === 10 && (
+                  <p className="text-sm sm:text-base text-gray-600 text-center italic px-2">
+                    *제로웨이스트: 쓰레기를 만들지 않는 생활방식
+                  </p>
+                )}
+              </div>
 
               {/* 선택지 */}
               <div className="space-y-3 sm:space-y-4 w-full max-w-full">
