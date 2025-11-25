@@ -38,9 +38,12 @@ export default function DeclarationPage() {
                             <p className="text-sm sm:text-base text-gray-700 leading-relaxed break-words overflow-wrap-anywhere w-full max-w-full mb-3">
                                 기후위기는 더 이상 먼 미래의 문제가 아니야. 우리의 건강·경제·지역의 지속가능성을 좌우하는 현실적인 과제이지!
                             </p>
+                            <p className="text-sm sm:text-base text-gray-700 leading-relaxed break-words overflow-wrap-anywhere w-full max-w-full mb-3">
+                                석탄을 LNG로 바꾸는 것은 나쁜 것을 다른 나쁜 것으로 바꾸는 거야.
+                            </p>
                             <p className="text-sm sm:text-base text-gray-700 leading-relaxed break-words overflow-wrap-anywhere w-full max-w-full">
-                                그 중심에 <strong className="text-green-700">정의로운 에너지 전환</strong>이 있어. 
-                                우리가 바라는 에너지 전환은 모두가 참여하는 정의로운 방식으로 친환경 재생에너지 중심의 체계로 이동하는 거야!
+                                우리가 바라는 에너지 전환은 모두가 참여하는 정의로운 방식으로 친환경 재생에너지 중심의 체계로 이동하는 거야! 
+                                그 중심에 <strong className="text-green-700">정의로운 에너지 전환</strong>이 있어.
                             </p>
                         </div>
 
@@ -87,12 +90,12 @@ export default function DeclarationPage() {
                         </div>
 
                         {/* 우리에게 필요한 것 */}
-                        <div className="bg-blue-50 rounded-xl p-5 sm:p-6 text-center w-full max-w-full overflow-hidden">
-                            <h3 className="font-bold text-gray-900 mb-2 text-base sm:text-lg break-words overflow-wrap-anywhere">
+                        <div className="bg-blue-50 rounded-xl p-5 sm:p-6 text-left w-full max-w-full overflow-hidden">
+                            <h3 className="font-bold text-gray-900 mb-3 text-base sm:text-lg break-words overflow-wrap-anywhere">
                                 🌱 우리에게 필요한 건?
                             </h3>
                             <p className="text-lg sm:text-xl font-bold text-green-700 break-words overflow-wrap-anywhere w-full max-w-full">
-                                분산형·친환경<br />재생에너지 중심의 미래
+                                분산형·친환경 재생에너지 중심의 미래
                             </p>
                         </div>
 
