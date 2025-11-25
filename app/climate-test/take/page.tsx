@@ -126,15 +126,19 @@ export default function ClimateTestTake() {
   // 인트로 화면
   if (showIntro) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-center justify-center p-4 pb-safe overflow-x-hidden w-full max-w-full">
-        <div className="w-full max-w-2xl max-w-full overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-start justify-center pt-12 sm:pt-16 p-4 pb-safe overflow-x-hidden w-full max-w-full">
+        <div className="w-full max-w-2xl max-w-full overflow-hidden space-y-5 sm:space-y-6">
+          {/* 헤더 */}
+          <div className="text-center">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2 break-words overflow-wrap-anywhere">
+              💡 왜 지금 '기후시민 선언'이 필요할까?
+            </h1>
+          </div>
+
           <Card className="w-full max-w-full border-0 shadow-2xl overflow-hidden">
-            <CardContent className="p-6 sm:p-8 md:p-12 w-full max-w-full overflow-hidden space-y-6 sm:space-y-8">
-              {/* 왜 필요한가 */}
+            <CardContent className="p-6 sm:p-8 w-full max-w-full overflow-hidden space-y-5 sm:space-y-6">
+              {/* 내용 */}
               <div className="bg-amber-50 border-l-4 border-amber-500 rounded-xl p-5 sm:p-6 text-left w-full max-w-full overflow-hidden">
-                <h3 className="font-bold text-gray-900 mb-3 text-base sm:text-lg break-words overflow-wrap-anywhere">
-                  💡 왜 지금 '기후시민 선언'이 필요할까?
-                </h3>
                 <p className="text-sm sm:text-base text-gray-700 leading-relaxed break-words overflow-wrap-anywhere w-full max-w-full mb-3">
                   기후위기는 더 이상 먼 미래의 문제가 아니야. 우리의 건강·경제·지역의 지속가능성을 좌우하는 현실적인 과제이지!
                 </p>
