@@ -23,10 +23,10 @@ export default function DeclarationPage() {
                                 지금, 기후시민으로서<br />행동할 수 있습니다!
                             </CardTitle>
                             <p className="text-base sm:text-lg text-gray-700 leading-relaxed px-2 break-words overflow-wrap-anywhere w-full max-w-full">
-                                경남기후위기비상행동이 함께하는<br />
+                                경남기후위기비상행동과 함께<br />
                                 <strong className="text-green-700">'기후시민 선언'</strong>에 참여해<br />
                                 친환경 에너지 전환을 지지하고,<br />
-                                더 나은 지역의 미래를 함께 만들어주세요.
+                                더 나은 지역의 미래를 만들어주세요.
                             </p>
                         </div>
 
