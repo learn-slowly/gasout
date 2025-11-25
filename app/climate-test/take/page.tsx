@@ -126,7 +126,7 @@ export default function ClimateTestTake() {
   // 인트로 화면
   if (showIntro) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-start justify-center pt-12 sm:pt-16 p-4 pb-safe overflow-x-hidden w-full max-w-full">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-start justify-center pt-24 sm:pt-28 p-4 pb-safe overflow-x-hidden w-full max-w-full">
         <div className="w-full max-w-2xl max-w-full overflow-hidden space-y-5 sm:space-y-6">
           {/* 헤더 */}
           <div className="text-center">
