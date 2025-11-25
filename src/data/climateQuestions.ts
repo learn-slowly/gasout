@@ -126,7 +126,7 @@ export const questions: Question[] = [
   {
     id: 10,
     dimension: 'J/P',
-    question: ''일주일 제로웨이스트 챌린지'를 하게 된다면?',
+    question: "'일주일 제로웨이스트 챌린지'를 하게 된다면?",
     optionA: {
       text: '실천 계획표·오늘의 할 일까지 딱딱 정리하기!',
       value: 'J',
