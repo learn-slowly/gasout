@@ -47,48 +47,6 @@ export default function DeclarationPage() {
                             </p>
                         </div>
 
-                        {/* 핵심 요약 */}
-                        <div className="bg-green-50 rounded-xl p-5 sm:p-6 space-y-3 text-left w-full max-w-full overflow-hidden">
-                            <h3 className="font-bold text-gray-900 text-base sm:text-lg break-words overflow-wrap-anywhere">
-                                ✅ 핵심 요약
-                            </h3>
-                            <ul className="space-y-2 text-sm sm:text-base text-gray-700">
-                                <li className="flex items-start gap-2">
-                                    <span className="flex-shrink-0">✓</span>
-                                    <span className="break-words overflow-wrap-anywhere flex-1">기후위기 시대, 에너지 전환은 필수</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <span className="flex-shrink-0">✓</span>
-                                    <span className="break-words overflow-wrap-anywhere flex-1">지역 주민이 배제되지 않는 정의로운 전환이 중요</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <span className="flex-shrink-0">✓</span>
-                                    <span className="break-words overflow-wrap-anywhere flex-1">정부의 LNG 확대는 한계</span>
-                                </li>
-                            </ul>
-                        </div>
-
-                        {/* LNG 문제점 */}
-                        <div className="bg-red-50 rounded-xl p-5 sm:p-6 text-left w-full max-w-full overflow-hidden">
-                            <h3 className="font-bold text-gray-900 mb-3 text-base sm:text-lg break-words overflow-wrap-anywhere">
-                                ⚠️ LNG의 문제점
-                            </h3>
-                            <div className="space-y-3 text-sm sm:text-base text-gray-700">
-                                <div>
-                                    <strong className="text-red-700">화석연료:</strong>
-                                    <span className="ml-2 break-words overflow-wrap-anywhere">LNG는 화석연료로 탄소중립 역행</span>
-                                </div>
-                                <div>
-                                    <strong className="text-red-700">경제적 손실:</strong>
-                                    <span className="ml-2 break-words overflow-wrap-anywhere">장기적 가동률이 매우 낮아져 경제적 손실이 전기요금과 세금 부담으로 이어짐</span>
-                                </div>
-                                <div>
-                                    <strong className="text-red-700">구조적 불평등:</strong>
-                                    <span className="ml-2 break-words overflow-wrap-anywhere">지역은 피해, 혜택은 외부인 구조 개선 필요</span>
-                                </div>
-                            </div>
-                        </div>
-
                         {/* 우리에게 필요한 것 */}
                         <div className="bg-blue-50 rounded-xl p-5 sm:p-6 text-left w-full max-w-full overflow-hidden">
                             <h3 className="font-bold text-gray-900 mb-3 text-base sm:text-lg break-words overflow-wrap-anywhere">
