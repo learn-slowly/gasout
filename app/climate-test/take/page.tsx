@@ -178,10 +178,10 @@ export default function ClimateTestTake() {
 
   if (showMiniFact) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-center justify-center p-4 pb-safe overflow-x-hidden w-full max-w-full">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-start justify-center pt-20 sm:pt-24 p-4 pb-safe overflow-x-hidden w-full max-w-full">
         <div className="w-full max-w-2xl max-w-full overflow-hidden">
           <Card className="w-full max-w-full border-0 shadow-2xl overflow-hidden">
-            <CardContent className="p-6 sm:p-8 md:p-12 w-full max-w-full overflow-hidden">
+            <CardContent className="p-6 sm:p-8 w-full max-w-full overflow-hidden">
               <div className="space-y-5 sm:space-y-6 w-full max-w-full">
                 <div className="text-center w-full max-w-full">
                   <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 leading-tight px-2 break-words overflow-wrap-anywhere w-full max-w-full">
@@ -219,7 +219,7 @@ export default function ClimateTestTake() {
   // 준비 중이면 로딩 표시
   if (!isReady) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-start justify-center pt-20 sm:pt-24 p-4">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-200 border-t-green-600 mx-auto"></div>
           <p className="text-gray-600 text-sm">테스트를 준비하는 중...</p>
@@ -231,7 +231,7 @@ export default function ClimateTestTake() {
   // 질문이 없으면 에러
   if (!currentQuestion) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-start justify-center pt-20 sm:pt-24 p-4">
         <div className="text-center space-y-4">
           <p className="text-red-600">질문을 불러올 수 없습니다.</p>
           <Button onClick={() => router.push("/declaration")}>
@@ -243,10 +243,10 @@ export default function ClimateTestTake() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-center justify-center p-4 pb-safe overflow-x-hidden w-full max-w-full">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-start justify-center pt-20 sm:pt-24 p-4 pb-safe overflow-x-hidden w-full max-w-full">
       <div className="w-full max-w-2xl max-w-full overflow-hidden">
         <Card className="w-full max-w-full border-0 shadow-2xl overflow-hidden">
-          <CardContent className="p-5 sm:p-6 md:p-8 w-full max-w-full overflow-hidden">
+          <CardContent className="p-5 sm:p-6 w-full max-w-full overflow-hidden">
             {/* 진행률 바 */}
             <div className="mb-5 sm:mb-6">
               <div className="flex justify-between items-center mb-2">
