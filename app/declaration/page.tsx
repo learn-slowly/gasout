@@ -60,11 +60,8 @@ export default function DeclarationPage() {
                         {/* MBTI 테스트 안내 */}
                         <div className="bg-purple-50 rounded-xl p-5 sm:p-6 text-left w-full max-w-full overflow-hidden">
                             <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base break-words overflow-wrap-anywhere">
-                                🎯 이어서 진행되는 나만의 기후시민 MBTI 테스트도 즐겨보세요!
+                                🎯 나만의 기후시민 MBTI 테스트로 당신에게 맞는 기후행동 방법을 찾아보세요
                             </h3>
-                            <p className="text-xs sm:text-sm text-gray-600 break-words overflow-wrap-anywhere w-full max-w-full">
-                                당신에게 맞는 기후행동 방법을 찾아보세요
-                            </p>
                         </div>
 
                         {/* CTA */}
@@ -77,7 +74,7 @@ export default function DeclarationPage() {
                                 기후시민 선언 & 테스트 시작
                             </Button>
                             <p className="text-xs sm:text-sm text-gray-500 leading-relaxed px-2 break-words overflow-wrap-anywhere w-full max-w-full">
-                                선언 후 나만의 기후시민 MBTI를 확인해보세요!
+                                내가 어떤 기후시민인지 알아보고 기후시민 선언에 함께해요
                             </p>
                         </div>
                     </CardContent>
