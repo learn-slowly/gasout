@@ -323,26 +323,51 @@ function ResultContent() {
         {/* LNG 팩트 요약 */}
         <Card className="border-0 shadow-xl bg-blue-50 w-full max-w-full overflow-hidden">
           <CardContent className="p-5 sm:p-6 md:p-8 w-full max-w-full overflow-hidden">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 break-words overflow-wrap-anywhere">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-5 break-words overflow-wrap-anywhere">
               💡 LNG의 진실
             </h2>
-            <div className="space-y-2.5 sm:space-y-3 text-gray-700 text-sm sm:text-base leading-relaxed w-full max-w-full">
-              <p className="break-words overflow-wrap-anywhere">
-                <strong>LNG도 화석연료입니다.</strong> 채굴-운송 과정에서 메탄이
-                누출되며, CO2보다 80배 이상 강력한 온실효과를 냅니다.
-              </p>
-              <p className="break-words overflow-wrap-anywhere">
-                <strong>재생에너지가 더 저렴합니다.</strong> 태양광 발전 단가는 LNG
-                발전보다 저렴하며, 전 세계가 재생에너지로 전환하고 있습니다.
-              </p>
-              <p className="break-words overflow-wrap-anywhere">
-                <strong>좌초자산이 될 위험</strong>이 있습니다. 2050 탄소중립 목표로
-                인해 10~15년 내에 사용하지 못하게 될 가능성이 높습니다.
-              </p>
+            
+            {/* 핵심 요약 */}
+            <div className="bg-white rounded-xl p-4 sm:p-5 mb-4 sm:mb-5 border border-blue-100">
+              <h3 className="font-bold text-gray-900 mb-3 text-base sm:text-lg">핵심 요약</h3>
+              <ul className="space-y-2 text-sm sm:text-base text-gray-700">
+                <li className="flex items-start gap-2">
+                  <span className="flex-shrink-0 text-green-600">✅</span>
+                  <span className="break-words overflow-wrap-anywhere flex-1">기후위기 시대, 에너지 전환은 필수</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="flex-shrink-0 text-green-600">✅</span>
+                  <span className="break-words overflow-wrap-anywhere flex-1">지역 주민이 배제되지 않는 정의로운 전환이 중요</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="flex-shrink-0 text-green-600">✅</span>
+                  <span className="break-words overflow-wrap-anywhere flex-1">정부의 LNG 확대는 한계</span>
+                </li>
+              </ul>
             </div>
+
+            {/* LNG의 문제점 */}
+            <div className="bg-white rounded-xl p-4 sm:p-5 border border-blue-100">
+              <h3 className="font-bold text-gray-900 mb-3 text-base sm:text-lg">LNG의 문제점</h3>
+              <div className="space-y-3 text-sm sm:text-base text-gray-700">
+                <div>
+                  <strong className="text-red-600">화석연료:</strong>
+                  <span className="ml-2">LNG는 화석연료로 탄소중립 역행</span>
+                </div>
+                <div>
+                  <strong className="text-red-600">경제적 손실:</strong>
+                  <span className="ml-2">장기적 가동률이 매우 낮아져 경제적 손실이 전기요금과 세금 부담으로 이어짐</span>
+                </div>
+                <div>
+                  <strong className="text-red-600">구조적 불평등:</strong>
+                  <span className="ml-2">지역은 피해, 혜택은 외부인 구조 개선 필요</span>
+                </div>
+              </div>
+            </div>
+
             <a
               href="/learn-more"
-              className="text-blue-600 hover:text-blue-800 active:text-blue-900 text-sm sm:text-base mt-4 inline-block touch-manipulation"
+              className="text-blue-600 hover:text-blue-800 active:text-blue-900 text-sm sm:text-base mt-4 inline-block touch-manipulation font-semibold"
             >
               자세히 보기 →
             </a>
