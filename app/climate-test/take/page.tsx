@@ -14,6 +14,7 @@ export default function ClimateTestTake() {
   const [answers, setAnswers] = useState<TestAnswer[]>([]);
   const [sessionId, setSessionId] = useState<string>("");
   const [showMiniFact, setShowMiniFact] = useState<MiniFact | null>(null);
+  const [showIntro, setShowIntro] = useState(true);
   const [isReady, setIsReady] = useState(false);
 
   const currentQuestion = questions[currentQuestionIndex];
@@ -117,6 +118,59 @@ export default function ClimateTestTake() {
     // 다음 질문으로 이동
     setCurrentQuestionIndex(currentQuestionIndex + 1);
   };
+
+  const handleStartTest = () => {
+    setShowIntro(false);
+  };
+
+  // 인트로 화면
+  if (showIntro) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-center justify-center p-4 pb-safe overflow-x-hidden w-full max-w-full">
+        <div className="w-full max-w-2xl max-w-full overflow-hidden">
+          <Card className="w-full max-w-full border-0 shadow-2xl overflow-hidden">
+            <CardContent className="p-6 sm:p-8 md:p-12 w-full max-w-full overflow-hidden space-y-6 sm:space-y-8">
+              {/* 왜 필요한가 */}
+              <div className="bg-amber-50 border-l-4 border-amber-500 rounded-xl p-5 sm:p-6 text-left w-full max-w-full overflow-hidden">
+                <h3 className="font-bold text-gray-900 mb-3 text-base sm:text-lg break-words overflow-wrap-anywhere">
+                  💡 왜 지금 '기후시민 선언'이 필요할까?
+                </h3>
+                <p className="text-sm sm:text-base text-gray-700 leading-relaxed break-words overflow-wrap-anywhere w-full max-w-full mb-3">
+                  기후위기는 더 이상 먼 미래의 문제가 아니야. 우리의 건강·경제·지역의 지속가능성을 좌우하는 현실적인 과제이지!
+                </p>
+                <p className="text-sm sm:text-base text-gray-700 leading-relaxed break-words overflow-wrap-anywhere w-full max-w-full mb-3">
+                  석탄을 LNG로 바꾸는 것은 나쁜 것을 다른 나쁜 것으로 바꾸는 거야.
+                </p>
+                <p className="text-sm sm:text-base text-gray-700 leading-relaxed break-words overflow-wrap-anywhere w-full max-w-full">
+                  우리가 바라는 에너지 전환은 모두가 참여하는 정의로운 방식으로 친환경 재생에너지 중심의 체계로 이동하는 거야! 
+                  그 중심에 <strong className="text-green-700">정의로운 에너지 전환</strong>이 있어.
+                </p>
+              </div>
+
+              {/* 우리에게 필요한 것 */}
+              <div className="bg-blue-50 rounded-xl p-5 sm:p-6 text-left w-full max-w-full overflow-hidden">
+                <h3 className="font-bold text-gray-900 mb-3 text-base sm:text-lg break-words overflow-wrap-anywhere">
+                  🌱 우리에게 필요한 건?
+                </h3>
+                <p className="text-lg sm:text-xl font-bold text-green-700 break-words overflow-wrap-anywhere w-full max-w-full">
+                  분산형·친환경 재생에너지 중심의 미래
+                </p>
+              </div>
+
+              {/* 시작 버튼 */}
+              <Button
+                onClick={handleStartTest}
+                className="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold min-h-[56px] text-base sm:text-lg rounded-xl touch-manipulation"
+                size="lg"
+              >
+                테스트 시작하기
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   if (showMiniFact) {
     return (
