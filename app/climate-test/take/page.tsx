@@ -214,9 +214,11 @@ export default function ClimateTestTake() {
                   {showMiniFact.link && (
                     <a
                       href={showMiniFact.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-amber-700 hover:text-amber-900 active:text-amber-950 font-semibold text-sm sm:text-base mt-4 inline-block touch-manipulation underline"
                     >
-                      자세히 보기 →
+                      자세히 보기 → (새 탭)
                     </a>
                   )}
                 </div>
