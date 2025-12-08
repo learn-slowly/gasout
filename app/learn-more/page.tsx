@@ -425,53 +425,56 @@ const factDetails: FactDetail[] = [
     subtitle: "재생에너지가 더 저렴합니다",
     sections: [
       {
-        title: "1. 가격 역전이 일어났어요",
+        title: "1. 전 세계적으로 태양광이 가장 저렴한 에너지원이 됐어요",
         content: (
           <div className="space-y-4">
-            <p>&quot;재생에너지는 비싸다&quot;는 말, 10년 전엔 맞았어요. 하지만 <strong className="text-green-600">지금은 완전히 달라졌어요!</strong></p>
+            <p>
+              <strong className="text-green-600">전 세계적으로 태양광은 이미 가장 저렴한 에너지원</strong>이 되었어요. 
+              &quot;재생에너지는 비싸다&quot;는 말은 이제 과거의 이야기예요.
+            </p>
             
+            <div className="bg-green-50 rounded-lg p-4">
+              <h4 className="font-bold mb-2">🌍 글로벌 트렌드</h4>
+              <ul className="space-y-1 text-sm">
+                <li>• 전 세계 신규 발전소의 <strong>80% 이상</strong>이 재생에너지</li>
+                <li>• 태양광 발전 비용: 10년 전 대비 <strong>89% 하락</strong></li>
+                <li>• 풍력 발전 비용: 10년 전 대비 <strong>70% 하락</strong></li>
+              </ul>
+            </div>
+
+            <div className="bg-amber-50 rounded-lg p-4">
+              <h4 className="font-bold mb-2">🇰🇷 한국의 &apos;그리드 패리티&apos;</h4>
+              <p className="text-sm mb-2">
+                <strong>그리드 패리티(Grid Parity)</strong>란 재생에너지 발전 비용이 기존 화석연료와 같아지는 시점을 말해요.
+              </p>
+              <ul className="space-y-1 text-sm">
+                <li>• 재생에너지 단가: <strong className="text-green-600">계속 하락 중</strong> ⬇️</li>
+                <li>• LNG 비용(탄소세 포함): <strong className="text-red-600">계속 상승 중</strong> ⬆️</li>
+                <li>• 한국도 장기적으로 <strong>그리드 패리티에 도달</strong>할 것</li>
+              </ul>
+            </div>
+
             <div className="bg-gray-100 rounded-lg p-4 overflow-x-auto">
-              <h4 className="font-bold mb-2 text-sm">📊 한국 발전단가 비교 (2024년 기준, kWh당)</h4>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="py-2 text-left">발전원</th>
-                    <th className="py-2 text-right">가격</th>
-                    <th className="py-2 text-right">추세</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b bg-green-50">
-                    <td className="py-2">태양광</td>
-                    <td className="py-2 text-right font-bold text-green-600">30~40원</td>
-                    <td className="py-2 text-right">⬇️ 하락</td>
-                  </tr>
-                  <tr className="border-b bg-green-50">
-                    <td className="py-2">육상풍력</td>
-                    <td className="py-2 text-right font-bold text-green-600">40~50원</td>
-                    <td className="py-2 text-right">⬇️ 하락</td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="py-2">해상풍력</td>
-                    <td className="py-2 text-right font-bold">70~80원</td>
-                    <td className="py-2 text-right">⬇️ 빠른 하락</td>
-                  </tr>
-                  <tr className="border-b bg-red-50">
-                    <td className="py-2">LNG</td>
-                    <td className="py-2 text-right font-bold text-red-600">50~70원</td>
-                    <td className="py-2 text-right">⬆️ 변동</td>
-                  </tr>
-                  <tr className="bg-red-50">
-                    <td className="py-2">석탄</td>
-                    <td className="py-2 text-right font-bold text-red-600">60~80원</td>
-                    <td className="py-2 text-right">⬆️ 상승</td>
-                  </tr>
-                </tbody>
-              </table>
+              <h4 className="font-bold mb-2 text-sm">📊 비용 추세 비교</h4>
+              <div className="flex items-center justify-center gap-8 py-4">
+                <div className="text-center">
+                  <div className="text-3xl mb-2">☀️</div>
+                  <div className="font-bold text-green-600">재생에너지</div>
+                  <div className="text-2xl">⬇️</div>
+                  <div className="text-sm text-gray-600">계속 하락</div>
+                </div>
+                <div className="text-4xl text-gray-400">⟷</div>
+                <div className="text-center">
+                  <div className="text-3xl mb-2">🔥</div>
+                  <div className="font-bold text-red-600">LNG + 탄소세</div>
+                  <div className="text-2xl">⬆️</div>
+                  <div className="text-sm text-gray-600">계속 상승</div>
+                </div>
+              </div>
             </div>
 
             <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
-              <p className="font-medium">🎯 <strong>핵심:</strong> 태양광은 이미 LNG보다 싸고, 풍력도 곧 따라잡아요!</p>
+              <p className="font-medium">🎯 <strong>핵심:</strong> 전 세계적으로 태양광이 가장 저렴한 에너지원이 됐고, 한국도 그리드 패리티에 도달하는 건 시간문제예요!</p>
             </div>
           </div>
         ),
