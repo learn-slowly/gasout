@@ -23,7 +23,31 @@ export const testResults: Record<MBTIType, TestResult> = {
       '플로깅(조깅+쓰레기 줍기)데이 기획',
       '온라인 토론방·밴드에서 재생에너지 전환 정보 공유',
       '학교 축제나 동아리에서 작은 기후게임 부스 운영'
-    ]
+    ],
+    bestPartner: {
+      type: 'ISTJ',
+      typeName: '기후 기록가',
+      emoji: '📝',
+      description: '당신의 넘치는 아이디어를 체계적으로 실행해줘요',
+      together: '창의적인 캠페인이 지속 가능한 프로젝트로!',
+      activity: '"LNG 반대 시민 참여 플랫폼" 함께 만들기'
+    },
+    heartPartner: {
+      type: 'INFP',
+      typeName: '기후 사색가',
+      emoji: '🌙',
+      description: '같은 이상을 품고 있지만 에너지 방향이 달라 균형잡혀요',
+      together: '깊이 있는 메시지를 대중에게 전달',
+      activity: '기후위기 스토리텔링 콘텐츠 제작'
+    },
+    synergyPartner: {
+      type: 'INTJ',
+      typeName: '기후 설계자',
+      emoji: '🏗️',
+      description: '당신의 창의성에 전략적 실행력을 더해줘요',
+      together: '혁신적 아이디어가 현실이 됨',
+      activity: '재생에너지 전환 장기 로드맵 기획'
+    }
   },
   
   ENTP: {
@@ -45,7 +69,31 @@ export const testResults: Record<MBTIType, TestResult> = {
       '기후위기 팩트체크 콘텐츠 제작하고 공유하기',
       '기후 가짜뉴스 바로잡기 캠페인 운영',
       '친구들과 "우리 학교 탄소 줄이기 전략회의" 운영'
-    ]
+    ],
+    bestPartner: {
+      type: 'ISFJ',
+      typeName: '기후 수호자',
+      emoji: '🛡️',
+      description: '당신의 혁신적 아이디어를 안정적으로 실행해줘요',
+      together: '파격적인 전략이 신뢰받는 활동으로',
+      activity: '지역 주민 설득 캠페인'
+    },
+    heartPartner: {
+      type: 'INTP',
+      typeName: '기후 분석가',
+      emoji: '🔬',
+      description: '논리적 사고를 공유하며 더 깊은 통찰로',
+      together: '데이터 기반 전략 수립',
+      activity: 'LNG 경제성 분석 보고서 작성'
+    },
+    synergyPartner: {
+      type: 'INFJ',
+      typeName: '기후 예언자',
+      emoji: '🔮',
+      description: '전략에 깊은 비전을 더해줘요',
+      together: '설득력 있는 미래 시나리오 제시',
+      activity: '기후정책 제안서 공동 작성'
+    }
   },
   
   ESFP: {
@@ -68,7 +116,31 @@ export const testResults: Record<MBTIType, TestResult> = {
       '일상 속 재활용 또는 친환경 패션 공유하기',
       '"LNG는 화석 연료, 대안은 재생에너지!" 슬로건 공유 활동',
       '"기후 밈 만들기 챌린지" 기획'
-    ]
+    ],
+    bestPartner: {
+      type: 'INTJ',
+      typeName: '기후 설계자',
+      emoji: '🏗️',
+      description: '당신의 즉흥적 매력에 장기 전략을 더해줘요',
+      together: '문화 활동이 체계적 운동으로',
+      activity: '기후 페스티벌 기획 및 운영'
+    },
+    heartPartner: {
+      type: 'ISFP',
+      typeName: '기후 감성가',
+      emoji: '🎨',
+      description: '예술적 감각을 공유하며 창의적 표현',
+      together: '감성적인 기후 콘텐츠 제작',
+      activity: '기후위기 사진/영상 전시'
+    },
+    synergyPartner: {
+      type: 'ENFJ',
+      typeName: '기후 가이드',
+      emoji: '🌈',
+      description: '당신의 표현력에 공감 능력을 더해요',
+      together: '대중을 움직이는 캠페인',
+      activity: '거리 문화 캠페인'
+    }
   },
   
   ESTP: {
@@ -90,7 +162,31 @@ export const testResults: Record<MBTIType, TestResult> = {
       '주민 대상 "LNG 문제 바로 알기" 캠페인',
       '업사이클링 워크숍 참여하기',
       '직접 실천 미션 수행 후 SNS 인증하기 (전기 절약)'
-    ]
+    ],
+    bestPartner: {
+      type: 'INFJ',
+      typeName: '기후 예언자',
+      emoji: '🔮',
+      description: '당신의 즉각 행동에 깊은 의미를 부여해줘요',
+      together: '실천이 영감을 주는 운동으로',
+      activity: '지역 기후 현장 활동'
+    },
+    heartPartner: {
+      type: 'ISTP',
+      typeName: '기후 메이커',
+      emoji: '🔧',
+      description: '실용적 접근을 공유하며 빠른 문제 해결',
+      together: '현장 중심 실천 프로젝트',
+      activity: '재생에너지 설치 워크숍'
+    },
+    synergyPartner: {
+      type: 'ENTJ',
+      typeName: '기후 개혁가',
+      emoji: '⚔️',
+      description: '행동력에 구조적 변화를 더해요',
+      together: '즉각 실행과 장기 전략의 조화',
+      activity: '신속 대응 기후 캠페인'
+    }
   },
   
   ESFJ: {
@@ -112,7 +208,31 @@ export const testResults: Record<MBTIType, TestResult> = {
       '친구들, 동네 주민들과 분리배출 캠페인 조직',
       '기후 행동 밴드·카톡방 운영 (소식 공유 중심)',
       '학교·직장 내 \'플라스틱 제로데이\' 제안'
-    ]
+    ],
+    bestPartner: {
+      type: 'INTP',
+      typeName: '기후 분석가',
+      emoji: '🔬',
+      description: '당신의 따뜻함에 논리적 근거를 더해줘요',
+      together: '공감 기반 설득이 데이터로 뒷받침됨',
+      activity: '주민 설명회 준비 및 진행'
+    },
+    heartPartner: {
+      type: 'ISFJ',
+      typeName: '기후 수호자',
+      emoji: '🛡️',
+      description: '돌봄의 마음을 공유하며 꾸준한 실천',
+      together: '지역 커뮤니티 기반 강화',
+      activity: '마을 에너지 협동조합 조직'
+    },
+    synergyPartner: {
+      type: 'ENFP',
+      typeName: '기후 모험가',
+      emoji: '🌟',
+      description: '조직력에 창의성을 더해요',
+      together: '활기찬 기후 커뮤니티 형성',
+      activity: '기후시민 네트워크 구축'
+    }
   },
   
   ESTJ: {
@@ -134,7 +254,31 @@ export const testResults: Record<MBTIType, TestResult> = {
       '축제 및 기후 행사에서 재생에너지 O/X 퀴즈부스 운영',
       '\'탄소 다이어트 주간\' 캠페인 기획 총괄',
       '단체 프로젝트로 LNG 관련 정책/환경 문제 모니터링'
-    ]
+    ],
+    bestPartner: {
+      type: 'INFP',
+      typeName: '기후 사색가',
+      emoji: '🌙',
+      description: '당신의 체계에 따뜻한 의미를 더해줘요',
+      together: '효율적 시스템이 사람 중심으로',
+      activity: '지역 기후행동 매뉴얼 제작'
+    },
+    heartPartner: {
+      type: 'ISTJ',
+      typeName: '기후 기록가',
+      emoji: '📝',
+      description: '조직력을 공유하며 완벽한 체계 구축',
+      together: '지속 가능한 운영 시스템',
+      activity: '기후행동 데이터베이스 관리'
+    },
+    synergyPartner: {
+      type: 'ENTP',
+      typeName: '기후 전략가',
+      emoji: '💡',
+      description: '실행력에 혁신적 아이디어를 더해요',
+      together: '새로운 방식의 체계적 접근',
+      activity: '기후정책 모니터링 시스템'
+    }
   },
   
   ENFJ: {
@@ -157,7 +301,31 @@ export const testResults: Record<MBTIType, TestResult> = {
       '"우리 지역 에너지 정책 바꾸기" 슬로건 캠페인 운영',
       '"우리 지역 에너지 바뀌면 뭐가 달라질까?" 토론 진행',
       '"기후 롤모델 스토리" 소개 콘텐츠 만들기'
-    ]
+    ],
+    bestPartner: {
+      type: 'ISTP',
+      typeName: '기후 메이커',
+      emoji: '🔧',
+      description: '당신의 비전에 실용적 실행력을 더해줘요',
+      together: '영감을 주는 리더십이 구체적 결과로',
+      activity: '재생에너지 교육 프로그램 운영'
+    },
+    heartPartner: {
+      type: 'INFJ',
+      typeName: '기후 예언자',
+      emoji: '🔮',
+      description: '비전과 통찰을 공유하며 깊은 영향력',
+      together: '미래를 보여주는 리더십',
+      activity: '기후 비전 공유 강연'
+    },
+    synergyPartner: {
+      type: 'INFP',
+      typeName: '기후 사색가',
+      emoji: '🌙',
+      description: '리더십에 깊은 철학을 더해요',
+      together: '가치 중심의 강력한 메시지',
+      activity: '기후정의 스토리 발굴'
+    }
   },
   
   ENTJ: {
@@ -179,7 +347,31 @@ export const testResults: Record<MBTIType, TestResult> = {
       '기업 ESG 활동 자문 or 모니터링',
       '미래형 \'탄소중립 도시 모델\' 설계 연구',
       '"시스템을 바꾸는 리더" 온라인 기후 포럼 운영'
-    ]
+    ],
+    bestPartner: {
+      type: 'ISFP',
+      typeName: '기후 감성가',
+      emoji: '🎨',
+      description: '당신의 전략에 인간적 온기를 더해줘요',
+      together: '강력한 개혁이 사람들의 마음을 얻음',
+      activity: '지역 에너지 전환 정책 수립'
+    },
+    heartPartner: {
+      type: 'INTJ',
+      typeName: '기후 설계자',
+      emoji: '🏗️',
+      description: '장기 전략을 공유하며 완벽한 로드맵',
+      together: '체계적 구조 개혁',
+      activity: '탄소중립 실행계획 작성'
+    },
+    synergyPartner: {
+      type: 'ENFP',
+      typeName: '기후 모험가',
+      emoji: '🌟',
+      description: '추진력에 창의성을 더해요',
+      together: '혁신적이면서 실현 가능한 변화',
+      activity: '기후혁신 프로젝트 리드'
+    }
   },
   
   // I 유형 (내향형)
@@ -203,7 +395,31 @@ export const testResults: Record<MBTIType, TestResult> = {
       '작은 글로 재생에너지 필요성 표현하기',
       '\'나의 기후 감정 일기\' 쓰기',
       '기후감정(Climate Anxiety) 치유 모임 참여'
-    ]
+    ],
+    bestPartner: {
+      type: 'ESTJ',
+      typeName: '기후 관리자',
+      emoji: '📋',
+      description: '당신의 이상에 체계적 실행력을 더해줘요',
+      together: '깊은 가치가 현실로 구현됨',
+      activity: '기후정의 메시지를 시스템화'
+    },
+    heartPartner: {
+      type: 'ENFP',
+      typeName: '기후 모험가',
+      emoji: '🌟',
+      description: '가치관을 공유하며 이상을 실현',
+      together: '의미 있는 창의적 활동',
+      activity: '기후 스토리텔링 콘텐츠'
+    },
+    synergyPartner: {
+      type: 'ENFJ',
+      typeName: '기후 가이드',
+      emoji: '🌈',
+      description: '사색에 리더십을 더해요',
+      together: '깊은 철학이 대중에게 전달됨',
+      activity: '기후감정 치유 모임'
+    }
   },
   
   INFJ: {
@@ -225,7 +441,31 @@ export const testResults: Record<MBTIType, TestResult> = {
       '미래 세대를 위한 기후 메시지 카드 만들기/편지 쓰기',
       '\'나의 기후 비전 선언문\' 작성 및 공유',
       '인문학적 관점의 기후 토론회 참여'
-    ]
+    ],
+    bestPartner: {
+      type: 'ESTP',
+      typeName: '기후 액션러',
+      emoji: '⚡',
+      description: '당신의 비전에 즉각 실행력을 더해줘요',
+      together: '통찰이 현장에서 바로 실현됨',
+      activity: '비전 제시 후 현장 캠페인'
+    },
+    heartPartner: {
+      type: 'ENFJ',
+      typeName: '기후 가이드',
+      emoji: '🌈',
+      description: '통찰력을 공유하며 강력한 영향력',
+      together: '사람들을 변화시키는 리더십',
+      activity: '기후 교육 프로그램 기획'
+    },
+    synergyPartner: {
+      type: 'ENTP',
+      typeName: '기후 전략가',
+      emoji: '💡',
+      description: '비전에 창의적 전략을 더해요',
+      together: '미래지향적 혁신 전략',
+      activity: '장기 기후정책 로드맵'
+    }
   },
   
   ISFP: {
@@ -247,7 +487,31 @@ export const testResults: Record<MBTIType, TestResult> = {
       '친환경 브랜드 리뷰 콘텐츠 만들기',
       '자연을 담은 포스터·아트북 만들기',
       '감성적 기후 메시지, 친환경 재생에너지 전환 메시지를 담은 디자인 캠페인 기획'
-    ]
+    ],
+    bestPartner: {
+      type: 'ENTJ',
+      typeName: '기후 개혁가',
+      emoji: '⚔️',
+      description: '당신의 감성에 강력한 추진력을 더해줘요',
+      together: '예술적 메시지가 구조적 변화로',
+      activity: '감성 캠페인을 정책 제안으로'
+    },
+    heartPartner: {
+      type: 'ESFP',
+      typeName: '기후 퍼포머',
+      emoji: '✨',
+      description: '감각적 표현을 공유하며 창의적 활동',
+      together: '아름다운 기후 문화 콘텐츠',
+      activity: '기후 예술 프로젝트'
+    },
+    synergyPartner: {
+      type: 'INFJ',
+      typeName: '기후 예언자',
+      emoji: '🔮',
+      description: '예술에 깊은 의미를 더해요',
+      together: '감동적인 기후 메시지',
+      activity: '생태 예술 전시'
+    }
   },
   
   ISFJ: {
@@ -269,7 +533,31 @@ export const testResults: Record<MBTIType, TestResult> = {
       '어린이·가족 대상 환경 교육 봉사 참여',
       '지역 재활용 캠페인 진행',
       '조용하지만 꾸준한 "매일 하나 기후 실천" 스티커 챌린지'
-    ]
+    ],
+    bestPartner: {
+      type: 'ENTP',
+      typeName: '기후 전략가',
+      emoji: '💡',
+      description: '당신의 꾸준함에 혁신적 아이디어를 더해줘요',
+      together: '안정적 실천에 새로운 방법 도입',
+      activity: '지역 실천을 혁신적으로 확장'
+    },
+    heartPartner: {
+      type: 'ESFJ',
+      typeName: '기후 커넥터',
+      emoji: '🤝',
+      description: '돌봄의 마음을 공유하며 커뮤니티 강화',
+      together: '따뜻한 지역 기후 공동체',
+      activity: '마을 단위 실천 프로젝트'
+    },
+    synergyPartner: {
+      type: 'INTJ',
+      typeName: '기후 설계자',
+      emoji: '🏗️',
+      description: '실천에 장기 전략을 더해요',
+      together: '지속 가능한 시스템 구축',
+      activity: '체계적 환경 실천 매뉴얼'
+    }
   },
   
   INTJ: {
@@ -292,7 +580,31 @@ export const testResults: Record<MBTIType, TestResult> = {
       '장기적 에너지 전환 로드맵 설계 시 LNG 영향 반영하기',
       '미래형 \'지속가능한 지역 모델\' 스케치',
       'AI 기술을 활용한 탄소 감축 솔루션 기획'
-    ]
+    ],
+    bestPartner: {
+      type: 'ESFP',
+      typeName: '기후 퍼포머',
+      emoji: '✨',
+      description: '당신의 계획에 즉흥적 매력을 더해줘요',
+      together: '전략이 사람들에게 매력적으로 전달됨',
+      activity: '재생에너지 전환 로드맵 홍보'
+    },
+    heartPartner: {
+      type: 'ENTJ',
+      typeName: '기후 개혁가',
+      emoji: '⚔️',
+      description: '전략적 사고를 공유하며 강력한 시너지',
+      together: '완벽한 장기 개혁 전략',
+      activity: '시스템 변화 마스터플랜'
+    },
+    synergyPartner: {
+      type: 'ENFP',
+      typeName: '기후 모험가',
+      emoji: '🌟',
+      description: '설계에 창의성을 더해요',
+      together: '혁신적이고 실현 가능한 비전',
+      activity: '미래 에너지 시스템 설계'
+    }
   },
   
   INTP: {
@@ -315,7 +627,31 @@ export const testResults: Record<MBTIType, TestResult> = {
       '데이터 시각화로 전력·배출 현황 비교',
       '기후 관련 논문·보고서 읽고 \'쉽게 풀어쓰기\'',
       '실험적 프로젝트 참여 (전력 사용 모니터링 등)'
-    ]
+    ],
+    bestPartner: {
+      type: 'ESFJ',
+      typeName: '기후 커넥터',
+      emoji: '🤝',
+      description: '당신의 분석에 공감 능력을 더해줘요',
+      together: '데이터가 사람들에게 와닿는 메시지로',
+      activity: '주민 대상 LNG 문제 설명회'
+    },
+    heartPartner: {
+      type: 'ENTP',
+      typeName: '기후 전략가',
+      emoji: '💡',
+      description: '논리적 사고를 공유하며 깊은 분석',
+      together: '철저한 근거 기반 전략',
+      activity: '기후 데이터 분석 보고서'
+    },
+    synergyPartner: {
+      type: 'INFJ',
+      typeName: '기후 예언자',
+      emoji: '🔮',
+      description: '분석에 통찰력을 더해요',
+      together: '데이터 속 미래 패턴 발견',
+      activity: '기후위기 시나리오 분석'
+    }
   },
   
   ISTP: {
@@ -338,7 +674,31 @@ export const testResults: Record<MBTIType, TestResult> = {
       '재활용 DIY 키트 제작하기',
       '지역 수리카페 공방 참여',
       '"재생에너지 실험 키트" 만들기 도전 (태양광 작은 조명 등)'
-    ]
+    ],
+    bestPartner: {
+      type: 'ENFJ',
+      typeName: '기후 가이드',
+      emoji: '🌈',
+      description: '당신의 실용성에 비전과 의미를 더해줘요',
+      together: '만드는 것이 영감을 주는 활동으로',
+      activity: '재생에너지 DIY 교육'
+    },
+    heartPartner: {
+      type: 'ESTP',
+      typeName: '기후 액션러',
+      emoji: '⚡',
+      description: '실행력을 공유하며 빠른 결과 도출',
+      together: '현장 중심 실천 프로젝트',
+      activity: '업사이클링 워크숍'
+    },
+    synergyPartner: {
+      type: 'INTJ',
+      typeName: '기후 설계자',
+      emoji: '🏗️',
+      description: '기술에 장기 전략을 더해요',
+      together: '실용적 기술이 시스템으로',
+      activity: '지역 재생에너지 인프라 구축'
+    }
   },
   
   ISTJ: {
@@ -360,6 +720,30 @@ export const testResults: Record<MBTIType, TestResult> = {
       '친환경 에너지 전환을 요구하는 단체 활동을 기록하고 정리',
       '재생에너지 관련 자료 모아 \'정리 노트\' 만들기',
       '"기후실천 100일 다이어리" 챌린지'
-    ]
+    ],
+    bestPartner: {
+      type: 'ENFP',
+      typeName: '기후 모험가',
+      emoji: '🌟',
+      description: '당신의 체계에 창의적 아이디어를 더해줘요',
+      together: '열정이 지속 가능한 프로젝트로',
+      activity: '기후행동 플랫폼 운영'
+    },
+    heartPartner: {
+      type: 'ESTJ',
+      typeName: '기후 관리자',
+      emoji: '📋',
+      description: '책임감을 공유하며 완벽한 시스템',
+      together: '체계적이고 지속 가능한 운영',
+      activity: '기후데이터 아카이브 구축'
+    },
+    synergyPartner: {
+      type: 'ENTP',
+      typeName: '기후 전략가',
+      emoji: '💡',
+      description: '기록에 혁신적 해석을 더해요',
+      together: '데이터가 전략적 인사이트로',
+      activity: '기후행동 성과 분석 리포트'
+    }
   },
 };

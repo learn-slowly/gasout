@@ -33,6 +33,15 @@ export interface TestAnswer {
   answer: MBTIDimension;
 }
 
+export interface CompatiblePartner {
+  type: MBTIType;
+  typeName: string;
+  emoji: string;
+  description: string;
+  together: string;
+  activity: string;
+}
+
 export interface TestResult {
   type: MBTIType;
   typeName: string;
@@ -43,6 +52,10 @@ export interface TestResult {
   strengths: string;
   recommendedActions: string[];
   compatibleTypes?: string[];
+  // 기후동지
+  bestPartner?: CompatiblePartner;
+  heartPartner?: CompatiblePartner;
+  synergyPartner?: CompatiblePartner;
 }
 
 export interface TestResponse {

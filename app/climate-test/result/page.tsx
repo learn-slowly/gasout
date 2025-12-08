@@ -320,6 +320,114 @@ function ResultContent() {
           </CardContent>
         </Card>
 
+        {/* 나와 잘 맞는 기후동지 */}
+        {(result.bestPartner || result.heartPartner || result.synergyPartner) && (
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-purple-50 to-pink-50 w-full max-w-full overflow-hidden">
+            <CardContent className="p-5 sm:p-6 md:p-8 w-full max-w-full overflow-hidden">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 break-words overflow-wrap-anywhere flex items-center gap-2">
+                <span>🤝</span>
+                <span>나와 잘 맞는 기후동지</span>
+              </h2>
+              <p className="text-gray-600 mb-5 sm:mb-6 text-sm sm:text-base italic">
+                &ldquo;당신의 방식으로 지구를 지킬 수 있어요&rdquo;
+              </p>
+
+              <div className="space-y-4 sm:space-y-5">
+                {/* 최고의 파트너 */}
+                {result.bestPartner && (
+                  <div className="bg-white rounded-xl p-4 sm:p-5 border-2 border-yellow-200 shadow-sm">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-2xl">{result.bestPartner.emoji}</span>
+                      <div>
+                        <span className="text-yellow-600 font-bold text-sm">🌟 최고의 파트너</span>
+                        <h3 className="font-bold text-gray-900 text-base sm:text-lg">
+                          {result.bestPartner.type} - {result.bestPartner.typeName}
+                        </h3>
+                      </div>
+                    </div>
+                    <ul className="space-y-2 text-sm sm:text-base text-gray-700">
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 text-yellow-500">•</span>
+                        <span className="break-words overflow-wrap-anywhere flex-1">{result.bestPartner.description}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 text-yellow-500">•</span>
+                        <span className="break-words overflow-wrap-anywhere flex-1">함께하면: {result.bestPartner.together}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 text-yellow-500">•</span>
+                        <span className="break-words overflow-wrap-anywhere flex-1">추천 활동: {result.bestPartner.activity}</span>
+                      </li>
+                    </ul>
+                  </div>
+                )}
+
+                {/* 마음이 통하는 파트너 */}
+                {result.heartPartner && (
+                  <div className="bg-white rounded-xl p-4 sm:p-5 border-2 border-green-200 shadow-sm">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-2xl">{result.heartPartner.emoji}</span>
+                      <div>
+                        <span className="text-green-600 font-bold text-sm">💚 마음이 통하는 파트너</span>
+                        <h3 className="font-bold text-gray-900 text-base sm:text-lg">
+                          {result.heartPartner.type} - {result.heartPartner.typeName}
+                        </h3>
+                      </div>
+                    </div>
+                    <ul className="space-y-2 text-sm sm:text-base text-gray-700">
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 text-green-500">•</span>
+                        <span className="break-words overflow-wrap-anywhere flex-1">{result.heartPartner.description}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 text-green-500">•</span>
+                        <span className="break-words overflow-wrap-anywhere flex-1">함께하면: {result.heartPartner.together}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 text-green-500">•</span>
+                        <span className="break-words overflow-wrap-anywhere flex-1">추천 활동: {result.heartPartner.activity}</span>
+                      </li>
+                    </ul>
+                  </div>
+                )}
+
+                {/* 시너지 파트너 */}
+                {result.synergyPartner && (
+                  <div className="bg-white rounded-xl p-4 sm:p-5 border-2 border-orange-200 shadow-sm">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-2xl">{result.synergyPartner.emoji}</span>
+                      <div>
+                        <span className="text-orange-600 font-bold text-sm">🔥 시너지 파트너</span>
+                        <h3 className="font-bold text-gray-900 text-base sm:text-lg">
+                          {result.synergyPartner.type} - {result.synergyPartner.typeName}
+                        </h3>
+                      </div>
+                    </div>
+                    <ul className="space-y-2 text-sm sm:text-base text-gray-700">
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 text-orange-500">•</span>
+                        <span className="break-words overflow-wrap-anywhere flex-1">{result.synergyPartner.description}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 text-orange-500">•</span>
+                        <span className="break-words overflow-wrap-anywhere flex-1">함께하면: {result.synergyPartner.together}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 text-orange-500">•</span>
+                        <span className="break-words overflow-wrap-anywhere flex-1">추천 활동: {result.synergyPartner.activity}</span>
+                      </li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              <p className="text-sm text-gray-500 text-center mt-5 sm:mt-6">
+                친구도 테스트하고 궁합을 확인해보세요! 🌱
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* LNG 팩트 요약 */}
         <Card className="border-0 shadow-xl bg-blue-50 w-full max-w-full overflow-hidden">
           <CardContent className="p-5 sm:p-6 md:p-8 w-full max-w-full overflow-hidden">
