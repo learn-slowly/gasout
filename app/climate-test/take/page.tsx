@@ -8,6 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { generateSessionId, getUTMParams, calculateMBTIType } from "@/src/lib/climateTest";
 
+// **텍스트**를 볼드로 변환하는 함수
+const renderBoldText = (text: string) => {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={index} className="font-bold text-amber-800">{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+};
+
 export default function ClimateTestTake() {
   const router = useRouter();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -198,7 +209,7 @@ export default function ClimateTestTake() {
                 </div>
                 <div className="bg-amber-50 border-l-4 border-amber-500 rounded-xl p-5 sm:p-6 w-full max-w-full overflow-hidden">
                   <p className="text-gray-800 leading-relaxed text-base sm:text-lg font-medium break-words overflow-wrap-anywhere w-full max-w-full">
-                    {showMiniFact.content}
+                    {renderBoldText(showMiniFact.content)}
                   </p>
                   {showMiniFact.link && (
                     <a
