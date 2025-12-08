@@ -284,24 +284,24 @@ export const miniFacts: MiniFact[] = [
     id: 1,
     title: '💡 알고 가기',
     content: "LNG는 '친환경 연료'가 아니라 **화석 연료**입니다!",
-    link: '/learn-more',
+    link: '/learn-more?fact=1',
   },
   {
     id: 2,
     title: '💡 알고 가기',
     content: 'LNG 발전소는 **좌초자산**이 될 가능성이 높습니다. 장기적으로 가동률이 낮아지면서 투자 손실이 전기요금과 세금 부담으로 이어질 수 있어요.',
-    link: '/learn-more',
+    link: '/learn-more?fact=2',
   },
   {
     id: 3,
     title: '💡 알고 가기',
     content: '재생에너지는 이미 화석연료보다 **더 저렴**해지고 있어요. 에너지 전환은 환경뿐 아니라 경제적으로도 합리적인 선택입니다!',
-    link: '/learn-more',
+    link: '/learn-more?fact=3',
   },
   {
     id: 4,
     title: '💡 알고 가기',
     content: '전 세계가 2050 탄소중립을 선언했지만, LNG 발전소는 30~40년 가동되어야 해요. **수학이 안 맞죠?**',
-    link: '/learn-more',
+    link: '/learn-more?fact=4',
   },
 ];
