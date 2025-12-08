@@ -290,8 +290,8 @@ export default function ClimateTestTake() {
                 <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 text-center leading-tight px-2 break-words overflow-wrap-anywhere w-full max-w-full">
                   {currentQuestion.question}
                 </h2>
-                {/* 질문 10번에 제로웨이스트 설명 추가 */}
-                {currentQuestion.id === 10 && (
+                {/* 질문 16번에 제로웨이스트 설명 추가 */}
+                {currentQuestion.id === 16 && (
                   <p className="text-sm sm:text-base text-gray-600 text-center italic px-2">
                     *제로웨이스트: 쓰레기를 만들지 않는 생활방식
                   </p>
