@@ -24,7 +24,7 @@ export default function Header() {
 
     const navItems = [
         { name: "소개", href: "/about", icon: Info },
-        { name: "기후시민선언", href: "/declaration", icon: Megaphone },
+        { name: "기후시민선언", href: "/test", icon: Megaphone },
         { name: "가스발전지도", href: "/", icon: Zap },
         { name: "뉴스아카이브", href: "/news", icon: Newspaper },
         { name: "더알아보기", href: "/learn-more", icon: BookOpen },

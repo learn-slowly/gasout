@@ -83,7 +83,7 @@ export function shareToKakao(params: {
     console.log('[Kakao Share] Sending default share...');
     
     // 테스트 시작 페이지 URL (결과 페이지가 아닌)
-    const testStartUrl = `${window.location.origin}/declaration`;
+    const testStartUrl = `${window.location.origin}/test`;
     
     window.Kakao.Share.sendDefault({
       objectType: 'feed',

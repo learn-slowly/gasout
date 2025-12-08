@@ -3,12 +3,12 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function ClimateTestIntro() {
+export default function ClimateTestRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    // 기후시민 선언 페이지로 리다이렉트
-    router.replace("/declaration");
+    // 새 경로로 리다이렉트
+    router.replace("/test");
   }, [router]);
 
   return (
@@ -20,4 +20,3 @@ export default function ClimateTestIntro() {
     </div>
   );
 }
-
