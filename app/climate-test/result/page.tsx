@@ -110,8 +110,8 @@ function ResultContent() {
       case "kakao":
         // 카카오톡 공유
         const success = shareToKakao({
-          title: `${emoji} ${typeName}`,
-          description: `${quote}\n\n나도 기후시민 MBTI 테스트 해보기!`,
+          title: `${emoji} 나의 기후행동 스타일: ${typeName}`,
+          description: `"${quote}"\n\n🌱 16가지 기후시민 유형 중 나는 어떤 타입?\n⏱️ 3분이면 알 수 있어요!`,
           linkUrl: url,
           buttonText: '나도 테스트하기',
           imageUrl: `${window.location.origin}/climate-mbti-og.png`,

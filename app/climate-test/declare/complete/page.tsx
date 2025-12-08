@@ -36,8 +36,8 @@ export default function ClimateDeclareComplete() {
     switch (platform) {
       case "kakao":
         shareToKakao({
-          title: "🌱 기후시민 선언",
-          description: "기후위기에 맞서는 첫걸음을 함께해요!\n\n나도 기후시민 MBTI 테스트하고 선언하기",
+          title: "🌍 나는 기후시민입니다!",
+          description: "LNG 발전소 건설을 막고, 재생에너지로 전환하는 첫걸음!\n\n🧪 나의 기후행동 스타일은? 3분 테스트로 알아보기\n✊ 10,000명 기후시민 선언 캠페인 참여하기",
           linkUrl: url,
           buttonText: '나도 테스트하기',
           imageUrl: `${window.location.origin}/climate-mbti-og.png`,
