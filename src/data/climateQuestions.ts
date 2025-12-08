@@ -162,6 +162,114 @@ export const questions: Question[] = [
       value: 'P',
     },
   },
+  // E/I 차원 추가 (13-14)
+  {
+    id: 13,
+    dimension: 'E/I',
+    question: 'SNS에서 기후위기 소식을 봤을 때?',
+    optionA: {
+      text: '댓글로 내 생각을 남기고 친구들과 토론하고 싶어요',
+      value: 'E',
+    },
+    optionB: {
+      text: '좋아요/공유만 누르거나, 조용히 더 찾아보고 싶어요',
+      value: 'I',
+    },
+  },
+  {
+    id: 14,
+    dimension: 'E/I',
+    question: '기후 관련 새로운 아이디어가 떠올랐다면?',
+    optionA: {
+      text: '바로 주변 사람들에게 말하면서 의견을 들어봐요',
+      value: 'E',
+    },
+    optionB: {
+      text: '혼자 충분히 생각해보고 다듬은 후에 공유해요',
+      value: 'I',
+    },
+  },
+  // S/N 차원 추가 (15-16)
+  {
+    id: 15,
+    dimension: 'S/N',
+    question: '재생에너지 관련 뉴스를 읽을 때?',
+    optionA: {
+      text: '"설치 비용이 얼마지? 효율은?" 구체적 수치가 궁금해요',
+      value: 'S',
+    },
+    optionB: {
+      text: '"이게 사회를 어떻게 바꿀까?" 큰 변화가 궁금해요',
+      value: 'N',
+    },
+  },
+  {
+    id: 16,
+    dimension: 'S/N',
+    question: '친환경 제품을 선택할 때 중요한 건?',
+    optionA: {
+      text: '성분, 인증 마크, 실제 사용 후기 같은 확실한 정보',
+      value: 'S',
+    },
+    optionB: {
+      text: '이 제품이 추구하는 가치와 철학이 나와 맞는지',
+      value: 'N',
+    },
+  },
+  // T/F 차원 추가 (17-18)
+  {
+    id: 17,
+    dimension: 'T/F',
+    question: '기후 캠페인을 평가할 때 중요하게 보는 건?',
+    optionA: {
+      text: '명확한 목표 달성과 측정 가능한 성과가 있는지',
+      value: 'T',
+    },
+    optionB: {
+      text: '사람들에게 감동을 주고 마음을 움직였는지',
+      value: 'F',
+    },
+  },
+  {
+    id: 18,
+    dimension: 'T/F',
+    question: '환경 다큐멘터리를 볼 때 더 집중하게 되는 장면은?',
+    optionA: {
+      text: '데이터와 그래프로 문제를 분석하는 전문가 인터뷰',
+      value: 'T',
+    },
+    optionB: {
+      text: '기후위기로 고통받는 사람들과 동물의 이야기',
+      value: 'F',
+    },
+  },
+  // J/P 차원 추가 (19-20)
+  {
+    id: 19,
+    dimension: 'J/P',
+    question: "한 달 동안 '탄소 다이어트'를 하기로 했다면?",
+    optionA: {
+      text: '매일 체크리스트 만들고 실천 일지 작성할 거예요',
+      value: 'J',
+    },
+    optionB: {
+      text: '큰 방향만 정하고 그때그때 할 수 있는 걸 해요',
+      value: 'P',
+    },
+  },
+  {
+    id: 20,
+    dimension: 'J/P',
+    question: 'LNG 반대 서명운동에 참여하게 된다면?',
+    optionA: {
+      text: '목표 인원, 기간, 역할을 정하고 계획적으로 진행',
+      value: 'J',
+    },
+    optionB: {
+      text: '일단 시작하고 상황 보면서 유연하게 조정',
+      value: 'P',
+    },
+  },
 ];
 
 export const miniFacts: MiniFact[] = [
@@ -181,6 +289,12 @@ export const miniFacts: MiniFact[] = [
     id: 3,
     title: '💡 알고 가기',
     content: '재생에너지는 이미 화석연료보다 **더 저렴**해지고 있어요. 에너지 전환은 환경뿐 아니라 경제적으로도 합리적인 선택입니다!',
+    link: '/learn-more',
+  },
+  {
+    id: 4,
+    title: '💡 알고 가기',
+    content: '전 세계가 2050 탄소중립을 선언했지만, LNG 발전소는 30~40년 가동되어야 해요. **수학이 안 맞죠?**',
     link: '/learn-more',
   },
 ];

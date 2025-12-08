@@ -48,20 +48,27 @@ export default function ClimateTestTake() {
     
     console.log(`${answeredQuestionNumber}번째 질문에 답변함`);
 
-    // 마지막 질문(12번)이면 결과 페이지로
+    // 마지막 질문(20번)이면 결과 페이지로
     if (currentQuestionIndex === questions.length - 1) {
       console.log("마지막 질문! 결과 페이지로 이동");
       saveTestResult(newAnswers);
       return;
     }
 
-    // PRD에 따라 4, 7, 9번 질문 앞에 미니 팩트 표시
-    // = 3, 6, 8번 질문 후에 표시
-    const factBeforeQuestions = [4, 7, 9]; // 이 질문들 앞에 팩트를 보여줌
-    const factCheckpoints = [3, 6, 8]; // = 이 질문들 후에 팩트를 보여줌
+    // PRD에 따른 미니 팩트 표시 위치 (20문항 기준)
+    // Q5 앞 (Q4 후) = miniFact 1 (LNG가 화석연료)
+    // Q7 앞 (Q6 후) = miniFact 2 (좌초자산)
+    // Q9 앞 (Q8 후) = miniFact 3 (재생에너지가 더 저렴)
+    // Q17 앞 (Q16 후) = miniFact 4 (탄소중립 목표와 모순)
+    const factMapping: Record<number, number> = {
+      4: 0,  // Q4 후 → miniFact[0]
+      6: 1,  // Q6 후 → miniFact[1]
+      8: 2,  // Q8 후 → miniFact[2]
+      16: 3, // Q16 후 → miniFact[3]
+    };
     
-    if (factCheckpoints.includes(answeredQuestionNumber)) {
-      const factIndex = factCheckpoints.indexOf(answeredQuestionNumber);
+    if (factMapping[answeredQuestionNumber] !== undefined) {
+      const factIndex = factMapping[answeredQuestionNumber];
       console.log(`미니 팩트 ${factIndex + 1} 표시 (${nextQuestionNumber}번 질문 앞)`);
       setShowMiniFact(miniFacts[factIndex]);
     } else {
