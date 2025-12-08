@@ -55,16 +55,17 @@ export default function ClimateTestTake() {
       return;
     }
 
-    // PRD에 따른 미니 팩트 표시 위치 (20문항 기준)
-    // Q5 앞 (Q4 후) = miniFact 1 (LNG가 화석연료)
-    // Q7 앞 (Q6 후) = miniFact 2 (좌초자산)
-    // Q9 앞 (Q8 후) = miniFact 3 (재생에너지가 더 저렴)
-    // Q17 앞 (Q16 후) = miniFact 4 (탄소중립 목표와 모순)
+    // 미니 팩트 표시 위치 (재정렬된 20문항 기준)
+    // E/I(1-5) → S/N(6-10) → T/F(11-15) → J/P(16-20)
+    // Q6 앞 (Q5 후, E/I→S/N 전환) = miniFact 1 (LNG가 화석연료)
+    // Q11 앞 (Q10 후, S/N→T/F 전환) = miniFact 2 (좌초자산)
+    // Q13 앞 (Q12 후) = miniFact 3 (재생에너지가 더 저렴)
+    // Q16 앞 (Q15 후, T/F→J/P 전환) = miniFact 4 (탄소중립 목표와 모순)
     const factMapping: Record<number, number> = {
-      4: 0,  // Q4 후 → miniFact[0]
-      6: 1,  // Q6 후 → miniFact[1]
-      8: 2,  // Q8 후 → miniFact[2]
-      16: 3, // Q16 후 → miniFact[3]
+      5: 0,   // Q5 후 (E/I 끝) → miniFact[0]
+      10: 1,  // Q10 후 (S/N 끝) → miniFact[1]
+      12: 2,  // Q12 후 → miniFact[2]
+      15: 3,  // Q15 후 (T/F 끝) → miniFact[3]
     };
     
     if (factMapping[answeredQuestionNumber] !== undefined) {

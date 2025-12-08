@@ -2,7 +2,9 @@
 import { Question, MiniFact } from '@/src/types/climateTest';
 
 export const questions: Question[] = [
-  // E/I 차원 (1-3)
+  // ========================================
+  // E/I 차원 - 기후행동 에너지 타입 (Q1-5)
+  // ========================================
   {
     id: 1,
     dimension: 'E/I',
@@ -42,129 +44,8 @@ export const questions: Question[] = [
       value: 'I',
     },
   },
-  // S/N 차원 (4-6)
   {
     id: 4,
-    dimension: 'S/N',
-    question: '기후위기를 들을 때 어떤 설명이 더 와닿나요?',
-    optionA: {
-      text: '"우리 동네 온도 30년 동안 몇 도 올랐대" 같은 딱! 보이는 변화',
-      value: 'S',
-    },
-    optionB: {
-      text: '"앞으로 우리는 어떤 미래를 살게 될까?" 같은 큰 그림',
-      value: 'N',
-    },
-  },
-  {
-    id: 5,
-    dimension: 'S/N',
-    question: 'LNG 발전소가 왜 문제인지 설명할 때?',
-    optionA: {
-      text: '"메탄 누출, 탄소 배출, 비용이 이렇게 높아요"',
-      value: 'S',
-    },
-    optionB: {
-      text: '"결국 우리 미래 에너지의 방향을 뒤로 돌리는 거예요"',
-      value: 'N',
-    },
-  },
-  {
-    id: 6,
-    dimension: 'S/N',
-    question: '기후실천을 제안할 때 어떤 말이 더 자연스럽나요?',
-    optionA: {
-      text: '"일회용컵 몇 개를 줄일 수 있어요"처럼 수치·근거 중심',
-      value: 'S',
-    },
-    optionB: {
-      text: '"우리 생활을 바꾸는 첫걸음이에요"처럼 의미 중심',
-      value: 'N',
-    },
-  },
-  // T/F 차원 (7-9)
-  {
-    id: 7,
-    dimension: 'T/F',
-    question: 'LNG 발전소 건설 반대 이유를 묻는다면?',
-    optionA: {
-      text: '"재생에너지가 더 싸고 배출량도 적어요"',
-      value: 'T',
-    },
-    optionB: {
-      text: '"주민 건강, 생태계 피해… 이건 우리 삶의 문제예요"',
-      value: 'F',
-    },
-  },
-  {
-    id: 8,
-    dimension: 'T/F',
-    question: '친구가 플라스틱 줄이기를 어려워한다면?',
-    optionA: {
-      text: '"이렇게 하면 진짜 쉬워!"하며 실천할 수 있는 해결책 딱!',
-      value: 'T',
-    },
-    optionB: {
-      text: '"나도 처음엔 그랬어" 공감하며 함께 작은 변화부터 시작',
-      value: 'F',
-    },
-  },
-  {
-    id: 9,
-    dimension: 'T/F',
-    question: '누군가 "환경보다 경제가 더 중요하다"고 말하면?',
-    optionA: {
-      text: '"둘이 싸우는 게 아니라 같이 갈 수 있어요"라고 근거로 설득',
-      value: 'T',
-    },
-    optionB: {
-      text: '"너가 그렇게 느끼는 이유가 있겠지"라고 먼저 마음을 열고 듣기',
-      value: 'F',
-    },
-  },
-  // J/P 차원 (10-12)
-  {
-    id: 10,
-    dimension: 'J/P',
-    question: "'일주일 제로웨이스트 챌린지'를 하게 된다면?",
-    optionA: {
-      text: '실천 계획표·오늘의 할 일까지 딱딱 정리하기!',
-      value: 'J',
-    },
-    optionB: {
-      text: '그날 가능한 것부터 자연스럽게 슥 실천하기!',
-      value: 'P',
-    },
-  },
-  {
-    id: 11,
-    dimension: 'J/P',
-    question: '기후 모임에 처음 가는 날, 당신의 스타일은?',
-    optionA: {
-      text: '미리 자료를 살펴보고 내 의견도 짧게 정리해 가기',
-      value: 'J',
-    },
-    optionB: {
-      text: '일단 가서 분위기 보며 참여하기',
-      value: 'P',
-    },
-  },
-  {
-    id: 12,
-    dimension: 'J/P',
-    question: '환경 캠페인 아이디어가 여러 개라면?',
-    optionA: {
-      text: '하나를 뽑아 바로 실행 준비 돌입!',
-      value: 'J',
-    },
-    optionB: {
-      text: '더 좋은 아이디어가 있는지 여유 있게 찾아보기!',
-      value: 'P',
-    },
-  },
-  // E/I 차원 추가 (13-14)
-  {
-    id: 13,
     dimension: 'E/I',
     question: 'SNS에서 기후위기 소식을 봤을 때?',
     optionA: {
@@ -177,7 +58,7 @@ export const questions: Question[] = [
     },
   },
   {
-    id: 14,
+    id: 5,
     dimension: 'E/I',
     question: '기후 관련 새로운 아이디어가 떠올랐다면?',
     optionA: {
@@ -189,9 +70,51 @@ export const questions: Question[] = [
       value: 'I',
     },
   },
-  // S/N 차원 추가 (15-16)
+
+  // ========================================
+  // S/N 차원 - 기후인식 스타일 (Q6-10)
+  // ========================================
   {
-    id: 15,
+    id: 6,
+    dimension: 'S/N',
+    question: '기후위기를 들을 때 어떤 설명이 더 와닿나요?',
+    optionA: {
+      text: '"우리 동네 온도 30년 동안 몇 도 올랐대" 같은 딱! 보이는 변화',
+      value: 'S',
+    },
+    optionB: {
+      text: '"앞으로 우리는 어떤 미래를 살게 될까?" 같은 큰 그림',
+      value: 'N',
+    },
+  },
+  {
+    id: 7,
+    dimension: 'S/N',
+    question: 'LNG 발전소가 왜 문제인지 설명할 때?',
+    optionA: {
+      text: '"메탄 누출, 탄소 배출, 비용이 이렇게 높아요"',
+      value: 'S',
+    },
+    optionB: {
+      text: '"결국 우리 미래 에너지의 방향을 뒤로 돌리는 거예요"',
+      value: 'N',
+    },
+  },
+  {
+    id: 8,
+    dimension: 'S/N',
+    question: '기후실천을 제안할 때 어떤 말이 더 자연스럽나요?',
+    optionA: {
+      text: '"일회용컵 몇 개를 줄일 수 있어요"처럼 수치·근거 중심',
+      value: 'S',
+    },
+    optionB: {
+      text: '"우리 생활을 바꾸는 첫걸음이에요"처럼 의미 중심',
+      value: 'N',
+    },
+  },
+  {
+    id: 9,
     dimension: 'S/N',
     question: '재생에너지 관련 뉴스를 읽을 때?',
     optionA: {
@@ -204,7 +127,7 @@ export const questions: Question[] = [
     },
   },
   {
-    id: 16,
+    id: 10,
     dimension: 'S/N',
     question: '친환경 제품을 선택할 때 중요한 건?',
     optionA: {
@@ -216,9 +139,51 @@ export const questions: Question[] = [
       value: 'N',
     },
   },
-  // T/F 차원 추가 (17-18)
+
+  // ========================================
+  // T/F 차원 - 기후행동의 동기 (Q11-15)
+  // ========================================
   {
-    id: 17,
+    id: 11,
+    dimension: 'T/F',
+    question: 'LNG 발전소 건설 반대 이유를 묻는다면?',
+    optionA: {
+      text: '"재생에너지가 더 싸고 배출량도 적어요"',
+      value: 'T',
+    },
+    optionB: {
+      text: '"주민 건강, 생태계 피해… 이건 우리 삶의 문제예요"',
+      value: 'F',
+    },
+  },
+  {
+    id: 12,
+    dimension: 'T/F',
+    question: '친구가 플라스틱 줄이기를 어려워한다면?',
+    optionA: {
+      text: '"이렇게 하면 진짜 쉬워!"하며 실천할 수 있는 해결책 딱!',
+      value: 'T',
+    },
+    optionB: {
+      text: '"나도 처음엔 그랬어" 공감하며 함께 작은 변화부터 시작',
+      value: 'F',
+    },
+  },
+  {
+    id: 13,
+    dimension: 'T/F',
+    question: '누군가 "환경보다 경제가 더 중요하다"고 말하면?',
+    optionA: {
+      text: '"둘이 싸우는 게 아니라 같이 갈 수 있어요"라고 근거로 설득',
+      value: 'T',
+    },
+    optionB: {
+      text: '"너가 그렇게 느끼는 이유가 있겠지"라고 먼저 마음을 열고 듣기',
+      value: 'F',
+    },
+  },
+  {
+    id: 14,
     dimension: 'T/F',
     question: '기후 캠페인을 평가할 때 중요하게 보는 건?',
     optionA: {
@@ -231,7 +196,7 @@ export const questions: Question[] = [
     },
   },
   {
-    id: 18,
+    id: 15,
     dimension: 'T/F',
     question: '환경 다큐멘터리를 볼 때 더 집중하게 되는 장면은?',
     optionA: {
@@ -243,7 +208,49 @@ export const questions: Question[] = [
       value: 'F',
     },
   },
-  // J/P 차원 추가 (19-20)
+
+  // ========================================
+  // J/P 차원 - 기후행동 스타일 (Q16-20)
+  // ========================================
+  {
+    id: 16,
+    dimension: 'J/P',
+    question: "'일주일 제로웨이스트 챌린지'를 하게 된다면?",
+    optionA: {
+      text: '실천 계획표·오늘의 할 일까지 딱딱 정리하기!',
+      value: 'J',
+    },
+    optionB: {
+      text: '그날 가능한 것부터 자연스럽게 슥 실천하기!',
+      value: 'P',
+    },
+  },
+  {
+    id: 17,
+    dimension: 'J/P',
+    question: '기후 모임에 처음 가는 날, 당신의 스타일은?',
+    optionA: {
+      text: '미리 자료를 살펴보고 내 의견도 짧게 정리해 가기',
+      value: 'J',
+    },
+    optionB: {
+      text: '일단 가서 분위기 보며 참여하기',
+      value: 'P',
+    },
+  },
+  {
+    id: 18,
+    dimension: 'J/P',
+    question: '환경 캠페인 아이디어가 여러 개라면?',
+    optionA: {
+      text: '하나를 뽑아 바로 실행 준비 돌입!',
+      value: 'J',
+    },
+    optionB: {
+      text: '더 좋은 아이디어가 있는지 여유 있게 찾아보기!',
+      value: 'P',
+    },
+  },
   {
     id: 19,
     dimension: 'J/P',
