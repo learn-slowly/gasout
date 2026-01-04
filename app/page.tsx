@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose } from "@/components/ui/drawer";
+import { BarChart3, Filter, Newspaper, Map as MapIcon, Database } from "lucide-react";
 
 /**
  * IntegratedGasMap 컴포넌트를 동적으로 로드합니다.
@@ -59,6 +61,11 @@ export default function Home() {
     powerPlant: 0,
     total: 0
   });
+
+  // Mobile Drawer Control
+  const [activeDrawer, setActiveDrawer] = useState<'stats' | 'filter' | 'news' | null>(null);
+
+
 
   /**
    * HTML 엔티티(예: &amp;, &lt;)를 일반 문자로 변환합니다.
@@ -393,12 +400,12 @@ export default function Home() {
 
 
       {/* 메인 컨텐츠 */}
-      <main className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+      <main className="p-0 lg:p-6 lg: lg:p-8 max-w-[1600px] h-full lg:mx-auto space-y-0 lg:space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-8 h-full">
           {/* 지도 섹션 - 메인 */}
-          <div className="lg:col-span-9 flex flex-col gap-4 animate-fade-in-up">
-            <Card className="h-[60vh] lg:h-[calc(100vh-10rem)] overflow-hidden rounded-3xl border-0 shadow-2xl shadow-slate-900/5 glass-card ring-1 ring-slate-900/5 transition-all duration-500">
-              <CardHeader className="px-6 py-4 border-b border-slate-100 bg-white/50 backdrop-blur-sm">
+          <div className="col-span-1 lg:col-span-9 flex flex-col gap-4 animate-fade-in-up h-[calc(100vh-theme(spacing.24))] lg:h-auto">
+            <Card className="h-full lg:h-[calc(100vh-10rem)] overflow-hidden rounded-none lg:rounded-3xl border-0 lg:border shadow-none lg:shadow-2xl shadow-slate-900/5 glass-card lg:ring-1 ring-slate-900/5 transition-all duration-500">
+              <CardHeader className="hidden lg:block px-6 py-4 border-b border-slate-100 bg-white/50 backdrop-blur-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
@@ -441,8 +448,8 @@ export default function Home() {
                     </div>
                   )}
                 </div>
-                {/* 지도 컨트롤 - 플로팅 버튼 스타일 */}
-                <div className="absolute top-4 right-4 z-[400]">
+                {/* 지도 컨트롤 - 플로팅 버튼 스타일 (Desktop Only for News) */}
+                <div className="absolute top-4 right-4 z-[400] hidden lg:block">
                   <button
                     onClick={() => {
                       setShowAllNews(!showAllNews);
@@ -462,8 +469,10 @@ export default function Home() {
             </Card>
           </div>
 
-          {/* 사이드바 */}
-          <div className="lg:col-span-3 space-y-6 h-full overflow-y-auto pr-1 custom-scrollbar">
+
+
+          {/* 사이드바 - 데스크톱 전용 */}
+          <div className="hidden lg:block lg:col-span-3 space-y-6 h-full overflow-y-auto pr-1 custom-scrollbar">
             {/* 통계 카드 */}
             <Card className="border-0 shadow-lg shadow-slate-900/5 glass-card ring-1 ring-slate-900/5 rounded-2xl overflow-hidden animate-fade-in-up delay-100 hover-lift">
               <CardHeader className="pb-3 border-b border-slate-100 bg-slate-50/50">
@@ -756,244 +765,397 @@ export default function Home() {
         </div>
 
         {/* 필터링된 시설 목록 */}
-        {(filteredPlants.length > 0 || filteredTerminals.length > 0) && (
-          <div className="mt-8 animate-fade-in-up delay-500">
-            <Card className="border-0 shadow-lg shadow-slate-900/5 glass-card ring-1 ring-slate-900/5 rounded-2xl overflow-hidden">
-              <CardHeader className="border-b border-slate-100 bg-white/50 backdrop-blur-sm">
-                <CardTitle className="text-base font-bold text-slate-800 flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-slate-900"></div>
-                  필터링된 시설 목록 <span className="text-slate-400 font-normal text-sm ml-1">({filteredPlants.length + filteredTerminals.length}개)</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 bg-slate-50/50">
-                <div className="space-y-8">
-                  {/* 발전소 목록 */}
-                  {showPlants && filteredPlants.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-                        <span className="w-1 h-4 bg-slate-900 rounded-full"></span>
-                        발전소 ({filteredPlants.length}개)
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
-                        {filteredPlants.map((plant) => {
-                          const isComplex = plant.type === '복합발전';
-                          return (
-                            <div
-                              key={plant.id}
-                              className="group bg-white border border-slate-200 rounded-xl p-4 hover:shadow-md hover:border-slate-300 transition-all duration-200 overflow-hidden w-full max-w-full"
-                            >
-                              <div className="flex items-start justify-between mb-3 gap-2 min-w-0 w-full max-w-full">
-                                <h4 className="font-bold text-sm text-slate-900 group-hover:text-blue-700 transition-colors break-words overflow-wrap-anywhere flex-1 min-w-0">{plant.plant_name}</h4>
-                                <span className={`text-[10px] px-2 py-1 rounded-full font-medium flex-shrink-0 whitespace-nowrap ${isComplex ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-600'
-                                  }`}>
-                                  {plant.type}
-                                </span>
-                              </div>
-                              <div className="text-xs text-slate-500 space-y-1.5 w-full max-w-full">
-                                <div className="flex justify-between gap-2 min-w-0 w-full max-w-full">
-                                  <span className="text-slate-400 flex-shrink-0">소유주</span>
-                                  <span className="font-medium text-slate-700 break-words overflow-wrap-anywhere text-right min-w-0 flex-1">{plant.owner}</span>
-                                </div>
-                                <div className="flex justify-between gap-2 min-w-0 w-full max-w-full">
-                                  <span className="text-slate-400 flex-shrink-0">용량</span>
-                                  <span className="font-medium text-slate-900 break-words overflow-wrap-anywhere text-right">{plant.capacity_mw?.toLocaleString()} MW</span>
-                                </div>
-                                {plant.status && (
-                                  <div className="flex justify-between items-center gap-2">
-                                    <span className="text-slate-400 flex-shrink-0">상태</span>
-                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0 whitespace-nowrap ${plant.status === '운영' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
-                                      plant.status === '건설' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
-                                        'bg-blue-50 text-blue-700 border border-blue-100'
-                                      }`}>
-                                      {plant.status}
-                                    </span>
-                                  </div>
-                                )}
-                                {plant.location && (
-                                  <div className="flex justify-between pt-2 border-t border-slate-100 mt-2 gap-2 min-w-0 w-full max-w-full">
-                                    <span className="text-slate-400 flex-shrink-0">위치</span>
-                                    <span className="font-medium text-slate-600 break-words overflow-wrap-anywhere text-right min-w-0 flex-1" title={plant.location}>{plant.location}</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 터미널 목록 */}
-                  {showTerminals && filteredTerminals.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-                        <span className="w-1 h-4 bg-slate-900 rounded-full"></span>
-                        터미널 ({filteredTerminals.length}개)
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
-                        {filteredTerminals.map((terminal) => {
-                          const isKogas = terminal.category === '가스공사';
-                          return (
-                            <div
-                              key={terminal.id}
-                              className="group bg-white border border-slate-200 rounded-xl p-4 hover:shadow-md hover:border-slate-300 transition-all duration-200 overflow-hidden"
-                            >
-                              <div className="flex items-start justify-between mb-3 gap-2 min-w-0">
-                                <h4 className="font-bold text-sm text-slate-900 group-hover:text-blue-700 transition-colors break-words flex-1 min-w-0 overflow-wrap-anywhere">{terminal.terminal_name}</h4>
-                                <span className={`text-[10px] px-2 py-1 rounded-full font-medium flex-shrink-0 whitespace-nowrap ${isKogas ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-orange-50 text-orange-700 border border-orange-100'
-                                  }`}>
-                                  {terminal.category}
-                                </span>
-                              </div>
-                              <div className="text-xs text-slate-500 space-y-1.5">
-                                <div className="flex justify-between gap-2 min-w-0">
-                                  <span className="text-slate-400 flex-shrink-0">소유주</span>
-                                  <span className="font-medium text-slate-700 break-words text-right min-w-0 overflow-wrap-anywhere flex-1">{terminal.owner}</span>
-                                </div>
-                                {terminal.capacity_kl && (
-                                  <div className="flex justify-between gap-2 min-w-0">
-                                    <span className="text-slate-400 flex-shrink-0">저장용량</span>
-                                    <span className="font-medium text-slate-900 break-words text-right overflow-wrap-anywhere">{terminal.capacity_kl.toLocaleString()} <span className="text-slate-400 font-normal">만kl</span></span>
-                                  </div>
-                                )}
-                                {terminal.tank_number && (
-                                  <div className="flex justify-between gap-2 min-w-0">
-                                    <span className="text-slate-400 flex-shrink-0">탱크</span>
-                                    <span className="font-medium text-slate-700 break-words text-right overflow-wrap-anywhere">{terminal.tank_number}호기</span>
-                                  </div>
-                                )}
-                                {terminal.status && (
-                                  <div className="flex justify-between items-center gap-2">
-                                    <span className="text-slate-400 flex-shrink-0">상태</span>
-                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0 whitespace-nowrap ${terminal.status === '운영' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
-                                      terminal.status === '건설' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
-                                        'bg-blue-50 text-blue-700 border border-blue-100'
-                                      }`}>
-                                      {terminal.status}
-                                    </span>
-                                  </div>
-                                )}
-                                {terminal.location && (
-                                  <div className="flex justify-between pt-2 border-t border-slate-100 mt-2 gap-2 min-w-0">
-                                    <span className="text-slate-400 flex-shrink-0">위치</span>
-                                    <span className="font-medium text-slate-600 break-words text-right min-w-0 overflow-wrap-anywhere flex-1" title={terminal.location}>{terminal.location}</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* 뉴스 패널 */}
-        {showAllNews && (
-          <div className="mt-8 animate-fade-in-up delay-500">
-            <Card className="border-0 shadow-lg shadow-slate-900/5 glass-card ring-1 ring-slate-900/5 rounded-2xl overflow-hidden">
-              <CardHeader className="border-b border-slate-100 bg-white/50 backdrop-blur-sm">
-                <div className="flex items-center justify-between">
+        {
+          (filteredPlants.length > 0 || filteredTerminals.length > 0) && (
+            <div className="mt-8 animate-fade-in-up delay-500">
+              <Card className="border-0 shadow-lg shadow-slate-900/5 glass-card ring-1 ring-slate-900/5 rounded-2xl overflow-hidden">
+                <CardHeader className="border-b border-slate-100 bg-white/50 backdrop-blur-sm">
                   <CardTitle className="text-base font-bold text-slate-800 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                    </svg>
-                    관련 뉴스
+                    <div className="h-2 w-2 rounded-full bg-slate-900"></div>
+                    필터링된 시설 목록 <span className="text-slate-400 font-normal text-sm ml-1">({filteredPlants.length + filteredTerminals.length}개)</span>
                   </CardTitle>
-                  <div className="flex gap-2">
-                    <Select
-                      value={newsFilter.locationType || 'all'}
-                      onValueChange={(value) => setNewsFilter(prev => ({
-                        ...prev,
-                        locationType: value === 'all' ? undefined : value as any
-                      }))}
-                    >
-                      <SelectTrigger className="w-32 h-9 text-xs bg-white border-slate-200 focus:ring-slate-900">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">전체 보기</SelectItem>
-                        <SelectItem value="national">전국 뉴스</SelectItem>
-                        <SelectItem value="regional">지역 뉴스</SelectItem>
-                        <SelectItem value="power_plant">발전소 뉴스</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowAllNews(false)}
-                      className="h-9 border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                    >
-                      닫기
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0 bg-slate-50/50">
-                {loadingNews ? (
-                  <div className="flex flex-col items-center justify-center py-12 gap-3">
-                    <div className="animate-spin rounded-full h-8 w-8 border-4 border-slate-200 border-t-slate-600"></div>
-                    <span className="text-sm font-medium text-slate-500">뉴스를 불러오는 중...</span>
-                  </div>
-                ) : allNews.length === 0 ? (
-                  <div className="text-center text-slate-500 py-12">
-                    <p className="text-sm">표시할 뉴스가 없습니다.</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-slate-200 max-h-[600px] overflow-y-auto custom-scrollbar">
-                    {allNews.map((news) => (
-                      <div key={news.id} className="bg-white p-5 hover:bg-slate-50 transition-colors group">
-                        <div className="flex flex-col h-full">
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className={`text-[10px] px-2 py-1 rounded-full font-medium ${news.location_type === 'national' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
-                              news.location_type === 'regional' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
-                                'bg-purple-50 text-purple-700 border border-purple-100'
-                              }`}>
-                              {news.location_type === 'national' ? '전국' :
-                                news.location_type === 'regional' ? '지역' : '발전소'}
-                            </span>
-                            <span className="text-xs text-slate-400">
-                              {new Date(news.published_at).toLocaleDateString('ko-KR')}
-                            </span>
-                          </div>
-                          <h4 className="font-bold text-sm text-slate-900 mb-2 line-clamp-2 group-hover:text-blue-700 transition-colors break-words">
-                            {decodeHtmlEntities(news.title)}
-                          </h4>
-                          <p className="text-xs text-slate-500 line-clamp-3 mb-4 flex-1 leading-relaxed break-words">
-                            {stripHtmlTags(decodeHtmlEntities(news.content || '')).substring(0, 150)}...
-                          </p>
-                          <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-100 gap-2">
-                            {news.si_do && news.si_gun_gu ? (
-                              <div className="text-xs text-slate-500 flex items-center gap-1 break-words min-w-0">
-                                <span className="flex-shrink-0">📍</span> <span className="break-words">{news.si_do} {news.si_gun_gu}</span>
+                </CardHeader>
+                <CardContent className="p-6 bg-slate-50/50">
+                  <div className="space-y-8">
+                    {/* 발전소 목록 */}
+                    {showPlants && filteredPlants.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+                          <span className="w-1 h-4 bg-slate-900 rounded-full"></span>
+                          발전소 ({filteredPlants.length}개)
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
+                          {filteredPlants.map((plant) => {
+                            const isComplex = plant.type === '복합발전';
+                            return (
+                              <div
+                                key={plant.id}
+                                className="group bg-white border border-slate-200 rounded-xl p-4 hover:shadow-md hover:border-slate-300 transition-all duration-200 overflow-hidden w-full max-w-full"
+                              >
+                                <div className="flex items-start justify-between mb-3 gap-2 min-w-0 w-full max-w-full">
+                                  <h4 className="font-bold text-sm text-slate-900 group-hover:text-blue-700 transition-colors break-words overflow-wrap-anywhere flex-1 min-w-0">{plant.plant_name}</h4>
+                                  <span className={`text-[10px] px-2 py-1 rounded-full font-medium flex-shrink-0 whitespace-nowrap ${isComplex ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-600'
+                                    }`}>
+                                    {plant.type}
+                                  </span>
+                                </div>
+                                <div className="text-xs text-slate-500 space-y-1.5 w-full max-w-full">
+                                  <div className="flex justify-between gap-2 min-w-0 w-full max-w-full">
+                                    <span className="text-slate-400 flex-shrink-0">소유주</span>
+                                    <span className="font-medium text-slate-700 break-words overflow-wrap-anywhere text-right min-w-0 flex-1">{plant.owner}</span>
+                                  </div>
+                                  <div className="flex justify-between gap-2 min-w-0 w-full max-w-full">
+                                    <span className="text-slate-400 flex-shrink-0">용량</span>
+                                    <span className="font-medium text-slate-900 break-words overflow-wrap-anywhere text-right">{plant.capacity_mw?.toLocaleString()} MW</span>
+                                  </div>
+                                  {plant.status && (
+                                    <div className="flex justify-between items-center gap-2">
+                                      <span className="text-slate-400 flex-shrink-0">상태</span>
+                                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0 whitespace-nowrap ${plant.status === '운영' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                                        plant.status === '건설' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
+                                          'bg-blue-50 text-blue-700 border border-blue-100'
+                                        }`}>
+                                        {plant.status}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {plant.location && (
+                                    <div className="flex justify-between pt-2 border-t border-slate-100 mt-2 gap-2 min-w-0 w-full max-w-full">
+                                      <span className="text-slate-400 flex-shrink-0">위치</span>
+                                      <span className="font-medium text-slate-600 break-words overflow-wrap-anywhere text-right min-w-0 flex-1" title={plant.location}>{plant.location}</span>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                            ) : (
-                              <div></div>
-                            )}
-                            <button
-                              onClick={() => window.open(news.url, '_blank')}
-                              className="text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center gap-1 transition-colors"
-                            >
-                              원문 보기
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                              </svg>
-                            </button>
-                          </div>
+                            );
+                          })}
                         </div>
                       </div>
-                    ))}
+                    )}
+
+                    {/* 터미널 목록 */}
+                    {showTerminals && filteredTerminals.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+                          <span className="w-1 h-4 bg-slate-900 rounded-full"></span>
+                          터미널 ({filteredTerminals.length}개)
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
+                          {filteredTerminals.map((terminal) => {
+                            const isKogas = terminal.category === '가스공사';
+                            return (
+                              <div
+                                key={terminal.id}
+                                className="group bg-white border border-slate-200 rounded-xl p-4 hover:shadow-md hover:border-slate-300 transition-all duration-200 overflow-hidden"
+                              >
+                                <div className="flex items-start justify-between mb-3 gap-2 min-w-0">
+                                  <h4 className="font-bold text-sm text-slate-900 group-hover:text-blue-700 transition-colors break-words flex-1 min-w-0 overflow-wrap-anywhere">{terminal.terminal_name}</h4>
+                                  <span className={`text-[10px] px-2 py-1 rounded-full font-medium flex-shrink-0 whitespace-nowrap ${isKogas ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-orange-50 text-orange-700 border border-orange-100'
+                                    }`}>
+                                    {terminal.category}
+                                  </span>
+                                </div>
+                                <div className="text-xs text-slate-500 space-y-1.5">
+                                  <div className="flex justify-between gap-2 min-w-0">
+                                    <span className="text-slate-400 flex-shrink-0">소유주</span>
+                                    <span className="font-medium text-slate-700 break-words text-right min-w-0 overflow-wrap-anywhere flex-1">{terminal.owner}</span>
+                                  </div>
+                                  {terminal.capacity_kl && (
+                                    <div className="flex justify-between gap-2 min-w-0">
+                                      <span className="text-slate-400 flex-shrink-0">저장용량</span>
+                                      <span className="font-medium text-slate-900 break-words text-right overflow-wrap-anywhere">{terminal.capacity_kl.toLocaleString()} <span className="text-slate-400 font-normal">만kl</span></span>
+                                    </div>
+                                  )}
+                                  {terminal.tank_number && (
+                                    <div className="flex justify-between gap-2 min-w-0">
+                                      <span className="text-slate-400 flex-shrink-0">탱크</span>
+                                      <span className="font-medium text-slate-700 break-words text-right overflow-wrap-anywhere">{terminal.tank_number}호기</span>
+                                    </div>
+                                  )}
+                                  {terminal.status && (
+                                    <div className="flex justify-between items-center gap-2">
+                                      <span className="text-slate-400 flex-shrink-0">상태</span>
+                                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0 whitespace-nowrap ${terminal.status === '운영' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                                        terminal.status === '건설' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
+                                          'bg-blue-50 text-blue-700 border border-blue-100'
+                                        }`}>
+                                        {terminal.status}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {terminal.location && (
+                                    <div className="flex justify-between pt-2 border-t border-slate-100 mt-2 gap-2 min-w-0">
+                                      <span className="text-slate-400 flex-shrink-0">위치</span>
+                                      <span className="font-medium text-slate-600 break-words text-right min-w-0 overflow-wrap-anywhere flex-1" title={terminal.location}>{terminal.location}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
-      </main>
-    </div>
+                </CardContent>
+              </Card>
+            </div>
+          )
+        }
+
+        {/* 뉴스 패널 */}
+        {
+          showAllNews && (
+            <div className="mt-8 animate-fade-in-up delay-500">
+              <Card className="border-0 shadow-lg shadow-slate-900/5 glass-card ring-1 ring-slate-900/5 rounded-2xl overflow-hidden">
+                <CardHeader className="border-b border-slate-100 bg-white/50 backdrop-blur-sm">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base font-bold text-slate-800 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                      </svg>
+                      관련 뉴스
+                    </CardTitle>
+                    <div className="flex gap-2">
+                      <Select
+                        value={newsFilter.locationType || 'all'}
+                        onValueChange={(value) => setNewsFilter(prev => ({
+                          ...prev,
+                          locationType: value === 'all' ? undefined : value as any
+                        }))}
+                      >
+                        <SelectTrigger className="w-32 h-9 text-xs bg-white border-slate-200 focus:ring-slate-900">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">전체 보기</SelectItem>
+                          <SelectItem value="national">전국 뉴스</SelectItem>
+                          <SelectItem value="regional">지역 뉴스</SelectItem>
+                          <SelectItem value="power_plant">발전소 뉴스</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowAllNews(false)}
+                        className="h-9 border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      >
+                        닫기
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0 bg-slate-50/50">
+                  {loadingNews ? (
+                    <div className="flex flex-col items-center justify-center py-12 gap-3">
+                      <div className="animate-spin rounded-full h-8 w-8 border-4 border-slate-200 border-t-slate-600"></div>
+                      <span className="text-sm font-medium text-slate-500">뉴스를 불러오는 중...</span>
+                    </div>
+                  ) : allNews.length === 0 ? (
+                    <div className="text-center text-slate-500 py-12">
+                      <p className="text-sm">표시할 뉴스가 없습니다.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-slate-200 max-h-[600px] overflow-y-auto custom-scrollbar">
+                      {allNews.map((news) => (
+                        <div key={news.id} className="bg-white p-5 hover:bg-slate-50 transition-colors group">
+                          <div className="flex flex-col h-full">
+                            <div className="flex items-center gap-2 mb-3">
+                              <span className={`text-[10px] px-2 py-1 rounded-full font-medium ${news.location_type === 'national' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
+                                news.location_type === 'regional' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                                  'bg-purple-50 text-purple-700 border border-purple-100'
+                                }`}>
+                                {news.location_type === 'national' ? '전국' :
+                                  news.location_type === 'regional' ? '지역' : '발전소'}
+                              </span>
+                              <span className="text-xs text-slate-400">
+                                {new Date(news.published_at).toLocaleDateString('ko-KR')}
+                              </span>
+                            </div>
+                            <h4 className="font-bold text-sm text-slate-900 mb-2 line-clamp-2 group-hover:text-blue-700 transition-colors break-words">
+                              {decodeHtmlEntities(news.title)}
+                            </h4>
+                            <p className="text-xs text-slate-500 line-clamp-3 mb-4 flex-1 leading-relaxed break-words">
+                              {stripHtmlTags(decodeHtmlEntities(news.content || '')).substring(0, 150)}...
+                            </p>
+                            <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-100 gap-2">
+                              {news.si_do && news.si_gun_gu ? (
+                                <div className="text-xs text-slate-500 flex items-center gap-1 break-words min-w-0">
+                                  <span className="flex-shrink-0">📍</span> <span className="break-words">{news.si_do} {news.si_gun_gu}</span>
+                                </div>
+                              ) : (
+                                <div></div>
+                              )}
+                              <button
+                                onClick={() => window.open(news.url, '_blank')}
+                                className="text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center gap-1 transition-colors"
+                              >
+                                원문 보기
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )
+        }
+
+        {/* Mobile Floating Bottom Bar */}
+        <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[50] flex items-center gap-3 p-1.5 bg-white/90 backdrop-blur-md rounded-full shadow-2xl ring-1 ring-slate-200 border border-slate-100">
+          <Button
+            variant={activeDrawer === 'stats' ? 'default' : 'ghost'}
+            size="icon"
+            className="rounded-full w-10 h-10"
+            onClick={() => setActiveDrawer('stats')}
+          >
+            <BarChart3 className="w-5 h-5" />
+          </Button>
+          <div className="w-px h-4 bg-slate-200" />
+          <Button
+            variant={activeDrawer === 'filter' ? 'default' : 'ghost'}
+            size="icon"
+            className="rounded-full w-10 h-10"
+            onClick={() => setActiveDrawer('filter')}
+          >
+            <Filter className="w-5 h-5" />
+          </Button>
+          <div className="w-px h-4 bg-slate-200" />
+          <Button
+            variant={activeDrawer === 'news' ? 'default' : 'ghost'}
+            size="icon"
+            className="rounded-full w-10 h-10"
+            onClick={() => setActiveDrawer('news')}
+          >
+            <Newspaper className="w-5 h-5" />
+          </Button>
+          {(filteredPlants.length > 0 || filteredTerminals.length > 0) && (
+            <>
+              <div className="w-px h-4 bg-slate-200" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full w-10 h-10 relative"
+                onClick={() => {/* TODO: Show List */ }}
+              >
+                <div className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                <Database className="w-5 h-5" />
+              </Button>
+            </>
+          )}
+        </div>
+
+        {/* Mobile Drawers */}
+        <Drawer open={activeDrawer === 'stats'} onOpenChange={(open) => !open && setActiveDrawer(null)}>
+          <DrawerContent className="pb-safe">
+            <DrawerHeader className="text-left">
+              <DrawerTitle>전체 현황</DrawerTitle>
+              <DrawerDescription>등록된 발전소 및 터미널 통계입니다.</DrawerDescription>
+            </DrawerHeader>
+            <div className="p-4 space-y-4">
+              <div className="flex justify-between items-baseline">
+                <span className="text-sm text-slate-500">총 등록 시설</span>
+                <span className="text-2xl font-bold text-slate-900">{stats.total}<span className="text-sm font-normal text-slate-400 ml-1">개</span></span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                  <div className="text-xs text-slate-500 mb-1">발전소</div>
+                  <div className="text-xl font-bold text-slate-900">{stats.plants.total}</div>
+                  <div className="text-[10px] text-slate-400 mt-1">{stats.plants.totalCapacity.toLocaleString()} MW</div>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                  <div className="text-xs text-slate-500 mb-1">터미널</div>
+                  <div className="text-xl font-bold text-slate-900">{stats.terminals.total}</div>
+                  <div className="text-[10px] text-slate-400 mt-1">{stats.terminals.totalCapacity.toLocaleString()} kL</div>
+                </div>
+              </div>
+            </div>
+            <DrawerFooter>
+              <Button onClick={() => setActiveDrawer(null)} className="w-full">확인</Button>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+
+        <Drawer open={activeDrawer === 'filter'} onOpenChange={(open) => !open && setActiveDrawer(null)}>
+          <DrawerContent className="pb-safe">
+            <DrawerHeader className="text-left">
+              <DrawerTitle>필터 설정</DrawerTitle>
+              <DrawerDescription>지도에 표시할 시설을 선택하세요.</DrawerDescription>
+            </DrawerHeader>
+            <div className="p-4 space-y-6">
+              <div>
+                <label className="text-sm font-semibold text-slate-900 mb-3 block">표시 시설</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer transition-all ${showPlants
+                    ? 'bg-slate-900 border-slate-900 text-white'
+                    : 'bg-white border-slate-200 text-slate-600'
+                    }`}>
+                    <input type="checkbox" checked={showPlants} onChange={(e) => setShowPlants(e.target.checked)} className="hidden" />
+                    <span className="font-semibold">발전소</span>
+                  </label>
+                  <label className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer transition-all ${showTerminals
+                    ? 'bg-slate-900 border-slate-900 text-white'
+                    : 'bg-white border-slate-200 text-slate-600'
+                    }`}>
+                    <input type="checkbox" checked={showTerminals} onChange={(e) => setShowTerminals(e.target.checked)} className="hidden" />
+                    <span className="font-semibold">터미널</span>
+                  </label>
+                </div>
+              </div>
+
+              {showPlants && (
+                <div>
+                  <label className="text-sm font-semibold text-slate-900 mb-2 block">발전소 유형</label>
+                  <Select value={plantTypeFilter} onValueChange={(value) => setPlantTypeFilter(value as any)}>
+                    <SelectTrigger className="w-full h-12 text-base"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체 보기</SelectItem>
+                      <SelectItem value="복합발전">복합발전</SelectItem>
+                      <SelectItem value="열병합발전">열병합발전</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+            <DrawerFooter>
+              <Button onClick={() => setActiveDrawer(null)} className="w-full h-12 text-base">적용하기</Button>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+
+        {/* News Drawer - Simplified for now */}
+        <Drawer open={activeDrawer === 'news'} onOpenChange={(open) => !open && setActiveDrawer(null)}>
+          <DrawerContent className="h-[80vh] pb-safe">
+            <DrawerHeader className="text-left border-b pb-4">
+              <DrawerTitle>뉴스 아카이브</DrawerTitle>
+              <DrawerDescription>관련된 최신 뉴스를 확인하세요.</DrawerDescription>
+            </DrawerHeader>
+            <div className="flex-1 overflow-y-auto p-4">
+              {/* Reuse News Filters Logic Here later or just show list */}
+              <div className="grid gap-3">
+                <Button variant="outline" className="justify-between h-auto py-3" onClick={() => { setNewsFilter({}); setShowAllNews(true); setActiveDrawer(null); }}>
+                  <span>전체 뉴스</span>
+                  <span className="font-bold text-blue-600">{newsStats.total}</span>
+                </Button>
+                <Button variant="outline" className="justify-between h-auto py-3" onClick={() => { setNewsFilter({ locationType: 'national' }); setShowAllNews(true); setActiveDrawer(null); }}>
+                  <span>전국 뉴스</span>
+                  <span className="font-bold text-green-600">{newsStats.national}</span>
+                </Button>
+                <Button variant="outline" className="justify-between h-auto py-3" onClick={() => { setNewsFilter({ locationType: 'regional' }); setShowAllNews(true); setActiveDrawer(null); }}>
+                  <span>지역 뉴스</span>
+                  <span className="font-bold text-orange-600">{newsStats.regional}</span>
+                </Button>
+              </div>
+            </div>
+          </DrawerContent>
+        </Drawer>
+      </main >
+    </div >
   );
 }

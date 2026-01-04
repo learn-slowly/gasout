@@ -116,7 +116,7 @@ export default function AboutPage() {
 
 
       {/* 메인 컨텐츠 */}
-      <main className="max-w-4xl mx-auto p-6 sm:p-8 lg:p-10 animate-fade-in-up">
+      <main className="max-w-4xl mx-auto p-4 sm:p-8 lg:p-10 animate-fade-in-up">
         <div className="space-y-10">
           {/* GasOut이란? */}
           <ScrollAnimate delay={0}>
@@ -127,7 +127,7 @@ export default function AboutPage() {
                   GasOut이란?
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-8 space-y-8 bg-slate-50/30">
+              <CardContent className="p-5 sm:p-8 space-y-6 sm:space-y-8 bg-slate-50/30">
                 <StaggeredFadeIn delay={0}>
                   <p className="text-lg text-slate-700 leading-relaxed font-medium">
                     우리는 경남기후위기비상행동에서 전국의 탈가스 탈 LNG 운동을 고민하고 있는 활동가들입니다.
@@ -202,7 +202,7 @@ export default function AboutPage() {
                   주요 기능
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-8 bg-slate-50/30">
+              <CardContent className="p-5 sm:p-8 bg-slate-50/30">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
                     <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
@@ -258,7 +258,7 @@ export default function AboutPage() {
                   데이터 현황
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-8 bg-slate-50/30">
+              <CardContent className="p-5 sm:p-8 bg-slate-50/30">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                   <div className="bg-white p-6 rounded-xl border border-slate-100 text-center hover:scale-105 transition-transform duration-200">
                     <div className="text-4xl font-black text-slate-900 mb-2">267<span className="text-lg font-normal text-slate-400 ml-1">개</span></div>
@@ -294,7 +294,7 @@ export default function AboutPage() {
                   참여해 주세요
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-8 bg-slate-50/30">
+              <CardContent className="p-5 sm:p-8 bg-slate-50/30">
                 <div className="space-y-8">
                   <p className="text-slate-600 leading-relaxed text-lg">
                     GasOut 프로젝트는 전국의 탈가스 탈 LNG 운동을 위한 정보 플랫폼입니다.

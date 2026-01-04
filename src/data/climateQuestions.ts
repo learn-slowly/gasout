@@ -49,11 +49,11 @@ export const questions: Question[] = [
     dimension: 'E/I',
     question: 'SNS에서 기후위기 소식을 봤을 때?',
     optionA: {
-      text: '댓글로 내 생각을 남기고 친구들과 토론하고 싶어요',
+      text: '댓글로 내 생각을 남기고 친구들과 토론하고 싶어',
       value: 'E',
     },
     optionB: {
-      text: '좋아요/공유만 누르거나, 조용히 더 찾아보고 싶어요',
+      text: '좋아요/공유만 누르거나, 조용히 더 찾아보고 싶어',
       value: 'I',
     },
   },
@@ -62,11 +62,11 @@ export const questions: Question[] = [
     dimension: 'E/I',
     question: '기후 관련 새로운 아이디어가 떠올랐다면?',
     optionA: {
-      text: '바로 주변 사람들에게 말하면서 의견을 들어봐요',
+      text: '바로 주변 사람들에게 말하면서 의견을 들어보자',
       value: 'E',
     },
     optionB: {
-      text: '혼자 충분히 생각해보고 다듬은 후에 공유해요',
+      text: '혼자 충분히 생각해보고 다듬은 후에 공유해',
       value: 'I',
     },
   },
@@ -79,11 +79,11 @@ export const questions: Question[] = [
     dimension: 'S/N',
     question: '기후위기를 들을 때 어떤 설명이 더 와닿나요?',
     optionA: {
-      text: '"우리 동네 온도 30년 동안 몇 도 올랐대" 같은 딱! 보이는 변화',
+      text: '"우리 동네 온도 30년 동안 몇 도 올랐대"',
       value: 'S',
     },
     optionB: {
-      text: '"앞으로 우리는 어떤 미래를 살게 될까?" 같은 큰 그림',
+      text: '"앞으로 우리는 어떤 미래를 살게 될까?"',
       value: 'N',
     },
   },
@@ -92,11 +92,11 @@ export const questions: Question[] = [
     dimension: 'S/N',
     question: 'LNG 발전소가 왜 문제인지 설명할 때?',
     optionA: {
-      text: '"메탄 누출, 탄소 배출, 비용이 이렇게 높아요"',
+      text: '"메탄 누출, 탄소 배출, 비용이 이렇게 높아"',
       value: 'S',
     },
     optionB: {
-      text: '"결국 우리 미래 에너지의 방향을 뒤로 돌리는 거예요"',
+      text: '"결국 우리 미래 에너지의 방향을 뒤로 돌리는거야"',
       value: 'N',
     },
   },
@@ -105,11 +105,11 @@ export const questions: Question[] = [
     dimension: 'S/N',
     question: '기후실천을 제안할 때 어떤 말이 더 자연스럽나요?',
     optionA: {
-      text: '"일회용컵 몇 개를 줄일 수 있어요"처럼 수치·근거 중심',
+      text: '"일회용컵 몇 개를 줄일 수 있어"',
       value: 'S',
     },
     optionB: {
-      text: '"우리 생활을 바꾸는 첫걸음이에요"처럼 의미 중심',
+      text: '"우리 생활을 바꾸는 첫걸음이지"',
       value: 'N',
     },
   },
@@ -118,11 +118,11 @@ export const questions: Question[] = [
     dimension: 'S/N',
     question: '재생에너지 관련 뉴스를 읽을 때?',
     optionA: {
-      text: '"설치 비용이 얼마지? 효율은?" 구체적 수치가 궁금해요',
+      text: '"설치 비용이 얼마지? 효율은?"',
       value: 'S',
     },
     optionB: {
-      text: '"이게 사회를 어떻게 바꿀까?" 큰 변화가 궁금해요',
+      text: '"이게 사회를 어떻게 바꿀까?"',
       value: 'N',
     },
   },
@@ -131,11 +131,11 @@ export const questions: Question[] = [
     dimension: 'S/N',
     question: '친환경 제품을 선택할 때 중요한 건?',
     optionA: {
-      text: '성분, 인증 마크, 실제 사용 후기 같은 확실한 정보',
+      text: '성분, 인증 마크, 실제 사용 후기',
       value: 'S',
     },
     optionB: {
-      text: '이 제품이 추구하는 가치와 철학이 나와 맞는지',
+      text: '이 제품이 추구하는 가치와 철학',
       value: 'N',
     },
   },
@@ -148,11 +148,11 @@ export const questions: Question[] = [
     dimension: 'T/F',
     question: 'LNG 발전소 건설 반대 이유를 묻는다면?',
     optionA: {
-      text: '"재생에너지가 더 싸고 배출량도 적어요"',
+      text: '"재생에너지가 더 싸고 탄소 배출량도 적어"',
       value: 'T',
     },
     optionB: {
-      text: '"주민 건강, 생태계 피해… 이건 우리 삶의 문제예요"',
+      text: '"주민 건강, 생태계 피해… 이건 우리 삶의 문제야"',
       value: 'F',
     },
   },
@@ -174,11 +174,11 @@ export const questions: Question[] = [
     dimension: 'T/F',
     question: '누군가 "환경보다 경제가 더 중요하다"고 말하면?',
     optionA: {
-      text: '"둘이 싸우는 게 아니라 같이 갈 수 있어요"라고 근거로 설득',
+      text: '"환경도 우리가 치뤄야할 비용이야. 둘은 같이 가아해."',
       value: 'T',
     },
     optionB: {
-      text: '"너가 그렇게 느끼는 이유가 있겠지"라고 먼저 마음을 열고 듣기',
+      text: '"네가 그렇게 느끼는 이유가 어떤거야?"',
       value: 'F',
     },
   },
@@ -256,20 +256,20 @@ export const questions: Question[] = [
     dimension: 'J/P',
     question: "한 달 동안 '탄소 다이어트'를 하기로 했다면?",
     optionA: {
-      text: '매일 체크리스트 만들고 실천 일지 작성할 거예요',
+      text: '매일 체크리스트 만들고 실천 일지 작성할 거야',
       value: 'J',
     },
     optionB: {
-      text: '큰 방향만 정하고 그때그때 할 수 있는 걸 해요',
+      text: '큰 방향만 정하고 그때그때 할 수 있는 걸 해',
       value: 'P',
     },
   },
   {
     id: 20,
     dimension: 'J/P',
-    question: 'LNG 반대 서명운동에 참여하게 된다면?',
+    question: '내가 탄소중립 공론장에 참여하게 된다면?',
     optionA: {
-      text: '목표 인원, 기간, 역할을 정하고 계획적으로 진행',
+      text: '인원과 기간을 확인하고 계획적으로 진행',
       value: 'J',
     },
     optionB: {

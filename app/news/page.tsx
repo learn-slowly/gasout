@@ -110,7 +110,7 @@ export default function NewsPage() {
 
 
             {/* 메인 컨텐츠 */}
-            <main className="max-w-7xl mx-auto p-6 sm:p-8 lg:p-10 space-y-8">
+            <main className="max-w-7xl mx-auto p-4 sm:p-8 lg:p-10 space-y-8">
                 <div className="space-y-8">
                     {/* 검색 및 필터 */}
                     {/* 검색 및 필터 */}
