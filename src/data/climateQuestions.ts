@@ -79,7 +79,7 @@ export const questions: Question[] = [
     dimension: 'S/N',
     question: '기후위기를 들을 때 어떤 설명이 더 와닿나요?',
     optionA: {
-      text: '"우리 동네 온도 30년 동안 몇 도 올랐대"',
+      text: '"우리 동네 온도가 30년 동안 몇 도 올랐대"',
       value: 'S',
     },
     optionB: {
@@ -105,7 +105,7 @@ export const questions: Question[] = [
     dimension: 'S/N',
     question: '기후실천을 제안할 때 어떤 말이 더 자연스럽나요?',
     optionA: {
-      text: '"일회용컵 몇 개를 줄일 수 있어"',
+      text: '"이렇게 하면 일회용컵 몇 개를 줄일 수 있어"',
       value: 'S',
     },
     optionB: {
@@ -178,7 +178,7 @@ export const questions: Question[] = [
       value: 'T',
     },
     optionB: {
-      text: '"네가 그렇게 느끼는 이유가 어떤거야?"',
+      text: '"그렇구나. 네가 그렇게 느끼는 이유가 어떤거야?"',
       value: 'F',
     },
   },
