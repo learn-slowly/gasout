@@ -1,5 +1,5 @@
 // 기후시민 MBTI 테스트 유틸리티 함수
-import { MBTIDimension, MBTIType, TestAnswer } from '@/src/types/climateTest';
+import { MBTIDimension, MBTIType, TestAnswer } from '@/types/climateTest';
 
 /**
  * 테스트 응답을 기반으로 MBTI 유형을 계산합니다.

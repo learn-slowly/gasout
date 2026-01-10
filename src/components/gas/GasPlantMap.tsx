@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { supabase } from "@/src/lib/supabase";
-import type { GasPlant } from "@/src/types/gasPlant";
+import { supabase } from "@/lib/supabase";
+import type { GasPlant } from "@/types/gasPlant";
 
 // Leaflet 기본 아이콘 설정
 const fixDefaultIcon = () => {

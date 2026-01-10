@@ -1,5 +1,5 @@
 // 기후시민 MBTI 테스트 결과 데이터
-import { TestResult, MBTIType } from '@/src/types/climateTest';
+import { TestResult, MBTIType } from '@/types/climateTest';
 
 export const testResults: Record<MBTIType, TestResult> = {
   // E 유형 (외향형)

@@ -1,5 +1,5 @@
 // 기후시민 MBTI 테스트 질문 데이터
-import { Question, MiniFact } from '@/src/types/climateTest';
+import { Question, MiniFact } from '@/types/climateTest';
 
 export const questions: Question[] = [
   // ========================================

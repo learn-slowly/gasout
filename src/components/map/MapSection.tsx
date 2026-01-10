@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { supabase } from "@/src/lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 type Marker = { 
   id: string; 
@@ -25,7 +25,7 @@ export default function MapSection({ statusFilter, plantTypeFilter }: Props) {
   const [markers, setMarkers] = useState<Marker[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  const LeafletMap = dynamic(() => import("@/src/components/map/LeafletMap"), {
+  const LeafletMap = dynamic(() => import("@/components/map/LeafletMap"), {
     ssr: false,
     loading: () => (
       <div className="w-full h-[480px] rounded-md border flex items-center justify-center text-sm text-gray-500">

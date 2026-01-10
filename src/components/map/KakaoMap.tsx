@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { loadKakaoSdk } from "@/src/lib/loadKakaoMap";
+import { loadKakaoSdk } from "@/lib/loadKakaoMap";
 
 type Kakao = any;
 
