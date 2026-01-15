@@ -15,7 +15,6 @@ export function useGasData() {
     const [plants, setPlants] = useState<GasPlant[]>([]);
     const [terminals, setTerminals] = useState<GasTerminal[]>([]);
     const [loading, setLoading] = useState(true);
-    const [news, setNews] = useState<any[]>([]);
 
     const [filters, setFilters] = useState<GasDataFilters>({
         showPlants: true,
@@ -33,15 +32,13 @@ export function useGasData() {
                     return;
                 }
 
-                const [plantRes, terminalRes, newsRes] = await Promise.all([
+                const [plantRes, terminalRes] = await Promise.all([
                     supabase.from('gas_plants').select('*').order('plant_name'),
-                    supabase.from('gas_terminals').select('*').order('terminal_name'),
-                    supabase.from('articles').select('*').eq('status', 'approved').order('published_at', { ascending: false }).limit(10)
+                    supabase.from('gas_terminals').select('*').order('terminal_name')
                 ]);
 
                 if (plantRes.data) setPlants(plantRes.data as GasPlant[]);
                 if (terminalRes.data) setTerminals(terminalRes.data as GasTerminal[]);
-                if (newsRes.data) setNews(newsRes.data);
             } catch (error) {
                 console.error('Error loading data:', error);
             } finally {
@@ -69,7 +66,6 @@ export function useGasData() {
         loading,
         filters,
         setFilters,
-        stats,
-        news
+        stats
     };
 }

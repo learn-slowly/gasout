@@ -1,13 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useGasData } from "@/hooks/useGasData"; // We will create this hook
+import { useGasData } from "@/hooks/useGasData";
 import StatsOverlay from "./StatsOverlay";
-import FilterControl from "./FilterControl";
-import NewsFeed from "./NewsFeed";
-import { useState } from "react";
-import type { GasPlant } from "@/types/gasPlant";
-import type { GasTerminal } from "@/types/gasTerminal";
 
 // Dynamic import for Leaflet map
 const IntegratedGasMap = dynamic(() => import("@/components/gas/IntegratedGasMap"), {
@@ -16,19 +11,9 @@ const IntegratedGasMap = dynamic(() => import("@/components/gas/IntegratedGasMap
 });
 
 export default function HeroMap() {
-    // We'll manage state here or lift it up. 
-    // For now, let's duplicate some state logic or assume we will refactor page.tsx to use this.
-    // Actually, let's make this component accept props or use a hook.
-    // Using a hook is cleaner for the refactor.
-
     const {
-        plants,
-        terminals,
         loading,
-        filters,
-        setFilters,
-        stats,
-        news
+        stats
     } = useGasData();
 
     return (
@@ -36,11 +21,11 @@ export default function HeroMap() {
             {/* Background Map */}
             <div className="absolute inset-0 z-0">
                 <IntegratedGasMap
-                    showPlants={filters.showPlants}
-                    showTerminals={filters.showTerminals}
-                    plantTypeFilter={filters.plantType}
-                    terminalCategoryFilter={filters.terminalCategory}
-                    statusFilter={filters.status}
+                    showPlants={true}
+                    showTerminals={true}
+                    plantTypeFilter="all"
+                    terminalCategoryFilter="all"
+                    statusFilter="all"
                     onPlantClick={(plant) => console.log(plant)}
                     onTerminalClick={(terminal) => console.log(terminal)}
                 />
@@ -51,19 +36,6 @@ export default function HeroMap() {
             {/* Overlays */}
             <div className="absolute inset-0 z-10 pointer-events-none">
                 <StatsOverlay stats={stats} isLoading={loading} />
-                <FilterControl
-                    showPlants={filters.showPlants}
-                    setShowPlants={(v) => setFilters(prev => ({ ...prev, showPlants: v }))}
-                    showTerminals={filters.showTerminals}
-                    setShowTerminals={(v) => setFilters(prev => ({ ...prev, showTerminals: v }))}
-                    plantTypeFilter={filters.plantType}
-                    setPlantTypeFilter={(v) => setFilters(prev => ({ ...prev, plantType: v }))}
-                    terminalCategoryFilter={filters.terminalCategory}
-                    setTerminalCategoryFilter={(v) => setFilters(prev => ({ ...prev, terminalCategory: v }))}
-                    statusFilter={filters.status}
-                    setStatusFilter={(v) => setFilters(prev => ({ ...prev, status: v }))}
-                />
-                <NewsFeed initialNews={news} />
             </div>
         </div>
     );
