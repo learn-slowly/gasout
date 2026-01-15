@@ -37,7 +37,7 @@ export default function Header() {
                 className={`fixed top-0 left-0 right-0 transition-all duration-300 ${mobileMenuOpen ? "z-[70]" : "z-50"} ${isScrolled ? "py-3" : "py-5"} ${mobileMenuOpen
                     ? "bg-transparent"
                     : isScrolled
-                        ? "bg-background/80 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20"
+                        ? "bg-slate-950/80 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20"
                         : "bg-transparent"
                     }`}
             >
@@ -160,4 +160,3 @@ export default function Header() {
         </>
     );
 }
-
