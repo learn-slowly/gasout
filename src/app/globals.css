@@ -1,15 +1,11 @@
 @import "tailwindcss";
 
-/* 모바일 최적화 */
 @layer utilities {
-
-  /* 터치 최적화 */
   .touch-manipulation {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Safe area 지원 (iPhone 노치 등) */
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
@@ -18,19 +14,16 @@
     padding-top: env(safe-area-inset-top);
   }
 
-  /* 스크롤 최적화 */
   .smooth-scroll {
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
   }
 
-  /* 가로 스크롤 방지 */
   .no-horizontal-scroll {
     overflow-x: hidden;
     max-width: 100vw;
   }
 
-  /* 텍스트 줄바꿈 최적화 */
   .break-words {
     word-break: break-word;
     overflow-wrap: break-word;
@@ -39,14 +32,7 @@
     max-width: 100%;
   }
 
-  /* 더 강력한 줄바꿈 */
-  .overflow-wrap-anywhere {
-    overflow-wrap: anywhere;
-    word-break: break-word;
-    max-width: 100%;
-  }
-
-  /* Leaflet 마커 스타일 보호 */
+  /* Custom Market Styles */
   .custom-gas-plant-marker,
   .custom-gas-terminal-marker {
     display: flex !important;
@@ -58,474 +44,156 @@
   .custom-gas-terminal-marker>div {
     flex-shrink: 0 !important;
   }
+  
+  /* Neon Glow Utilities */
+  .text-glow {
+    text-shadow: 0 0 10px rgba(var(--primary), 0.5), 0 0 20px rgba(var(--primary), 0.3);
+  }
+  
+  .box-glow {
+    box-shadow: 0 0 20px rgba(var(--primary), 0.2), inset 0 0 20px rgba(var(--primary), 0.1);
+  }
 }
 
 @theme {
   --color-primary-50: #f0f9ff;
   --color-primary-100: #e0f2fe;
-  --color-primary-500: #0ea5e9;
-  --color-primary-600: #0284c7;
-  --color-primary-900: #0c4a6e;
-  --color-secondary-50: #f5f3ff;
-  --color-secondary-500: #8b5cf6;
-  --color-secondary-900: #4c1d95;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-900: #1e3a8a;
 }
 
 :root {
-  /* Base Colors - Modern Slate/Blue Theme */
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  /* Midnight Energy Theme (Deep Dark + Neon) */
+  --background: #020617; /* Slate 950 - Update to slightly deeper black-blue if needed */
+  --foreground: #f8fafc; /* Slate 50 */
 
-  /* Card & Surface */
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --popover: #ffffff;
-  --popover-foreground: #0f172a;
-
-  /* Primary Brand Color (Vibrant Blue/Cyan) */
-  --primary: #0f172a;
-  --primary-foreground: #f8fafc;
-
-  /* Secondary (Purple/Indigo Accent) */
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
-
-  /* Muted */
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-
-  /* Accent */
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
-
-  /* Destructive */
-  --destructive: #ef4444;
-  --destructive-foreground: #f8fafc;
-
-  /* Borders & Inputs */
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #0f172a;
-
-  --radius: 1rem;
-  /* More rounded */
-}
-
-.dark {
-  --background: #020617;
-  --foreground: #f8fafc;
-  --card: #0f172a;
+  /* Surface Colors */
+  --card: #0f172a;       /* Slate 900 */
   --card-foreground: #f8fafc;
   --popover: #0f172a;
   --popover-foreground: #f8fafc;
-  --primary: #f8fafc;
-  --primary-foreground: #020617;
-  --secondary: #1e293b;
-  --secondary-foreground: #f8fafc;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
+
+  /* Primary: Electric Blue */
+  --primary: #3b82f6;    /* Blue 500 */
+  --primary-foreground: #ffffff;
+
+  /* Secondary: Neon Mint */
+  --secondary: #10b981;  /* Emerald 500 */
+  --secondary-foreground: #ffffff;
+
+  /* Muted */
+  --muted: #1e293b;      /* Slate 800 */
+  --muted-foreground: #94a3b8; /* Slate 400 */
+
+  /* Accent */
   --accent: #1e293b;
   --accent-foreground: #f8fafc;
-  --destructive: #7f1d1d;
+
+  /* Destructive */
+  --destructive: #ef4444; /* Red 500 */
   --destructive-foreground: #f8fafc;
-  --border: #1e293b;
+
+  /* Borders & Inputs */
+  --border: #1e293b;     /* Slate 800 */
   --input: #1e293b;
-  --ring: #cbd5e1;
+  --ring: #3b82f6;       /* Blue 500 */
+
+  --radius: 1rem;
 }
 
-* {
-  border-color: hsl(var(--border));
-}
-
-* {
-  /* 모든 요소에 기본적으로 최대 너비 제한 */
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-/* Leaflet 마커와 지도 요소는 max-width 제한 제외 */
-.leaflet-container,
-.leaflet-container *,
-.leaflet-marker-icon,
-.leaflet-marker-icon *,
-.leaflet-popup,
-.leaflet-popup *,
-.custom-gas-plant-marker,
-.custom-gas-plant-marker *,
-.custom-gas-terminal-marker,
-.custom-gas-terminal-marker * {
-  max-width: none !important;
-}
-
-html,
-body {
-  overflow-x: hidden;
-  width: 100%;
-  max-width: 100vw;
-  height: 100dvh;
-  /* Mobile viewport height fix */
-}
-
+/* Force Dark Mode Style for consistency */
 body {
   background-color: var(--background);
   color: var(--foreground);
-  background-image:
-    radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
-    radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+  /* Cyberpunk Gradient Background */
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08), transparent 25%), 
+    radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.08), transparent 25%);
   background-attachment: fixed;
-  /* 텍스트 줄바꿈 최적화 - 모바일 강화 */
-  word-break: break-word;
-  overflow-wrap: break-word;
-  hyphens: auto;
 }
 
-/* 모든 텍스트 요소에 강력한 줄바꿈 적용 */
-p,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-span,
-div,
-a,
-label,
-input,
-textarea,
-li,
-td,
-th {
-  word-break: break-word;
-  overflow-wrap: break-word;
-  overflow-wrap: anywhere;
-  /* 더 강력한 줄바꿈 */
-  hyphens: auto;
-  max-width: 100%;
+* {
+  border-color: var(--border);
+  box-sizing: border-box;
 }
 
-/* 모바일에서 더 강력한 줄바꿈 */
-@media (max-width: 768px) {
-
-  p,
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  span,
-  div,
-  a,
-  label,
-  li {
-    word-break: break-word;
-    overflow-wrap: anywhere;
-    hyphens: auto;
-  }
+/* Leaflet Overrides for Dark Theme */
+.leaflet-container {
+  background: #0f172a !important; /* Match card color */
+  font-family: inherit !important;
 }
 
-/* 긴 URL이나 단어가 있는 경우 강제 줄바꿈 */
-a,
-code,
-pre {
-  word-break: break-all;
-  overflow-wrap: anywhere;
-  max-width: 100%;
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #1e293b !important; /* Slate 800 */
+  color: #f8fafc !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* 버튼 텍스트는 줄바꿈 방지 (버튼 레이아웃 유지) */
-button:not([class*="whitespace-normal"]) {
-  white-space: nowrap;
-  max-width: 100%;
+.leaflet-popup-content {
+  margin: 12px !important;
+  line-height: 1.5 !important;
 }
 
-/* 버튼 내부 텍스트는 줄바꿈 허용 (특별한 경우) */
-button.allow-wrap,
-button[class*="break-words"],
-button[class*="whitespace-normal"] {
-  white-space: normal !important;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-}
-
-/* 제목은 적절한 줄바꿈 허용 */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  word-break: break-word;
-  overflow-wrap: break-word;
-  overflow-wrap: anywhere;
-  line-height: 1.2;
-  max-width: 100%;
-}
-
-/* 모바일에서 제목도 더 강력하게 줄바꿈 */
-@media (max-width: 768px) {
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    word-break: break-word;
-    overflow-wrap: anywhere;
-  }
-}
-
-/* Glassmorphism Utilities */
+/* Glassmorphism Refined */
 .glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-}
-
-.glass-dark {
   background: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.08); 
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(15, 23, 42, 0.7);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
-  background: rgba(255, 255, 255, 0.9);
-  transform: translateY(-2px);
-  transition: all 0.3s ease;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(59, 130, 246, 0.3); /* Primary color border on hover */
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.1); /* Slight glow */
 }
 
-/* Safari 호환성을 위한 강력한 SVG 아이콘 크기 제한 */
-svg {
-  max-width: 24px !important;
-  max-height: 24px !important;
-  width: 24px !important;
-  height: 24px !important;
-  display: inline-block !important;
-  vertical-align: middle !important;
-  flex-shrink: 0 !important;
-  overflow: hidden !important;
-  box-sizing: border-box !important;
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-/* 모든 SVG 요소에 강제 크기 제한 */
-* svg {
-  max-width: 24px !important;
-  max-height: 24px !important;
-  width: 24px !important;
-  height: 24px !important;
-  display: inline-block !important;
-  vertical-align: middle !important;
-  flex-shrink: 0 !important;
-  overflow: hidden !important;
-  box-sizing: border-box !important;
+::-webkit-scrollbar-track {
+  background: #020617; 
 }
 
-/* Safari 특화 규칙 */
-@supports (-webkit-appearance: none) {
-  svg {
-    max-width: 24px !important;
-    max-height: 24px !important;
-    width: 24px !important;
-    height: 24px !important;
-    display: inline-block !important;
-    vertical-align: middle !important;
-    flex-shrink: 0 !important;
-    overflow: hidden !important;
-    box-sizing: border-box !important;
-  }
-
-  * svg {
-    max-width: 24px !important;
-    max-height: 24px !important;
-    width: 24px !important;
-    height: 24px !important;
-    display: inline-block !important;
-    vertical-align: middle !important;
-    flex-shrink: 0 !important;
-    overflow: hidden !important;
-    box-sizing: border-box !important;
-  }
+::-webkit-scrollbar-thumb {
+  background: #334155; 
+  border-radius: 4px;
 }
 
-/* 특정 크기 클래스들 */
-.w-3 svg,
-.w-3 {
-  max-width: 12px !important;
-  max-height: 12px !important;
-  width: 12px !important;
-  height: 12px !important;
+::-webkit-scrollbar-thumb:hover {
+  background: #475569; 
 }
 
-.w-4 svg,
-.w-4 {
-  max-width: 16px !important;
-  max-height: 16px !important;
-  width: 16px !important;
-  height: 16px !important;
+/* Animations */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+  50% { opacity: 0.7; box-shadow: 0 0 20px rgba(59, 130, 246, 0.8); }
 }
 
-.w-5 svg,
-.w-5 {
-  max-width: 20px !important;
-  max-height: 20px !important;
-  width: 20px !important;
-  height: 20px !important;
+.animate-pulse-glow {
+  animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-.w-6 svg,
-.w-6 {
-  max-width: 24px !important;
-  max-height: 24px !important;
-  width: 24px !important;
-  height: 24px !important;
+@keyframes slide-up-fade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.w-8 svg,
-.w-8 {
-  max-width: 32px !important;
-  max-height: 32px !important;
-  width: 32px !important;
-  height: 32px !important;
-}
-
-/* 컨테이너 크기 제한 */
-.icon-container {
-  width: 24px !important;
-  height: 24px !important;
-  display: inline-block !important;
-  overflow: hidden !important;
-  box-sizing: border-box !important;
-}
-
-/* Safari에서 SVG가 부모 요소를 벗어나지 않도록 */
-.icon-container svg {
-  max-width: 100% !important;
-  max-height: 100% !important;
-  width: 100% !important;
-  height: 100% !important;
-}
-
-/* Custom Animations */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 20px, 0);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-
-  100% {
-    background-position: 1000px 0;
-  }
-}
-
-@keyframes float {
-  0% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-5px);
-  }
-
-  100% {
-    transform: translateY(0px);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-/* Staggered Delays */
-.delay-100 {
-  animation-delay: 100ms;
-}
-
-.delay-200 {
-  animation-delay: 200ms;
-}
-
-.delay-300 {
-  animation-delay: 300ms;
-}
-
-.delay-400 {
-  animation-delay: 400ms;
-}
-
-.delay-500 {
-  animation-delay: 500ms;
-}
-
-.delay-700 {
-  animation-delay: 700ms;
-}
-
-/* Hover Effects */
-.hover-lift {
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
-}
-
-/* Glass Card Refined */
-.glass-card {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-}
-
-.glass-card:hover {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(255, 255, 255, 0.8);
+.animate-slide-up {
+  animation: slide-up-fade 0.5s ease-out forwards;
 }

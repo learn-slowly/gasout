@@ -3,11 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Zap, Newspaper, Info, Lock, Megaphone, BookOpen, Sparkles } from "lucide-react";
+import { Menu, X, Zap, Newspaper, Info, Lock, Megaphone, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-
-
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -32,11 +30,14 @@ export default function Header() {
 
     return (
         <>
-            <header
+            <motion.header
+                initial={{ y: -100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.5 }}
                 className={`fixed top-0 left-0 right-0 transition-all duration-300 ${mobileMenuOpen ? "z-[70]" : "z-50"} ${isScrolled ? "py-3" : "py-5"} ${mobileMenuOpen
                     ? "bg-transparent"
                     : isScrolled
-                        ? "bg-white backdrop-blur-xl border-b border-slate-200/50 shadow-sm"
+                        ? "bg-background/80 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20"
                         : "bg-transparent"
                     }`}
             >
@@ -44,13 +45,13 @@ export default function Header() {
                     <div className="flex items-center justify-between">
                         {/* Logo */}
                         <Link href="/" className="flex items-center gap-2 group">
-                            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-slate-700 text-white shadow-lg shadow-slate-900/20 transition-transform group-hover:scale-105 group-hover:rotate-3">
+                            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-900 text-white shadow-lg shadow-primary/20 transition-transform group-hover:scale-105 group-hover:rotate-3">
                                 <Zap className="h-6 w-6" />
                                 <div className="absolute inset-0 rounded-xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
                             <div>
-                                <h1 className="text-xl font-bold tracking-tight text-slate-900">GasOut.kr</h1>
-                                <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Now or Never</p>
+                                <h1 className="text-xl font-bold tracking-tight text-foreground text-glow">GasOut.kr</h1>
+                                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Now or Never</p>
                             </div>
                         </Link>
 
@@ -64,18 +65,24 @@ export default function Header() {
                                             variant="ghost"
                                             size="sm"
                                             className={`relative px-4 py-2 h-auto text-sm font-normal transition-all ${isActive
-                                                ? "text-slate-900 bg-slate-100/50"
-                                                : "text-slate-400 hover:text-slate-900 hover:bg-slate-100/50"
+                                                ? "text-primary bg-primary/10 hover:bg-primary/20"
+                                                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                                                 }`}
                                         >
                                             {item.name}
+                                            {isActive && (
+                                                <motion.div
+                                                    layoutId="navbar-active"
+                                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+                                                />
+                                            )}
                                         </Button>
                                     </Link>
                                 );
                             })}
-                            <div className="w-px h-6 bg-slate-200 mx-2" />
+                            <div className="w-px h-6 bg-white/10 mx-2" />
                             <Link href="/admin">
-                                <Button variant="outline" size="sm" className="gap-2 border-slate-200 hover:border-slate-300 hover:bg-white/80">
+                                <Button variant="outline" size="sm" className="gap-2 border-white/10 hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary">
                                     <Lock className="w-3 h-3" />
                                     <span>관리자</span>
                                 </Button>
@@ -88,49 +95,69 @@ export default function Header() {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                                className={`relative z-[70] transition-all duration-300 ${mobileMenuOpen ? "rotate-90 text-slate-900" : ""}`}
+                                className={`relative z-[70] transition-all duration-300 hover:bg-white/5 ${mobileMenuOpen ? "rotate-90 text-primary" : "text-foreground"}`}
                             >
                                 {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                             </Button>
                         </div>
                     </div>
                 </div>
-            </header>
+            </motion.header>
 
             {/* Mobile Menu Overlay */}
-            {mobileMenuOpen && (
-                <div className="fixed inset-0 z-[60] bg-white h-dvh md:hidden flex flex-col pt-24 px-6 animate-in fade-in slide-in-from-top-5 duration-200">
-                    <nav className="flex flex-col gap-4">
-                        {navItems.map((item) => (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                onClick={() => setMobileMenuOpen(false)}
-                                className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${pathname === item.href
-                                    ? "bg-slate-100 text-slate-900 font-bold"
-                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                                    }`}
+            <AnimatePresence>
+                {mobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="fixed inset-0 z-[60] bg-background/95 backdrop-blur-3xl h-dvh md:hidden flex flex-col pt-24 px-6"
+                    >
+                        <nav className="flex flex-col gap-4">
+                            {navItems.map((item, index) => (
+                                <motion.div
+                                    key={item.href}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                >
+                                    <Link
+                                        href={item.href}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${pathname === item.href
+                                            ? "bg-primary/10 text-primary font-bold border border-primary/20"
+                                            : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                                            }`}
+                                    >
+                                        <div className={`p-2 rounded-lg ${pathname === item.href ? "bg-primary/20 text-primary" : "bg-white/5"}`}>
+                                            <item.icon className="w-5 h-5" />
+                                        </div>
+                                        <span className="text-lg">{item.name}</span>
+                                    </Link>
+                                </motion.div>
+                            ))}
+                            <hr className="border-white/10 my-2" />
+                            <motion.div
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.5 }}
                             >
-                                <div className={`p-2 rounded-lg ${pathname === item.href ? "bg-white shadow-sm" : "bg-slate-100"}`}>
-                                    <item.icon className="w-5 h-5" />
-                                </div>
-                                <span className="text-lg">{item.name}</span>
-                            </Link>
-                        ))}
-                        <hr className="border-slate-100 my-2" />
-                        <Link
-                            href="/admin"
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-center gap-4 p-4 rounded-2xl text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                        >
-                            <div className="p-2 rounded-lg bg-slate-100">
-                                <Lock className="w-5 h-5" />
-                            </div>
-                            <span className="text-lg">관리자 로그인</span>
-                        </Link>
-                    </nav>
-                </div>
-            )}
+                                <Link
+                                    href="/admin"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="flex items-center gap-4 p-4 rounded-2xl text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                                >
+                                    <div className="p-2 rounded-lg bg-white/5">
+                                        <Lock className="w-5 h-5" />
+                                    </div>
+                                    <span className="text-lg">관리자 로그인</span>
+                                </Link>
+                            </motion.div>
+                        </nav>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </>
     );
 }
+
