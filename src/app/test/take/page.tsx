@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { questions, miniFacts } from "@/data/climateQuestions";
+import { factDetails } from "@/data/factDetails";
 import { TestAnswer, MiniFact } from "@/types/climateTest";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -196,42 +197,71 @@ export default function TestTakePage() {
   }
 
   if (showMiniFact) {
+    const factDetail = factDetails.find(f => f.id === showMiniFact.id);
+
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-start justify-center pt-20 sm:pt-24 p-4 pb-safe overflow-x-hidden w-full max-w-full">
-        <div className="w-full max-w-2xl overflow-hidden">
-          <Card className="w-full border-0 shadow-2xl overflow-hidden">
-            <CardContent className="p-6 sm:p-8 w-full overflow-hidden">
-              <div className="space-y-5 sm:space-y-6 w-full">
-                <div className="text-center w-full">
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 leading-tight px-2 break-words w-full">
-                    {showMiniFact.title}
-                  </h2>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl animate-in zoom-in-95 duration-300">
+          <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 p-4 sm:p-5 flex justify-between items-center">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
+              <span className="text-2xl">{showMiniFact.title}</span>
+            </h2>
+            <Button
+              onClick={handleCloseMiniFact}
+              variant="ghost"
+              size="icon"
+              className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full h-10 w-10"
+            >
+              ✕
+            </Button>
+          </div>
+
+          <div className="p-5 sm:p-6 space-y-6">
+            <div className="bg-amber-50 border-l-4 border-amber-500 rounded-xl p-5">
+              <p className="text-gray-800 leading-relaxed text-lg font-medium">
+                {renderBoldText(showMiniFact.content)}
+              </p>
+            </div>
+
+            {factDetail && (
+              <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500 delay-150">
+                <div className="flex items-center gap-3 py-2">
+                  <span className="text-4xl">{factDetail.emoji}</span>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">{factDetail.pageTitle}</h3>
+                    <p className="text-gray-600">{factDetail.subtitle}</p>
+                  </div>
                 </div>
-                <div className="bg-amber-50 border-l-4 border-amber-500 rounded-xl p-5 sm:p-6 w-full overflow-hidden">
-                  <p className="text-gray-800 leading-relaxed text-base sm:text-lg font-medium break-words w-full">
-                    {renderBoldText(showMiniFact.content)}
-                  </p>
-                  {showMiniFact.link && (
-                    <a
-                      href={showMiniFact.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-amber-700 hover:text-amber-900 active:text-amber-950 font-semibold text-sm sm:text-base mt-4 inline-block touch-manipulation underline"
-                    >
-                      자세히 보기 → (새 탭)
-                    </a>
+
+                <div className="space-y-6">
+                  {factDetail.sections.slice(0, 3).map((section, idx) => (
+                    <div key={idx} className="space-y-2">
+                      <h4 className="font-bold text-lg text-gray-800">{section.title}</h4>
+                      <div className="text-gray-700 leading-relaxed text-sm sm:text-base">
+                        {section.content}
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* 내용이 더 있으면 표시 */}
+                  {factDetail.sections.length > 3 && (
+                    <p className="text-center text-gray-500 text-sm italic">
+                      ... 더 많은 내용은 '더 알아보기' 페이지에서 확인할 수 있어요 ...
+                    </p>
                   )}
                 </div>
-                <Button
-                  onClick={handleCloseMiniFact}
-                  className="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold min-h-[56px] text-base sm:text-lg rounded-xl touch-manipulation"
-                  size="lg"
-                >
-                  계속하기
-                </Button>
               </div>
-            </CardContent>
-          </Card>
+            )}
+          </div>
+
+          <div className="sticky bottom-0 bg-white border-t border-gray-100 p-4 sm:p-5">
+            <Button
+              onClick={handleCloseMiniFact}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-lg h-14 rounded-xl shadow-lg shadow-green-200"
+            >
+              확인했어요, 다음으로! 👉
+            </Button>
+          </div>
         </div>
       </div>
     );

@@ -1,7 +1,7 @@
 // 기후시민 MBTI 테스트 타입 정의
 
 export type MBTIDimension = 'E' | 'I' | 'S' | 'N' | 'T' | 'F' | 'J' | 'P';
-export type MBTIType = 
+export type MBTIType =
   | 'ENFP' | 'ENFJ' | 'ENTP' | 'ENTJ'
   | 'INFP' | 'INFJ' | 'INTP' | 'INTJ'
   | 'ESFP' | 'ESFJ' | 'ESTP' | 'ESTJ'
@@ -81,5 +81,20 @@ export interface ClimateDeclaration {
   consentPrivacy: boolean;
   consentMarketing: boolean;
   createdAt: string;
+}
+
+export interface Section {
+  title: string;
+  content: React.ReactNode;
+}
+
+export interface FactDetail {
+  id: number;
+  emoji: string;
+  pageTitle: string;
+  subtitle: string;
+  sections: Section[];
+  sources: string[];
+  closingMessage: string;
 }
 
