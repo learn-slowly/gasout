@@ -30,7 +30,7 @@ export default function TestStartPage() {
                         {/* MBTI 테스트 안내 */}
                         <div className="bg-purple-50 rounded-xl p-5 sm:p-6 text-center w-full overflow-hidden">
                             <h3 className="font-semibold text-gray-900 mb-2 text-base sm:text-lg break-words">
-                                🎯 나만의 기후시민 MBTI 테스트로 당신에게 맞는 기후행동 방법을 찾아보세요
+                                🎯 나만의 기후시민 성향 테스트로 당신에게 맞는 기후행동 방법을 찾아보세요
                             </h3>
                         </div>
 

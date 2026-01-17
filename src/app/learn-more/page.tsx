@@ -34,7 +34,7 @@ const factDetails: FactDetail[] = [
         content: (
           <div className="space-y-4">
             <p>
-              LNG(Liquefied Natural Gas, 액화천연가스)는 <strong>천연가스를 영하 162도로 냉각</strong>해서 액체로 만든 거예요. 
+              LNG(Liquefied Natural Gas, 액화천연가스)는 <strong>천연가스를 영하 162도로 냉각</strong>해서 액체로 만든 거예요.
               천연가스의 주성분은 <strong>메탄(CH₄)</strong>이고요.
             </p>
             <p>
@@ -75,7 +75,7 @@ const factDetails: FactDetail[] = [
         content: (
           <div className="space-y-4">
             <p>LNG의 가장 큰 문제는 <strong className="text-red-600">메탄 누출</strong>이에요.</p>
-            
+
             <div className="bg-red-50 rounded-lg p-4">
               <h4 className="font-bold mb-2">📊 메탄의 온실효과</h4>
               <ul className="space-y-1">
@@ -197,12 +197,12 @@ const factDetails: FactDetail[] = [
         content: (
           <div className="space-y-4">
             <p>
-              <strong>좌초자산(Stranded Asset)</strong>은 예상보다 훨씬 빨리 가치가 사라져서 
+              <strong>좌초자산(Stranded Asset)</strong>은 예상보다 훨씬 빨리 가치가 사라져서
               <strong className="text-red-600"> 쓸모없이 방치되는 자산</strong>을 말해요.
             </p>
             <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg">
               <p className="font-medium">
-                🚢 <strong>비유하자면:</strong> 증기선이 한창일 때 거액을 들여 증기선 공장을 지었는데, 
+                🚢 <strong>비유하자면:</strong> 증기선이 한창일 때 거액을 들여 증기선 공장을 지었는데,
                 10년도 안 돼서 디젤선박이 나와버린 격이죠.
               </p>
             </div>
@@ -234,7 +234,7 @@ const factDetails: FactDetail[] = [
             </div>
             <div className="bg-red-50 rounded-lg p-4">
               <p className="font-medium text-red-800">
-                ❓ <strong>이상하죠?</strong> 2050년부터는 화석연료를 쓸 수 없는데, 
+                ❓ <strong>이상하죠?</strong> 2050년부터는 화석연료를 쓸 수 없는데,
                 2055년까지 써야 하는 발전소를 지금 짓는다고요?
               </p>
             </div>
@@ -429,10 +429,10 @@ const factDetails: FactDetail[] = [
         content: (
           <div className="space-y-4">
             <p>
-              <strong className="text-green-600">전 세계적으로 태양광은 이미 가장 저렴한 에너지원</strong>이 되었어요. 
+              <strong className="text-green-600">전 세계적으로 태양광은 이미 가장 저렴한 에너지원</strong>이 되었어요.
               &quot;재생에너지는 비싸다&quot;는 말은 이제 과거의 이야기예요.
             </p>
-            
+
             <div className="bg-green-50 rounded-lg p-4">
               <h4 className="font-bold mb-2">🌍 글로벌 트렌드</h4>
               <ul className="space-y-1 text-sm">
@@ -1113,7 +1113,7 @@ function LearnMoreContent() {
               LNG 발전소 건설을 막아주세요
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/declaration">
+              <Link href="/test">
                 <Button
                   size="lg"
                   className="w-full sm:w-auto bg-white hover:bg-gray-50 text-green-600 font-bold px-8"

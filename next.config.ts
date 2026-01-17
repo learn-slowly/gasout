@@ -32,6 +32,25 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
+  async redirects() {
+    return [
+      {
+        source: '/declaration',
+        destination: '/test',
+        permanent: true,
+      },
+      {
+        source: '/climate-test',
+        destination: '/test',
+        permanent: true,
+      },
+      {
+        source: '/climate-test/declare',
+        destination: '/test/declare',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
