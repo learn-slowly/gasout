@@ -35,7 +35,7 @@ export default function TestTakePage() {
     // 세션 ID 생성 및 준비 완료
     const newSessionId = generateSessionId();
     setSessionId(newSessionId);
-    
+
     // 즉시 준비 완료로 설정
     setTimeout(() => {
       setIsReady(true);
@@ -44,7 +44,7 @@ export default function TestTakePage() {
 
   const handleAnswer = (answer: TestAnswer["answer"]) => {
     if (!currentQuestion) return;
-    
+
     const newAnswer: TestAnswer = {
       questionId: currentQuestion.id,
       answer,
@@ -56,7 +56,7 @@ export default function TestTakePage() {
     // 답변한 질문 번호 (1부터 시작)
     const answeredQuestionNumber = currentQuestionIndex + 1;
     const nextQuestionNumber = answeredQuestionNumber + 1;
-    
+
     console.log(`${answeredQuestionNumber}번째 질문에 답변함`);
 
     // 마지막 질문(20번)이면 결과 페이지로
@@ -78,7 +78,7 @@ export default function TestTakePage() {
       12: 2,  // Q12 후 → miniFact[2]
       15: 3,  // Q15 후 (T/F 끝) → miniFact[3]
     };
-    
+
     if (factMapping[answeredQuestionNumber] !== undefined) {
       const factIndex = factMapping[answeredQuestionNumber];
       console.log(`미니 팩트 ${factIndex + 1} 표시 (${nextQuestionNumber}번 질문 앞)`);
@@ -95,13 +95,13 @@ export default function TestTakePage() {
     try {
       // 클라이언트에서 결과 계산
       const resultType = calculateMBTIType(finalAnswers);
-      
+
       console.log("테스트 완료! 결과 타입:", resultType);
       console.log("세션 ID:", sessionId);
-      
+
       // 결과 페이지로 바로 이동 (새 경로)
       router.push(`/test/result?session=${sessionId}&type=${resultType}`);
-      
+
       // 백그라운드에서 DB 저장 시도 (실패해도 무시)
       const utmParams = getUTMParams();
       fetch("/api/climate-test/save", {
@@ -165,7 +165,7 @@ export default function TestTakePage() {
                   석탄을 LNG로 바꾸는 것은 나쁜 것을 다른 나쁜 것으로 바꾸는 거야.
                 </p>
                 <p className="text-sm sm:text-base text-gray-700 leading-relaxed break-words w-full">
-                  우리가 바라는 에너지 전환은 모두가 참여하는 정의로운 방식으로 친환경 재생에너지 중심의 체계로 이동하는 거야! 
+                  우리가 바라는 에너지 전환은 모두가 참여하는 정의로운 방식으로 친환경 재생에너지 중심의 체계로 이동하는 거야!
                   그 중심에 <strong className="text-green-700">정의로운 에너지 전환</strong>이 있어.
                 </p>
               </div>
@@ -275,7 +275,7 @@ export default function TestTakePage() {
                   {currentQuestionIndex + 1} / {questions.length}
                 </span>
                 <span className="text-xs sm:text-sm font-medium text-gray-600">
-                  {currentQuestion?.dimension || ''} 차원
+                  {/* 차원 표시 삭제 */}
                 </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2.5 sm:h-3">

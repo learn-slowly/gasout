@@ -90,7 +90,7 @@ export const questions: Question[] = [
   {
     id: 7,
     dimension: 'S/N',
-    question: 'LNG 발전소가 왜 문제인지 설명할 때?',
+    question: 'LNG 발전소가 왜 문제인지 설명할 때 당신의 설명방식은?',
     optionA: {
       text: '"메탄 누출, 탄소 배출, 비용이 이렇게 높아"',
       value: 'S',
@@ -116,7 +116,7 @@ export const questions: Question[] = [
   {
     id: 9,
     dimension: 'S/N',
-    question: '재생에너지 관련 뉴스를 읽을 때?',
+    question: '재생에너지 관련 뉴스를 읽을 때 어떤 생각이 먼저 드나요?',
     optionA: {
       text: '"설치 비용이 얼마지? 효율은?"',
       value: 'S',
@@ -146,7 +146,7 @@ export const questions: Question[] = [
   {
     id: 11,
     dimension: 'T/F',
-    question: 'LNG 발전소 건설 반대 이유를 묻는다면?',
+    question: 'LNG 발전소 건설 반대 이유를 묻는다면 당신의 대답ㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌ은?',
     optionA: {
       text: '"재생에너지가 더 싸고 탄소 배출량도 적어"',
       value: 'T',
@@ -172,7 +172,7 @@ export const questions: Question[] = [
   {
     id: 13,
     dimension: 'T/F',
-    question: '누군가 "환경보다 경제가 더 중요하다"고 말하면?',
+    question: '누군가 "환경보다 경제가 더 중요하다"고 말하면 당신의 대답은?',
     optionA: {
       text: '"환경도 우리가 치뤄야할 비용이야. 둘은 같이 가아해."',
       value: 'T',
@@ -185,7 +185,7 @@ export const questions: Question[] = [
   {
     id: 14,
     dimension: 'T/F',
-    question: '기후 캠페인을 평가할 때 중요하게 보는 건?',
+    question: '기후 캠페인을 평가할 때 중요하게 보는 건 어떤건가요?',
     optionA: {
       text: '명확한 목표 달성과 측정 가능한 성과가 있는지',
       value: 'T',
@@ -282,25 +282,25 @@ export const questions: Question[] = [
 export const miniFacts: MiniFact[] = [
   {
     id: 1,
-    title: '💡 알고 가기',
+    title: '💡 한 걸음 더',
     content: "LNG는 '친환경 연료'가 아니라 **화석 연료**입니다!",
     link: '/learn-more?fact=1',
   },
   {
     id: 2,
-    title: '💡 알고 가기',
+    title: '💡 한 걸음 더',
     content: 'LNG 발전소는 **좌초자산**이 될 가능성이 높습니다. 장기적으로 가동률이 낮아지면서 투자 손실이 전기요금과 세금 부담으로 이어질 수 있어요.',
     link: '/learn-more?fact=2',
   },
   {
     id: 3,
-    title: '💡 알고 가기',
+    title: '💡 한 걸음 더',
     content: '재생에너지는 이미 화석연료보다 **더 저렴**해지고 있어요. 에너지 전환은 환경뿐 아니라 경제적으로도 합리적인 선택입니다!',
     link: '/learn-more?fact=3',
   },
   {
     id: 4,
-    title: '💡 알고 가기',
+    title: '💡 한 걸음 더',
     content: '전 세계가 2050 탄소중립을 선언했지만, LNG 발전소는 30~40년 가동되어야 해요. **수학이 안 맞죠?**',
     link: '/learn-more?fact=4',
   },
