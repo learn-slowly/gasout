@@ -146,7 +146,7 @@ export const questions: Question[] = [
   {
     id: 11,
     dimension: 'T/F',
-    question: 'LNG 발전소 건설 반대 이유를 묻는다면 당신의 대답ㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌㅌ은?',
+    question: 'LNG 발전소 건설 반대 이유를 묻는다면 당신의 대답은?',
     optionA: {
       text: '"재생에너지가 더 싸고 탄소 배출량도 적어"',
       value: 'T',
