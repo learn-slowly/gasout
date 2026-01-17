@@ -44,17 +44,17 @@ function ResultContent() {
   // 카카오 SDK 초기화
   useEffect(() => {
     console.log('[Result Page] Attempting to initialize Kakao SDK...');
-    
+
     // SDK 로드를 위해 여러 번 시도
     let attempts = 0;
     const maxAttempts = 10;
-    
+
     const tryInitialize = () => {
       attempts++;
       console.log(`[Result Page] Initialization attempt ${attempts}/${maxAttempts}`);
-      
+
       const success = initKakao();
-      
+
       if (!success && attempts < maxAttempts) {
         setTimeout(tryInitialize, 500);
       } else if (success) {
@@ -63,7 +63,7 @@ function ResultContent() {
         console.error('[Result Page] Failed to initialize Kakao SDK after', maxAttempts, 'attempts');
       }
     };
-    
+
     // 초기 지연 후 시작
     const timer = setTimeout(tryInitialize, 500);
 
@@ -116,18 +116,18 @@ function ResultContent() {
           buttonText: '나도 테스트하기',
           imageUrl: `${window.location.origin}/climate-mbti-og.png`,
         });
-        
+
         // 공유 실패 시 링크 복사로 폴백
         if (!success) {
           navigator.clipboard.writeText(url);
         }
         break;
-        
+
       case "url":
         navigator.clipboard.writeText(url);
         alert("링크가 복사되었습니다!");
         break;
-        
+
       default:
         // 다른 플랫폼은 기본 공유 다이얼로그
         if (navigator.share) {
@@ -151,7 +151,7 @@ function ResultContent() {
   const handleDeclare = () => {
     const type = result?.type || "";
     const sessionId = searchParams.get("session");
-    
+
     // session ID가 있으면 함께 전달
     if (sessionId) {
       router.push(`/test/declare?type=${type}&session=${sessionId}`);
@@ -177,7 +177,7 @@ function ResultContent() {
         <Card className="max-w-2xl w-full">
           <CardContent className="p-6 sm:p-8 text-center">
             <p className="text-gray-600 mb-4 text-sm sm:text-base">결과를 찾을 수 없습니다.</p>
-            <Button 
+            <Button
               onClick={() => router.push("/test")}
               className="min-h-[44px] touch-manipulation"
             >
@@ -200,22 +200,50 @@ function ResultContent() {
             <Badge className="mb-3 sm:mb-4 bg-green-600 text-white text-base sm:text-lg px-4 sm:px-6 py-2 sm:py-3 font-bold">
               {result.type}
             </Badge>
-            
+
             {/* 캐릭터명 */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3 sm:mb-4 leading-tight px-2 break-words w-full">
               {result.typeName}
             </h1>
-            
+
             {/* 인용구 */}
             <div className="bg-green-100 border-l-4 border-green-600 p-4 sm:p-6 rounded-r-lg mb-4">
               <p className="text-lg sm:text-xl text-green-900 font-medium italic leading-relaxed break-words">
                 &ldquo;{result.quote}&rdquo;
               </p>
             </div>
-            
+
             {/* 설명 */}
             <p className="text-base sm:text-lg text-gray-700 leading-relaxed px-2 break-words w-full">
               {result.description}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* 기후시민 선언 CTA */}
+        <Card className="border-0 shadow-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full overflow-hidden">
+          <CardContent className="p-6 sm:p-8 md:p-10 text-center w-full overflow-hidden">
+            <div className="text-4xl sm:text-5xl mb-4">🌱</div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 sm:mb-4 break-words">
+              첫 번째 실천을 시작하세요
+            </h2>
+            <p className="text-base sm:text-lg text-green-50 mb-6 sm:mb-8 leading-relaxed break-words">
+              당신이 할 수 있는 첫 번째 실천은<br />
+              <strong className="text-white text-xl sm:text-2xl">기후시민 선언</strong>입니다
+            </p>
+            <Button
+              onClick={handleDeclare}
+              size="lg"
+              className="w-full bg-white hover:bg-gray-50 active:bg-gray-100 text-green-600 text-base sm:text-lg font-bold py-5 sm:py-6 rounded-xl shadow-lg hover:shadow-xl active:shadow-md transition-all touch-manipulation min-h-[56px] whitespace-normal"
+            >
+              지금 바로 기후시민 선언하기 →
+            </Button>
+            <p className="text-xs sm:text-sm text-green-100 mt-4">
+              {stats?.totalDeclarations ? (
+                <>이미 <strong className="text-white">{stats.totalDeclarations.toLocaleString()}명</strong>이 함께하고 있어요!</>
+              ) : (
+                <>지금 바로 기후시민이 되어주세요!</>
+              )}
             </p>
           </CardContent>
         </Card>
@@ -251,7 +279,7 @@ function ResultContent() {
                 <span>📊</span>
                 <span>함께하는 기후시민</span>
               </h2>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                 {/* 전체 테스트 완료자 */}
                 <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 sm:p-5 text-center border border-blue-100">
@@ -290,8 +318,8 @@ function ResultContent() {
               </div>
 
               <p className="text-sm text-gray-500 text-center mt-4 sm:mt-6">
-                지금까지 <strong className="text-green-600">{stats.totalTests.toLocaleString()}명</strong>이 
-                테스트를 완료했고, <strong className="text-green-600">{stats.totalDeclarations.toLocaleString()}명</strong>이 
+                지금까지 <strong className="text-green-600">{stats.totalTests.toLocaleString()}명</strong>이
+                테스트를 완료했고, <strong className="text-green-600">{stats.totalDeclarations.toLocaleString()}명</strong>이
                 기후시민으로 선언했어요! 🌱
               </p>
             </CardContent>
@@ -434,7 +462,7 @@ function ResultContent() {
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-5 break-words">
               💡 LNG의 진실
             </h2>
-            
+
             {/* 핵심 요약 */}
             <div className="bg-white rounded-xl p-4 sm:p-5 mb-4 sm:mb-5 border border-blue-100">
               <h3 className="font-bold text-gray-900 mb-3 text-base sm:text-lg">핵심 요약</h3>
@@ -482,33 +510,6 @@ function ResultContent() {
           </CardContent>
         </Card>
 
-        {/* 기후시민 선언 CTA */}
-        <Card className="border-0 shadow-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full overflow-hidden">
-          <CardContent className="p-6 sm:p-8 md:p-10 text-center w-full overflow-hidden">
-            <div className="text-4xl sm:text-5xl mb-4">🌱</div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 sm:mb-4 break-words">
-              첫 번째 실천을 시작하세요
-            </h2>
-            <p className="text-base sm:text-lg text-green-50 mb-6 sm:mb-8 leading-relaxed break-words">
-              당신이 할 수 있는 첫 번째 실천은<br />
-              <strong className="text-white text-xl sm:text-2xl">기후시민 선언</strong>입니다
-            </p>
-            <Button
-              onClick={handleDeclare}
-              size="lg"
-              className="w-full bg-white hover:bg-gray-50 active:bg-gray-100 text-green-600 text-base sm:text-lg font-bold py-5 sm:py-6 rounded-xl shadow-lg hover:shadow-xl active:shadow-md transition-all touch-manipulation min-h-[56px] whitespace-normal"
-            >
-              지금 바로 기후시민 선언하기 →
-            </Button>
-            <p className="text-xs sm:text-sm text-green-100 mt-4">
-              {stats?.totalDeclarations ? (
-                <>이미 <strong className="text-white">{stats.totalDeclarations.toLocaleString()}명</strong>이 함께하고 있어요!</>
-              ) : (
-                <>지금 바로 기후시민이 되어주세요!</>
-              )}
-            </p>
-          </CardContent>
-        </Card>
 
         {/* 공유 버튼 */}
         <div className="space-y-3 sm:space-y-4 w-full overflow-hidden">
@@ -521,14 +522,14 @@ function ResultContent() {
             <Button
               onClick={() => handleShare("kakao")}
               variant="outline"
-              className="border-2 min-h-[48px] touch-manipulation text-sm sm:text-base whitespace-normal"
+              className="border-2 min-h-[48px] touch-manipulation text-sm sm:text-base whitespace-normal bg-white text-gray-900 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
             >
               카카오톡 공유
             </Button>
             <Button
               onClick={() => handleShare("url")}
               variant="outline"
-              className="border-2 min-h-[48px] touch-manipulation text-sm sm:text-base whitespace-normal"
+              className="border-2 min-h-[48px] touch-manipulation text-sm sm:text-base whitespace-normal bg-white text-gray-900 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
             >
               링크 복사
             </Button>
