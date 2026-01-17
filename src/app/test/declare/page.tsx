@@ -87,7 +87,7 @@ function DeclareForm() {
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    className="mt-2 h-12 sm:h-14 text-base sm:text-lg touch-manipulation"
+                    className="mt-2 h-12 sm:h-14 text-base sm:text-lg touch-manipulation text-gray-900"
                     inputMode="text"
                   />
                 </div>
@@ -102,7 +102,7 @@ function DeclareForm() {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="mt-2 h-12 sm:h-14 text-base sm:text-lg touch-manipulation"
+                    className="mt-2 h-12 sm:h-14 text-base sm:text-lg touch-manipulation text-gray-900"
                     inputMode="email"
                   />
                 </div>
@@ -117,7 +117,7 @@ function DeclareForm() {
                     onChange={(e) =>
                       setFormData({ ...formData, region: e.target.value })
                     }
-                    className="mt-2 h-12 sm:h-14 text-base sm:text-lg touch-manipulation"
+                    className="mt-2 h-12 sm:h-14 text-base sm:text-lg touch-manipulation text-gray-900"
                     inputMode="text"
                   />
                 </div>
@@ -132,7 +132,7 @@ function DeclareForm() {
                     onChange={(e) =>
                       setFormData({ ...formData, phone: e.target.value })
                     }
-                    className="mt-2 h-12 sm:h-14 text-base sm:text-lg touch-manipulation"
+                    className="mt-2 h-12 sm:h-14 text-base sm:text-lg touch-manipulation text-gray-900"
                     inputMode="tel"
                   />
                 </div>
