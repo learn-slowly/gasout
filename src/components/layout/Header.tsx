@@ -126,7 +126,7 @@ export default function Header() {
                                         onClick={() => setMobileMenuOpen(false)}
                                         className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${pathname === item.href
                                             ? "bg-primary/10 text-primary font-bold border border-primary/20"
-                                            : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                                            : "text-gray-600 hover:bg-black/5 hover:text-gray-900"
                                             }`}
                                     >
                                         <div className={`p-2 rounded-lg ${pathname === item.href ? "bg-primary/20 text-primary" : "bg-white/5"}`}>
@@ -145,7 +145,7 @@ export default function Header() {
                                 <Link
                                     href="/admin"
                                     onClick={() => setMobileMenuOpen(false)}
-                                    className="flex items-center gap-4 p-4 rounded-2xl text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                                    className="flex items-center gap-4 p-4 rounded-2xl text-gray-600 hover:bg-black/5 hover:text-gray-900"
                                 >
                                     <div className="p-2 rounded-lg bg-white/5">
                                         <Lock className="w-5 h-5" />
