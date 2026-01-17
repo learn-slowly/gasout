@@ -78,7 +78,7 @@ function DeclareForm() {
 
               <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
                 <div>
-                  <Label htmlFor="name" className="text-sm sm:text-base">이름 *</Label>
+                  <Label htmlFor="name" className="text-sm sm:text-base font-bold text-gray-900">이름 *</Label>
                   <Input
                     id="name"
                     type="text"
@@ -93,7 +93,7 @@ function DeclareForm() {
                 </div>
 
                 <div>
-                  <Label htmlFor="email" className="text-sm sm:text-base">이메일 *</Label>
+                  <Label htmlFor="email" className="text-sm sm:text-base font-bold text-gray-900">이메일 *</Label>
                   <Input
                     id="email"
                     type="email"
@@ -108,7 +108,7 @@ function DeclareForm() {
                 </div>
 
                 <div>
-                  <Label htmlFor="region" className="text-sm sm:text-base">지역</Label>
+                  <Label htmlFor="region" className="text-sm sm:text-base font-bold text-gray-900">지역</Label>
                   <Input
                     id="region"
                     type="text"
@@ -123,7 +123,7 @@ function DeclareForm() {
                 </div>
 
                 <div>
-                  <Label htmlFor="phone" className="text-sm sm:text-base">전화번호</Label>
+                  <Label htmlFor="phone" className="text-sm sm:text-base font-bold text-gray-900">전화번호</Label>
                   <Input
                     id="phone"
                     type="tel"
