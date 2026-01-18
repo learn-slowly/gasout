@@ -149,8 +149,46 @@ export default function AdminDashboard() {
         success: false,
         message: error.message || 'Geocoding 중 오류 발생',
       });
-    } finally {
       setUploadingGeocode(false);
+    }
+  };
+
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analyzedCount, setAnalyzedCount] = useState(0);
+  const [analyzeResult, setAnalyzeResult] = useState<string | null>(null);
+
+  const handleBulkAnalysis = async () => {
+    setIsAnalyzing(true);
+    setAnalyzedCount(0);
+    setAnalyzeResult(null);
+
+    let totalProcessed = 0;
+
+    try {
+      // 재귀적으로 호출하여 모든 기사 처리
+      const processBatch = async (): Promise<void> => {
+        const response = await fetch('/api/admin/analyze-news', { method: 'POST' });
+        const result = await response.json();
+
+        if (result.processed > 0) {
+          totalProcessed += result.processed;
+          setAnalyzedCount(totalProcessed);
+          // 계속해서 다음 배치 처리
+          await new Promise(r => setTimeout(r, 1000)); // Rate limit 방지용 딜레이
+          return processBatch();
+        } else {
+          // 더 이상 처리할 기사가 없음
+          return;
+        }
+      };
+
+      await processBatch();
+      setAnalyzeResult(`${totalProcessed}개 기사 분석 완료`);
+    } catch (error) {
+      console.error("Analysis failed:", error);
+      setAnalyzeResult("분석 중 오류가 발생했습니다.");
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -315,13 +353,40 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent className="pt-6">
               <Link href="/admin/articles">
-                <Button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-12 shadow-md shadow-indigo-900/20 transition-all">
+                <Button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-12 shadow-md shadow-indigo-900/20 transition-all mb-3">
                   {stats.pendingArticles > 0 ? `${stats.pendingArticles}개 기사 검토하기` : '기사 검토하기'}
                   <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </Button>
               </Link>
+              <div className="pt-2 border-t border-white/5">
+                <Button
+                  variant="outline"
+                  onClick={handleBulkAnalysis}
+                  disabled={isAnalyzing}
+                  className="w-full bg-indigo-500/10 border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/20 hover:text-indigo-200"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {analyzedCount}개 분석 중...
+                    </>
+                  ) : (
+                    <>
+                      <span className="mr-2">🤖</span> AI 일괄 분석 실행
+                    </>
+                  )}
+                </Button>
+                {analyzeResult && (
+                  <div className={`mt-2 text-xs text-center ${analyzeResult.includes("완료") ? "text-green-400" : "text-amber-400"}`}>
+                    {analyzeResult}
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 
