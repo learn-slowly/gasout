@@ -88,8 +88,11 @@ export async function POST() {
             results
         });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Analysis failed:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({
+            error: "Internal Server Error",
+            details: error.message || String(error)
+        }, { status: 500 });
     }
 }
