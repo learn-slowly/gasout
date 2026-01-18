@@ -6,18 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
-import { 
-  CheckCircle, 
-  XCircle, 
-  Eye, 
-  ExternalLink, 
+import {
+  CheckCircle,
+  XCircle,
+  Eye,
+  ExternalLink,
   Search,
   Filter,
   Calendar,
@@ -57,6 +57,9 @@ interface Article {
   power_plant_id?: string;
   latitude?: number;
   longitude?: number;
+  si_do?: string;
+  si_gun_gu?: string;
+  eup_myeon_dong?: string;
   created_at: string;
 }
 
@@ -67,7 +70,7 @@ export default function ArticlesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState<string>("all");
-  
+
   // 편집 모달 상태
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [editForm, setEditForm] = useState({
@@ -81,7 +84,7 @@ export default function ArticlesPage() {
   });
   const [powerPlantSearch, setPowerPlantSearch] = useState('');
   const [filteredPowerPlants, setFilteredPowerPlants] = useState<any[]>([]);
-  
+
   // 발전소 목록 상태
   const [powerPlants, setPowerPlants] = useState<any[]>([]);
   const [loadingPlants, setLoadingPlants] = useState(false);
@@ -102,7 +105,7 @@ export default function ArticlesPage() {
         const decodedTitle = decodeHtmlEntities(article.title);
         const decodedContent = stripHtmlTags(decodeHtmlEntities(article.content));
         return decodedTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-               decodedContent.toLowerCase().includes(searchTerm.toLowerCase());
+          decodedContent.toLowerCase().includes(searchTerm.toLowerCase());
       });
     }
 
@@ -145,7 +148,7 @@ export default function ArticlesPage() {
         .order('name');
 
       if (error) throw error;
-      
+
       // GT/ST 그룹화
       const groupedPlants = groupPowerPlants(data || []);
       setPowerPlants(groupedPlants);
@@ -170,21 +173,21 @@ export default function ArticlesPage() {
       const fuelMatch = plant.fuel_type?.toLowerCase().includes(searchLower);
       const typeMatch = plant.plant_type?.toLowerCase().includes(searchLower);
       const operatorMatch = plant.operator?.toLowerCase().includes(searchLower);
-      
+
       return nameMatch || fuelMatch || typeMatch || operatorMatch;
     });
-    
+
     setFilteredPowerPlants(filtered);
   };
 
   // 발전소 그룹화 함수
   const groupPowerPlants = (plants: any[]) => {
     const grouped: { [key: string]: any } = {};
-    
+
     plants.forEach(plant => {
       // GT/ST 제거한 기본 이름 추출
       const baseName = plant.name.replace(/\s*(GT|ST)$/g, '').trim();
-      
+
       if (!grouped[baseName]) {
         grouped[baseName] = {
           id: plant.id, // 첫 번째 발전소의 ID 사용
@@ -200,7 +203,7 @@ export default function ArticlesPage() {
           originalName: plant.name
         };
       }
-      
+
       // GT/ST 구분 추가
       if (plant.name.includes('GT')) {
         grouped[baseName].hasGT = true;
@@ -211,7 +214,7 @@ export default function ArticlesPage() {
         grouped[baseName].stId = plant.id;
       }
     });
-    
+
     return Object.values(grouped);
   };
 
@@ -225,8 +228,8 @@ export default function ArticlesPage() {
       if (error) throw error;
 
       // 로컬 상태 업데이트
-      setArticles(prev => 
-        prev.map(article => 
+      setArticles(prev =>
+        prev.map(article =>
           article.id === id ? { ...article, status } : article
         )
       );
@@ -247,7 +250,7 @@ export default function ArticlesPage() {
       eup_myeon_dong: article.eup_myeon_dong || '',
       power_plant_id: article.power_plant_id || ''
     });
-    
+
     // 발전소 검색 상태 초기화
     setPowerPlantSearch('');
     setFilteredPowerPlants(powerPlants);
@@ -289,20 +292,20 @@ export default function ArticlesPage() {
       if (error) throw error;
 
       // 로컬 상태 업데이트
-      setArticles(prev => 
-        prev.map(article => 
-          article.id === editingArticle.id 
-            ? { 
-                ...article, 
-                title: editForm.title,
-                content: editForm.content,
-                location_type: editForm.location_type,
-                si_do: editForm.si_do,
-                si_gun_gu: editForm.si_gun_gu,
-                eup_myeon_dong: editForm.eup_myeon_dong,
-                power_plant_id: editForm.power_plant_id,
-                status: 'approved'
-              } 
+      setArticles(prev =>
+        prev.map(article =>
+          article.id === editingArticle.id
+            ? {
+              ...article,
+              title: editForm.title,
+              content: editForm.content,
+              location_type: editForm.location_type,
+              si_do: editForm.si_do,
+              si_gun_gu: editForm.si_gun_gu,
+              eup_myeon_dong: editForm.eup_myeon_dong,
+              power_plant_id: editForm.power_plant_id,
+              status: 'approved'
+            }
             : article
         )
       );
@@ -365,7 +368,12 @@ export default function ArticlesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background Gradients */}
+      <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary/10 via-background to-background pointer-events-none" />
+      <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/20 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-40 -left-20 w-72 h-72 bg-secondary/20 rounded-full blur-[100px] pointer-events-none" />
+
       <style jsx global>{`
         [data-radix-popper-content-wrapper] {
           z-index: 99999 !important;
@@ -373,49 +381,61 @@ export default function ArticlesPage() {
         [data-radix-select-content] {
           z-index: 99999 !important;
           position: fixed !important;
-          background-color: white !important;
-          border: 1px solid #e5e7eb !important;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+          background-color: #1e293b !important;
+          border: 1px solid #334155 !important;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
           border-radius: 6px !important;
+          color: #f8fafc !important;
         }
         [data-radix-select-viewport] {
           z-index: 99999 !important;
-          background-color: white !important;
+          background-color: #1e293b !important;
         }
         [data-radix-select-item] {
-          background-color: white !important;
-          border-bottom: 1px solid #f3f4f6 !important;
+          color: #f8fafc !important;
+          background-color: transparent !important;
+          border-bottom: 1px solid #334155 !important;
         }
-        [data-radix-select-item]:hover {
-          background-color: #f9fafb !important;
+        [data-radix-select-item]:hover, [data-radix-select-item][data-highlighted] {
+          background-color: #334155 !important;
+          color: white !important;
         }
       `}</style>
-      <div className="max-w-7xl mx-auto p-4">
+      <div className="max-w-7xl mx-auto p-4 relative z-10">
         {/* 헤더 */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">기사 관리</h1>
-          <p className="text-gray-600">Inoreader로부터 수집된 기사를 검토하고 승인합니다</p>
+        <div className="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/5 pb-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-indigo-500/20 border border-indigo-500/30 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/10">
+              <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-white tracking-tight text-glow">기사 관리</h1>
+              <p className="text-sm text-slate-400 mt-1">Inoreader로부터 수집된 기사를 검토하고 승인하거나 편집합니다</p>
+            </div>
+          </div>
         </div>
 
         {/* 필터 및 검색 */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-lg">필터 및 검색</CardTitle>
+        <Card className="glass-card mb-6">
+          <CardHeader className="border-b border-white/5 pb-4">
+            <CardTitle className="text-lg text-white">필터 및 검색</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                 <Input
                   placeholder="제목 또는 내용 검색..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 bg-slate-800/50 border-white/10 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-indigo-500/20"
                 />
               </div>
-              
+
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-slate-800/50 border-white/10 text-white focus:ring-indigo-500/20">
                   <SelectValue placeholder="상태 선택" />
                 </SelectTrigger>
                 <SelectContent>
@@ -427,7 +447,7 @@ export default function ArticlesPage() {
               </Select>
 
               <Select value={locationFilter} onValueChange={setLocationFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-slate-800/50 border-white/10 text-white focus:ring-indigo-500/20">
                   <SelectValue placeholder="위치 선택" />
                 </SelectTrigger>
                 <SelectContent>
@@ -438,13 +458,14 @@ export default function ArticlesPage() {
                 </SelectContent>
               </Select>
 
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setSearchTerm("");
                   setStatusFilter("all");
                   setLocationFilter("all");
                 }}
+                className="bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white"
               >
                 <Filter className="w-4 h-4 mr-2" />
                 필터 초기화
@@ -455,63 +476,63 @@ export default function ArticlesPage() {
 
         {/* 통계 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card>
+          <Card className="glass-card">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">전체 기사</p>
-                  <p className="text-2xl font-bold text-gray-900">{articles.length}</p>
+                  <p className="text-sm text-slate-400">전체 기사</p>
+                  <p className="text-2xl font-bold text-white">{articles.length}</p>
                 </div>
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Eye className="w-5 h-5 text-blue-600" />
+                <div className="p-2 bg-blue-500/20 rounded-lg">
+                  <Eye className="w-5 h-5 text-blue-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="glass-card">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">대기중</p>
-                  <p className="text-2xl font-bold text-yellow-600">
+                  <p className="text-sm text-slate-400">대기중</p>
+                  <p className="text-2xl font-bold text-yellow-400">
                     {articles.filter(a => a.status === 'pending').length}
                   </p>
                 </div>
-                <div className="p-2 bg-yellow-100 rounded-lg">
-                  <Calendar className="w-5 h-5 text-yellow-600" />
+                <div className="p-2 bg-yellow-500/20 rounded-lg">
+                  <Calendar className="w-5 h-5 text-yellow-500" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="glass-card">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">승인됨</p>
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-sm text-slate-400">승인됨</p>
+                  <p className="text-2xl font-bold text-green-400">
                     {articles.filter(a => a.status === 'approved').length}
                   </p>
                 </div>
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
+                <div className="p-2 bg-green-500/20 rounded-lg">
+                  <CheckCircle className="w-5 h-5 text-green-500" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="glass-card">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">거부됨</p>
-                  <p className="text-2xl font-bold text-red-600">
+                  <p className="text-sm text-slate-400">거부됨</p>
+                  <p className="text-2xl font-bold text-red-400">
                     {articles.filter(a => a.status === 'rejected').length}
                   </p>
                 </div>
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <XCircle className="w-5 h-5 text-red-600" />
+                <div className="p-2 bg-red-500/20 rounded-lg">
+                  <XCircle className="w-5 h-5 text-red-500" />
                 </div>
               </div>
             </CardContent>
@@ -521,108 +542,128 @@ export default function ArticlesPage() {
         {/* 기사 목록 */}
         <div className="space-y-4">
           {filteredArticles.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <p className="text-gray-500">검색 조건에 맞는 기사가 없습니다.</p>
+            <Card className="glass-card border-dashed border-white/10">
+              <CardContent className="p-12 text-center">
+                <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-8 h-8 text-slate-500" />
+                </div>
+                <p className="text-slate-400 text-lg">검색 조건에 맞는 기사가 없습니다.</p>
+                <Button
+                  variant="link"
+                  className="text-indigo-400 mt-2"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setStatusFilter("all");
+                    setLocationFilter("all");
+                  }}
+                >
+                  필터 초기화
+                </Button>
               </CardContent>
             </Card>
           ) : (
             filteredArticles.map((article) => (
-              <Card key={article.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
+              <Card key={article.id} className="glass-card hover:bg-slate-800/80 transition-all group">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between gap-6">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-2 mb-3">
                         {getStatusBadge(article.status)}
                         {getLocationBadge(article.location_type)}
                         {article.power_plant_id && (
-                          <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200">
+                          <Badge variant="outline" className="bg-orange-500/10 text-orange-400 border-orange-500/20">
                             <Building className="w-3 h-3 mr-1" />
                             발전소 연결됨
                           </Badge>
                         )}
+                        {/* AI Score Badge if available (Optional, if you want to show it here too) */}
+                        {/* {article.ai_score !== null && (
+                            <Badge className={`border-0 ${article.is_relevant ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-700 text-slate-400'}`}>
+                                AI: {article.ai_score}
+                            </Badge>
+                        )} */}
                       </div>
-                      
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+
+                      <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-indigo-300 transition-colors">
                         {decodeHtmlEntities(article.title)}
                       </h3>
-                      
-                      <p className="text-gray-600 text-sm mb-3 line-clamp-3">
+
+                      <p className="text-slate-400 text-sm mb-4 line-clamp-3 leading-relaxed">
                         {stripHtmlTags(decodeHtmlEntities(article.content))}
                       </p>
-                      
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
+
+                      <div className="flex items-center gap-4 text-xs text-slate-500">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           {formatDate(article.published_at)}
                         </div>
                         {article.latitude && article.longitude && (
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1 text-teal-400">
                             <MapPin className="w-3 h-3" />
                             위치 정보 있음
                           </div>
                         )}
                       </div>
                     </div>
-                    
-                    <div className="flex flex-col gap-2 ml-4">
+
+                    <div className="flex flex-col gap-2 ml-4 min-w-[120px]">
                       <Button
                         variant="outline"
                         size="sm"
+                        className="bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white"
                         onClick={() => window.open(article.url, '_blank')}
                       >
                         <ExternalLink className="w-4 h-4 mr-1" />
                         원문 보기
                       </Button>
-                      
-                      <div className="flex flex-col gap-2">
+
+                      <div className="flex flex-col gap-2 pt-2 border-t border-white/5 mt-2">
                         <Button
                           variant="outline"
                           size="sm"
+                          className="bg-indigo-500/10 border-indigo-500/20 text-indigo-300 hover:bg-indigo-500/20 hover:text-indigo-200"
                           onClick={() => openEditModal(article)}
                         >
                           <Edit className="w-4 h-4 mr-1" />
                           편집
                         </Button>
-                        
+
                         {/* 상태 변경 버튼들 */}
-                        <div className="flex gap-2">
+                        <div className="flex flex-col gap-2">
                           {article.status === 'pending' && (
-                            <>
+                            <div className="grid grid-cols-2 gap-2">
                               <Button
                                 size="sm"
-                                className="bg-green-600 hover:bg-green-700 text-white"
+                                className="bg-green-600 hover:bg-green-500 text-white"
                                 onClick={() => updateArticleStatus(article.id, 'approved')}
                               >
-                                <CheckCircle className="w-4 h-4 mr-1" />
-                                승인
+                                <CheckCircle className="w-4 h-4" />
                               </Button>
                               <Button
                                 size="sm"
-                                className="bg-red-600 hover:bg-red-700 text-white"
+                                className="bg-red-600 hover:bg-red-500 text-white"
                                 onClick={() => updateArticleStatus(article.id, 'rejected')}
                               >
-                                <XCircle className="w-4 h-4 mr-1" />
-                                거부
+                                <XCircle className="w-4 h-4" />
                               </Button>
-                            </>
+                            </div>
                           )}
-                          
+
                           {article.status === 'approved' && (
                             <Button
                               size="sm"
-                              className="bg-red-600 hover:bg-red-700 text-white"
+                              className="bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 hover:text-red-300"
                               onClick={() => updateArticleStatus(article.id, 'rejected')}
                             >
                               <XCircle className="w-4 h-4 mr-1" />
                               거부로 변경
                             </Button>
                           )}
-                          
+
                           {article.status === 'rejected' && (
                             <Button
                               size="sm"
-                              className="bg-green-600 hover:bg-green-700 text-white"
+                              className="bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500/20 hover:text-green-300"
                               onClick={() => updateArticleStatus(article.id, 'approved')}
                             >
                               <CheckCircle className="w-4 h-4 mr-1" />
@@ -642,79 +683,83 @@ export default function ArticlesPage() {
 
       {/* 편집 모달 */}
       {editingArticle && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 99998 }}>
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative" style={{ zIndex: 99998 }}>
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">기사 편집</h2>
-                <Button variant="ghost" size="sm" onClick={closeEditModal}>
-                  <X className="w-4 h-4" />
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" style={{ zIndex: 99998 }}>
+          <div className="bg-[#0f172a] border border-white/10 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative" style={{ zIndex: 99998 }}>
+            <div className="p-8">
+              <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">기사 편집</h2>
+                  <p className="text-sm text-slate-400">기사 내용을 수정하고 분류를 업데이트합니다</p>
+                </div>
+                <Button variant="ghost" size="sm" onClick={closeEditModal} className="text-slate-400 hover:text-white hover:bg-white/10">
+                  <X className="w-5 h-5" />
                 </Button>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {/* 제목 */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
                     제목
                   </label>
                   <Input
                     value={editForm.title}
                     onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="기사 제목을 입력하세요"
+                    className="bg-slate-800/50 border-white/10 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-indigo-500/20"
                   />
                 </div>
 
                 {/* 내용 */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
                     내용
                   </label>
                   <textarea
                     value={editForm.content}
                     onChange={(e) => setEditForm(prev => ({ ...prev, content: e.target.value }))}
                     placeholder="기사 내용을 입력하세요"
-                    className="w-full h-32 p-3 border border-gray-300 rounded-md resize-none"
+                    className="w-full h-32 p-3 bg-slate-800/50 border border-white/10 rounded-md text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-indigo-500/20 resize-none focus:outline-none focus:ring-2"
                   />
                 </div>
 
                 {/* 위치 타입 */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
                     뉴스 분류
                   </label>
                   <Select
                     value={editForm.location_type}
-                    onValueChange={(value: 'national' | 'regional' | 'power_plant') => 
+                    onValueChange={(value: 'national' | 'regional' | 'power_plant') =>
                       setEditForm(prev => ({ ...prev, location_type: value }))
                     }
                   >
-                    <SelectTrigger className="w-full h-10 px-3 py-2 text-sm">
+                    <SelectTrigger className="w-full h-10 px-3 py-2 text-sm bg-slate-800/50 border-white/10 text-white focus:ring-indigo-500/20">
                       <SelectValue placeholder="뉴스 분류를 선택하세요" />
                     </SelectTrigger>
-                    <SelectContent 
-                      className="min-w-[300px] w-full bg-white border border-gray-200 shadow-lg rounded-md"
-                      style={{ 
-                        position: 'fixed !important',
-                        zIndex: '99999 !important',
+                    <SelectContent
+                      className="min-w-[300px] w-full bg-[#1e293b] border border-slate-700 shadow-xl rounded-md"
+                      style={{
+                        position: 'fixed',
+                        zIndex: 99999,
                         minWidth: '300px',
                         width: 'auto',
-                        backgroundColor: 'white',
-                        border: '1px solid #e5e7eb',
-                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                        backgroundColor: '#1e293b',
+                        border: '1px solid #334155',
+                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)'
                       }}
                       position="popper"
                       sideOffset={4}
                       avoidCollisions={true}
                       collisionPadding={20}
                     >
-                      <SelectItem value="national" className="py-4 px-4 text-sm min-h-[50px] flex items-center bg-white hover:bg-gray-50 border-b border-gray-100">
+                      <SelectItem value="national" className="py-3 px-4 text-sm min-h-[40px] flex items-center bg-transparent hover:bg-slate-700 text-slate-200 border-b border-slate-700 data-[highlighted]:bg-slate-700 data-[highlighted]:text-white">
                         전국 뉴스
                       </SelectItem>
-                      <SelectItem value="regional" className="py-4 px-4 text-sm min-h-[50px] flex items-center bg-white hover:bg-gray-50 border-b border-gray-100">
+                      <SelectItem value="regional" className="py-3 px-4 text-sm min-h-[40px] flex items-center bg-transparent hover:bg-slate-700 text-slate-200 border-b border-slate-700 data-[highlighted]:bg-slate-700 data-[highlighted]:text-white">
                         지역 뉴스
                       </SelectItem>
-                      <SelectItem value="power_plant" className="py-4 px-4 text-sm min-h-[50px] flex items-center bg-white hover:bg-gray-50">
+                      <SelectItem value="power_plant" className="py-3 px-4 text-sm min-h-[40px] flex items-center bg-transparent hover:bg-slate-700 text-slate-200 data-[highlighted]:bg-slate-700 data-[highlighted]:text-white">
                         발전소 뉴스
                       </SelectItem>
                     </SelectContent>
@@ -723,11 +768,11 @@ export default function ArticlesPage() {
 
                 {/* 발전소 선택 (발전소 뉴스인 경우) */}
                 {editForm.location_type === 'power_plant' && (
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      관련 발전소
+                  <div className="space-y-2 p-4 bg-slate-800/30 rounded-xl border border-white/5">
+                    <label className="block text-sm font-medium text-slate-300">
+                      관련 발전소 검색
                     </label>
-                    
+
                     {/* 검색 입력창 */}
                     <div className="relative">
                       <Input
@@ -738,23 +783,22 @@ export default function ArticlesPage() {
                           setPowerPlantSearch(e.target.value);
                           filterPowerPlants(e.target.value);
                         }}
-                        className="w-full h-10 px-3 py-2 text-sm"
+                        className="w-full h-10 px-3 pl-10 py-2 text-sm bg-slate-800/50 border-white/10 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-indigo-500/20"
                       />
-                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
+                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                        <Search className="w-4 h-4 text-slate-500" />
                       </div>
                     </div>
 
                     {/* 검색 결과 목록 */}
-                    <div className="max-h-[300px] overflow-y-auto border border-gray-200 rounded-md bg-white">
+                    <div className="max-h-[250px] overflow-y-auto border border-white/10 rounded-md bg-slate-900/50 custom-scrollbar">
                       {loadingPlants ? (
-                        <div className="p-4 text-center text-gray-500">
+                        <div className="p-4 text-center text-slate-500 flex items-center justify-center gap-2">
+                          <div className="animate-spin w-4 h-4 border-2 border-slate-500 border-t-transparent rounded-full" />
                           발전소 목록을 불러오는 중...
                         </div>
                       ) : filteredPowerPlants.length === 0 ? (
-                        <div className="p-4 text-center text-gray-500">
+                        <div className="p-4 text-center text-slate-500">
                           {powerPlantSearch ? '검색 결과가 없습니다' : '발전소를 검색해보세요'}
                         </div>
                       ) : (
@@ -765,32 +809,30 @@ export default function ArticlesPage() {
                               setEditForm(prev => ({ ...prev, power_plant_id: plant.id }));
                               setPowerPlantSearch(plant.name);
                             }}
-                            className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                              editForm.power_plant_id === plant.id ? 'bg-blue-50 border-blue-200' : ''
-                            }`}
+                            className={`p-3 border-b border-white/5 cursor-pointer transition-colors ${editForm.power_plant_id === plant.id
+                              ? 'bg-indigo-500/20 border-indigo-500/30'
+                              : 'hover:bg-white/5'
+                              }`}
                           >
                             <div className="flex items-center justify-between w-full gap-3">
                               <div className="flex flex-col flex-1 min-w-0">
-                                <span className="font-medium text-sm truncate">{plant.name}</span>
-                                <span className="text-xs text-gray-500 truncate">
+                                <span className={`font-medium text-sm truncate ${editForm.power_plant_id === plant.id ? 'text-indigo-300' : 'text-slate-300'}`}>
+                                  {plant.name}
+                                </span>
+                                <span className="text-xs text-slate-500 truncate">
                                   {plant.plant_type} • {plant.fuel_type} • {plant.operator}
                                 </span>
                               </div>
                               <div className="flex gap-1 flex-shrink-0">
                                 {plant.hasGT && (
-                                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded whitespace-nowrap">
+                                  <Badge variant="outline" className="text-[10px] bg-blue-500/10 text-blue-400 border-blue-500/20 px-1 py-0.5 h-auto">
                                     GT
-                                  </span>
+                                  </Badge>
                                 )}
                                 {plant.hasST && (
-                                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded whitespace-nowrap">
+                                  <Badge variant="outline" className="text-[10px] bg-green-500/10 text-green-400 border-green-500/20 px-1 py-0.5 h-auto">
                                     ST
-                                  </span>
-                                )}
-                                {plant.hasGT && plant.hasST && (
-                                  <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded whitespace-nowrap">
-                                    복합
-                                  </span>
+                                  </Badge>
                                 )}
                               </div>
                             </div>
@@ -798,53 +840,56 @@ export default function ArticlesPage() {
                         ))
                       )}
                     </div>
-                    
-                    <p className="text-xs text-gray-500 mt-1">
-                      💡 GT: 가스터빈, ST: 증기터빈, 복합: GT+ST 모두 보유
-                    </p>
                   </div>
                 )}
 
                 {/* 위치 정보 */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
                       시/도
                     </label>
                     <Input
                       value={editForm.si_do}
                       onChange={(e) => setEditForm(prev => ({ ...prev, si_do: e.target.value }))}
                       placeholder="예: 서울특별시"
+                      className="bg-slate-800/50 border-white/10 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-indigo-500/20"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
                       시/군/구
                     </label>
                     <Input
                       value={editForm.si_gun_gu}
                       onChange={(e) => setEditForm(prev => ({ ...prev, si_gun_gu: e.target.value }))}
                       placeholder="예: 강남구"
+                      className="bg-slate-800/50 border-white/10 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-indigo-500/20"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
                       읍/면/동
                     </label>
                     <Input
                       value={editForm.eup_myeon_dong}
                       onChange={(e) => setEditForm(prev => ({ ...prev, eup_myeon_dong: e.target.value }))}
                       placeholder="예: 역삼동"
+                      className="bg-slate-800/50 border-white/10 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-indigo-500/20"
                     />
                   </div>
                 </div>
 
                 {/* 버튼 */}
-                <div className="flex justify-end gap-2 pt-4 border-t">
-                  <Button variant="outline" onClick={closeEditModal}>
+                <div className="flex justify-end gap-3 pt-6 border-t border-white/10 bg-black/20 p-4 -mx-6 -mb-6 mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={closeEditModal}
+                    className="bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white"
+                  >
                     취소
                   </Button>
-                  <Button onClick={updateArticle} className="bg-blue-600 hover:bg-blue-700">
+                  <Button onClick={updateArticle} className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20">
                     <Save className="w-4 h-4 mr-2" />
                     저장 및 승인
                   </Button>
