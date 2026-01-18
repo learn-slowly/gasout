@@ -5,16 +5,24 @@ import { NextResponse } from "next/server";
 // Supabase Admin Client (Service Role key required for admin updates if RLS is strict, 
 // but here we use the standard client assuming appropriate policies or server-side usage)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-// Note: Ideally use service role key for admin tasks
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+// Admin Route MUST use the service role key to bypass RLS. Do not fallback to Anon key.
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseServiceKey) {
+    console.error("CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing in server environment.");
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey || "");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST() {
     try {
         if (!process.env.GEMINI_API_KEY) {
-            return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 500 });
+            return NextResponse.json({ error: "Configuration Error: GEMINI_API_KEY is missing" }, { status: 500 });
+        }
+        if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+            return NextResponse.json({ error: "Configuration Error: SUPABASE_SERVICE_ROLE_KEY is missing. Check Vercel Env Vars." }, { status: 500 });
         }
 
         // 1. Fetch articles that haven't been analyzed yet (ai_score is null)
