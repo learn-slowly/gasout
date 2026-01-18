@@ -187,7 +187,16 @@ export default function AdminDashboard() {
           return processBatch();
         } else if (result.failed && result.failed > 0) {
           const firstError = result.errors?.[0];
-          throw new Error(`AI 분석 실패 (${result.failed}건): ${firstError?.error || '상세 에러 없음'}`);
+          const errorMsg = firstError?.error || '';
+
+          // 429 Too Many Requests 또는 Quota 에러 발생 시 자동 대기 및 재시도
+          if (errorMsg.includes("429") || errorMsg.includes("Quota") || errorMsg.includes("RATE_LIMIT")) {
+            setAnalyzeResult(`사용량 제한(Quota) 감지. 60초 대기 후 재시도합니다... (현재 ${totalProcessed}개 완료)`);
+            await new Promise(r => setTimeout(r, 60000)); // 60초 대기
+            return processBatch(); // 재시도
+          }
+
+          throw new Error(`AI 분석 실패 (${result.failed}건): ${errorMsg || '상세 에러 없음'}`);
         } else {
           // 더 이상 처리할 기사가 없음
           return;
