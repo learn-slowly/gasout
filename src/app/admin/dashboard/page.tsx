@@ -163,12 +163,20 @@ export default function AdminDashboard() {
     setAnalyzeResult(null);
 
     let totalProcessed = 0;
+    let hasError = false;
 
     try {
       // 재귀적으로 호출하여 모든 기사 처리
       const processBatch = async (): Promise<void> => {
+        if (hasError) return;
+
         const response = await fetch('/api/admin/analyze-news', { method: 'POST' });
         const result = await response.json();
+
+        if (!response.ok) {
+          hasError = true;
+          throw new Error(result.details || result.error || "알 수 없는 서버 에러");
+        }
 
         if (result.processed > 0) {
           totalProcessed += result.processed;
@@ -183,10 +191,17 @@ export default function AdminDashboard() {
       };
 
       await processBatch();
-      setAnalyzeResult(`${totalProcessed}개 기사 분석 완료`);
-    } catch (error) {
+
+      if (!hasError) {
+        if (totalProcessed === 0) {
+          setAnalyzeResult("분석할 새로운 기사가 없습니다.");
+        } else {
+          setAnalyzeResult(`${totalProcessed}개 기사 분석 완료`);
+        }
+      }
+    } catch (error: any) {
       console.error("Analysis failed:", error);
-      setAnalyzeResult("분석 중 오류가 발생했습니다.");
+      setAnalyzeResult(`오류: ${error.message}`);
     } finally {
       setIsAnalyzing(false);
     }
