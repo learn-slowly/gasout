@@ -191,7 +191,8 @@ export default function AdminDashboard() {
 
           // 429 Too Many Requests 또는 Quota 에러 발생 시 자동 대기 및 재시도
           if (errorMsg.includes("429") || errorMsg.includes("Quota") || errorMsg.includes("RATE_LIMIT")) {
-            setAnalyzeResult(`사용량 제한(Quota) 감지. 60초 대기 후 재시도합니다... (현재 ${totalProcessed}개 완료)`);
+            const retryTime = new Date(Date.now() + 60000).toLocaleTimeString();
+            setAnalyzeResult(`⚠️ 감지된 사용량 제한(Quota). 60초 대기 중... (${retryTime}에 재시도 예정) (현재 ${totalProcessed}개 완료)`);
             await new Promise(r => setTimeout(r, 60000)); // 60초 대기
             return processBatch(); // 재시도
           }
