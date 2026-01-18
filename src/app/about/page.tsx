@@ -42,15 +42,7 @@ export default function AboutPage() {
           className="space-y-12"
         >
           {/* Header Section */}
-          <motion.div variants={itemVariants} className="text-center space-y-4 mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white text-glow">
-              GasOut <span className="text-primary">Project</span>
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Making the invisible visible. <br />
-              전국의 화력 발전소와 기후 위기 현장을 기록하고 감시합니다.
-            </p>
-          </motion.div>
+          {/* Header Section Removed */}
 
           {/* GasOut? */}
           <motion.div variants={itemVariants}>
