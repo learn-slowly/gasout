@@ -49,7 +49,7 @@ export async function POST() {
             .from("articles")
             .select("id, title, content")
             .is("ai_score", null)
-            .limit(10); // Process 10 at a time to avoid timeouts
+            .limit(1); // Process 1 at a time to strictly control rate limits (Free Tier safe)
 
         if (fetchError) {
             return NextResponse.json({ error: fetchError.message }, { status: 500 });

@@ -182,7 +182,8 @@ export default function AdminDashboard() {
           totalProcessed += result.processed;
           setAnalyzedCount(totalProcessed);
           // 계속해서 다음 배치 처리
-          await new Promise(r => setTimeout(r, 1000)); // Rate limit 방지용 딜레이
+          // Gemini Free Tier Limit (~15 RPM) 준수를 위해 4초 이상 대기
+          await new Promise(r => setTimeout(r, 4000));
           return processBatch();
         } else if (result.failed && result.failed > 0) {
           const firstError = result.errors?.[0];
