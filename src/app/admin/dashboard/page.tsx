@@ -194,7 +194,15 @@ export default function AdminDashboard() {
 
       if (!hasError) {
         if (totalProcessed === 0) {
-          setAnalyzeResult("분석할 새로운 기사가 없습니다.");
+          // If the API returned a debug/info message, try to show it
+          const firstResponse = await fetch('/api/admin/analyze-news', { method: 'POST' });
+          const firstResult = await firstResponse.json();
+
+          if (firstResult.debug_info) {
+            setAnalyzeResult(`진단 결과: ${JSON.stringify(firstResult.debug_info, null, 2)}`);
+          } else {
+            setAnalyzeResult("분석할 새로운 기사가 없습니다. (DB 확인 필요)");
+          }
         } else {
           setAnalyzeResult(`${totalProcessed}개 기사 분석 완료`);
         }

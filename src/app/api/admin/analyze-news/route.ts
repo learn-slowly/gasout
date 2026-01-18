@@ -57,13 +57,17 @@ export async function POST() {
 
         if (!articles || articles.length === 0) {
             // Check if there are any articles at all (debug check)
-            const { count } = await supabase.from("articles").select("*", { count: 'exact', head: true });
+            const { count: total } = await supabase.from("articles").select("*", { count: 'exact', head: true });
+            const { count: pending } = await supabase.from("articles").select("*", { count: 'exact', head: true }).is("ai_score", null);
 
             return NextResponse.json({
                 message: "No new articles to analyze",
                 debug_info: {
-                    total_articles: count,
-                    note: "If total articles > 0 but no new ones found, all might be processed already."
+                    total_articles_in_db: total,
+                    pending_articles: pending,
+                    logic: "Fetched limit(10) where ai_score is null",
+                    key_role: supabaseServiceKey ? "Present (Service Role)" : "Missing",
+                    env_url: process.env.NEXT_PUBLIC_SUPABASE_URL
                 }
             });
         }
