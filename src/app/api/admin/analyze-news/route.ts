@@ -1,3 +1,4 @@
+
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
@@ -25,6 +26,24 @@ export async function POST() {
             return NextResponse.json({ error: "Configuration Error: SUPABASE_SERVICE_ROLE_KEY is missing. Check Vercel Env Vars." }, { status: 500 });
         }
 
+        // [DEBUG] Check if the key is actually a Service Role key
+        try {
+            const payloadPart = process.env.SUPABASE_SERVICE_ROLE_KEY?.split('.')[1];
+            if (payloadPart) {
+                const payload = JSON.parse(Buffer.from(payloadPart, 'base64').toString());
+                console.log("Key Role Debug:", payload.role);
+
+                if (payload.role !== 'service_role') {
+                    return NextResponse.json({
+                        error: "Configuration Error: 잘못된 키가 입력되었습니다.",
+                        details: `현재 입력된 SUPABASE_SERVICE_ROLE_KEY는 '${payload.role}' 권한의 키입니다. 'service_role' 키를 복사해서 넣어주세요.`
+                    }, { status: 500 });
+                }
+            }
+        } catch (e) {
+            console.error("Key decode failed", e);
+        }
+
         // 1. Fetch articles that haven't been analyzed yet (ai_score is null)
         const { data: articles, error: fetchError } = await supabase
             .from("articles")
@@ -37,7 +56,16 @@ export async function POST() {
         }
 
         if (!articles || articles.length === 0) {
-            return NextResponse.json({ message: "No new articles to analyze" });
+            // Check if there are any articles at all (debug check)
+            const { count } = await supabase.from("articles").select("*", { count: 'exact', head: true });
+
+            return NextResponse.json({
+                message: "No new articles to analyze",
+                debug_info: {
+                    total_articles: count,
+                    note: "If total articles > 0 but no new ones found, all might be processed already."
+                }
+            });
         }
 
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
