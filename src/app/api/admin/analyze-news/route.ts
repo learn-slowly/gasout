@@ -74,9 +74,11 @@ export async function POST() {
 
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const results = [];
+        const errors = [];
 
         // 2. Analyze each article
         for (const article of articles) {
+            // ... (prompt definition) ...
             const prompt = `
         Analyze the following news article for its relevance to 'LNG Power Plants', 'Climate Crisis', or 'Carbon Neutrality' in South Korea.
         
@@ -111,21 +113,24 @@ export async function POST() {
                     .eq("id", article.id);
 
                 if (updateError) {
-                    console.error(`Failed to update article ${article.id}:`, updateError);
+                    throw new Error(`Supabase update failed: ${updateError.message}`);
                 } else {
                     results.push({ id: article.id, ...analysis });
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error(`Failed to analyze article ${article.id}:`, err);
-                // Mark as processed but with error/0 score to prevent infinite retries if needed, 
-                // or just skip. For now, we skip.
+                errors.push({ id: article.id, title: article.title, error: err.message || String(err) });
+                // If it's a Gemini API error (like 403 or quota), we might want to stop early? 
+                // For now, let's collect them.
             }
         }
 
         return NextResponse.json({
-            success: true,
+            success: results.length > 0,
             processed: results.length,
-            results
+            failed: errors.length,
+            results,
+            errors: errors.length > 0 ? errors : undefined
         });
 
     } catch (error: any) {

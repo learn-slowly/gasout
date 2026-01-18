@@ -184,6 +184,9 @@ export default function AdminDashboard() {
           // 계속해서 다음 배치 처리
           await new Promise(r => setTimeout(r, 1000)); // Rate limit 방지용 딜레이
           return processBatch();
+        } else if (result.failed && result.failed > 0) {
+          const firstError = result.errors?.[0];
+          throw new Error(`AI 분석 실패 (${result.failed}건): ${firstError?.error || '상세 에러 없음'}`);
         } else {
           // 더 이상 처리할 기사가 없음
           return;
