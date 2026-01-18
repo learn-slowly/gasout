@@ -155,11 +155,13 @@ export default function AdminDashboard() {
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzedCount, setAnalyzedCount] = useState(0);
+  const [retryCount, setRetryCount] = useState(0); // 연속 재시도 횟수 카운트
   const [analyzeResult, setAnalyzeResult] = useState<string | null>(null);
 
   const handleBulkAnalysis = async () => {
     setIsAnalyzing(true);
     setAnalyzedCount(0);
+    setRetryCount(0);
     setAnalyzeResult(null);
 
     let totalProcessed = 0;
@@ -181,6 +183,7 @@ export default function AdminDashboard() {
         if (result.processed > 0) {
           totalProcessed += result.processed;
           setAnalyzedCount(totalProcessed);
+          setRetryCount(0); // 성공하면 카운트 리셋
           // 계속해서 다음 배치 처리
           // Gemini Free Tier Limit (~15 RPM) 준수를 위해 4초 이상 대기
           await new Promise(r => setTimeout(r, 4000));
@@ -191,8 +194,17 @@ export default function AdminDashboard() {
 
           // 429 Too Many Requests 또는 Quota 에러 발생 시 자동 대기 및 재시도
           if (errorMsg.includes("429") || errorMsg.includes("Quota") || errorMsg.includes("RATE_LIMIT")) {
+            const newRetryCount = retryCount + 1;
+            setRetryCount(newRetryCount);
+
             const retryTime = new Date(Date.now() + 60000).toLocaleTimeString();
-            setAnalyzeResult(`⚠️ 감지된 사용량 제한(Quota). 60초 대기 중... (${retryTime}에 재시도 예정) (현재 ${totalProcessed}개 완료)`);
+
+            let warningMsg = `⚠️ 감지된 사용량 제한(Quota). 60초 대기 중... (${retryTime}에 재시도) (현재 ${totalProcessed}개 완료)`;
+            if (newRetryCount >= 3) {
+              warningMsg = `⛔️ 반복적인 제한 감지(${newRetryCount}회). 일일 허용량(1,500건) 초과가 의심됩니다. (내일 다시 시도하거나, 새 API 키로 교체하세요)`;
+            }
+
+            setAnalyzeResult(warningMsg);
             await new Promise(r => setTimeout(r, 60000)); // 60초 대기
             return processBatch(); // 재시도
           }
