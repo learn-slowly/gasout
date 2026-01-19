@@ -48,11 +48,11 @@ export async function POST() {
         // [Verified] The user's key has access to these specific models.
         // We prioritize the most stable/cost-effective ones from their available list.
         const CANDIDATE_MODELS = [
-            "gemini-2.0-flash-lite-preview-02-05", // Preferred (User requested)
-            "gemini-2.0-flash-lite",              // Stable Lite
-            "gemini-2.0-flash",                   // Stable 2.0 Flash
-            "gemini-2.5-flash",                   // Bleeding edge (Available in user's key)
-            "gemini-2.0-flash-001"                // Explicit version
+            "gemini-2.0-flash",                   // Priority 1: Stable 2.0 (Higher Availability)
+            "gemini-2.0-flash-lite-preview-02-05", // Priority 2: User requested Lite
+            "gemini-2.0-flash-lite",              // Priority 3: Stable Lite
+            "gemini-2.5-flash",                   // Priority 4: Bleeding edge
+            "gemini-2.0-flash-001"                // Priority 5: Explicit version
         ];
 
         for (const article of articles) {
