@@ -74,10 +74,16 @@ export async function POST() {
 
         const results = [];
         const errors = [];
+        const CANDIDATE_MODELS = [
+            "gemini-2.0-flash-lite-preview-02-05", // User request
+            "gemini-1.5-flash",
+            "gemini-1.5-flash-001",
+            "gemini-1.5-pro",
+            "gemini-1.0-pro"
+        ];
 
         // 2. Analyze each article
         for (const article of articles) {
-            // ... (prompt definition) ...
             const prompt = `
         Analyze the following news article for its relevance to 'LNG Power Plants', 'Climate Crisis', or 'Carbon Neutrality' in South Korea.
         
@@ -93,29 +99,36 @@ export async function POST() {
       `;
 
             try {
-                // Try 1.5 Flash first
-                let model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-                let result;
+                let analysis = null;
+                let lastError = null;
 
-                try {
-                    result = await model.generateContent(prompt);
-                } catch (firstErr: any) {
-                    // If 404 (Model Not Found) or similar, try fallback to gemini-pro
-                    if (firstErr.message.includes("404") || firstErr.message.includes("not found")) {
-                        console.warn("Gemini 1.5 Flash not found, falling back to gemini-pro");
-                        model = genAI.getGenerativeModel({ model: "gemini-pro" });
-                        result = await model.generateContent(prompt);
-                    } else {
-                        throw firstErr;
+                // Try each model until one works
+                for (const modelName of CANDIDATE_MODELS) {
+                    try {
+                        console.log(`Trying model: ${modelName} for article ${article.id}`);
+                        const model = genAI.getGenerativeModel({ model: modelName });
+                        const result = await model.generateContent(prompt);
+                        const response = await result.response;
+                        const text = response.text();
+
+                        // Clean up markdown code blocks if present
+                        const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
+                        analysis = JSON.parse(jsonStr);
+                        console.log(`Success with model: ${modelName}`);
+                        break; // Success!
+                    } catch (e: any) {
+                        console.warn(`Failed with model ${modelName}: ${e.message}`);
+                        lastError = e;
+                        // Continue to next model unless it's a rate limit
+                        if (e.message.includes("429") || e.message.includes("Quota")) {
+                            throw e; // Fail fast on rate limits
+                        }
                     }
                 }
 
-                const response = await result.response;
-                const text = response.text();
-
-                // Clean up markdown code blocks if present
-                const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
-                const analysis = JSON.parse(jsonStr);
+                if (!analysis) {
+                    throw lastError || new Error(`All model candidates failed. Check API Key permissions. Last error: ${lastError?.message}`);
+                }
 
                 // 3. Update Supabase
                 const { error: updateError } = await supabase
