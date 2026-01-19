@@ -72,7 +72,6 @@ export async function POST() {
             });
         }
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-001" });
         const results = [];
         const errors = [];
 
@@ -94,7 +93,23 @@ export async function POST() {
       `;
 
             try {
-                const result = await model.generateContent(prompt);
+                // Try 1.5 Flash first
+                let model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                let result;
+
+                try {
+                    result = await model.generateContent(prompt);
+                } catch (firstErr: any) {
+                    // If 404 (Model Not Found) or similar, try fallback to gemini-pro
+                    if (firstErr.message.includes("404") || firstErr.message.includes("not found")) {
+                        console.warn("Gemini 1.5 Flash not found, falling back to gemini-pro");
+                        model = genAI.getGenerativeModel({ model: "gemini-pro" });
+                        result = await model.generateContent(prompt);
+                    } else {
+                        throw firstErr;
+                    }
+                }
+
                 const response = await result.response;
                 const text = response.text();
 
@@ -120,8 +135,6 @@ export async function POST() {
             } catch (err: any) {
                 console.error(`Failed to analyze article ${article.id}:`, err);
                 errors.push({ id: article.id, title: article.title, error: err.message || String(err) });
-                // If it's a Gemini API error (like 403 or quota), we might want to stop early? 
-                // For now, let's collect them.
             }
         }
 
