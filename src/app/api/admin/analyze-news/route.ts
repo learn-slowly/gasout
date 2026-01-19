@@ -74,12 +74,14 @@ export async function POST() {
 
         const results = [];
         const errors = [];
+        // [Crtical Update] User's key fails with all 1.5 models (404). 
+        // We include "gemini-pro" (v1.0) as the ultimate failsafe.
         const CANDIDATE_MODELS = [
             "gemini-1.5-flash",
-            "gemini-1.5-flash-8b",
             "gemini-1.5-flash-001",
-            "gemini-1.5-flash-002",
-            "gemini-1.5-pro"
+            "gemini-1.5-pro",
+            "gemini-pro",       // Fallback: v1.0 Stable (Most compatible)
+            "gemini-1.0-pro"    // Fallback: Explicit v1.0
         ];
 
         // 2. Analyze each article
