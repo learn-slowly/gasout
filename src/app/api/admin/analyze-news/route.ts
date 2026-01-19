@@ -46,11 +46,11 @@ export async function POST() {
         const errors = [];
 
         // [Verified] The user's key has access to these specific models.
-        // We prioritize the most stable/cost-effective ones from their available list.
+        // We prioritize "Lite" models as they typically have higher availability/quota for free tier.
         const CANDIDATE_MODELS = [
-            "gemini-2.0-flash",                   // Priority 1: Stable 2.0 (Higher Availability)
-            "gemini-2.0-flash-lite-preview-02-05", // Priority 2: User requested Lite
-            "gemini-2.0-flash-lite",              // Priority 3: Stable Lite
+            "gemini-2.0-flash-lite-preview-02-05", // Priority 1: User requested & Lite (Likely best quota)
+            "gemini-2.0-flash-lite",              // Priority 2: Stable Lite
+            "gemini-2.0-flash",                   // Priority 3: Standard Flash (might have stricter limits)
             "gemini-2.5-flash",                   // Priority 4: Bleeding edge
             "gemini-2.0-flash-001"                // Priority 5: Explicit version
         ];
