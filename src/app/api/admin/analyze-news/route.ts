@@ -23,40 +23,6 @@ export async function POST() {
             return NextResponse.json({ error: "Configuration Error: SUPABASE_SERVICE_ROLE_KEY is missing. Check Vercel Env Vars." }, { status: 500 });
         }
 
-        // [DEBUG] Diagnosing Model Access
-        // 404 errors persist across all models. We will try to LIST what models are available to this key.
-        let availableModels: string[] = [];
-        try {
-            const listModelsUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`;
-            const listResponse = await fetch(listModelsUrl);
-            const listData = await listResponse.json();
-
-            if (listData.models) {
-                availableModels = listData.models.map((m: any) => m.name.replace('models/', ''));
-                console.log("✅ AVAILABLE MODELS FOR THIS KEY:", availableModels);
-            } else {
-                console.warn("⚠️ Could not list models. Response:", listData);
-            }
-        } catch (listErr) {
-            console.error("❌ Failed to list models:", listErr);
-        }
-
-        // [DEBUG] Check Key Role
-        try {
-            const payloadPart = process.env.SUPABASE_SERVICE_ROLE_KEY?.split('.')[1];
-            if (payloadPart) {
-                const payload = JSON.parse(Buffer.from(payloadPart, 'base64').toString());
-                if (payload.role !== 'service_role') {
-                    return NextResponse.json({
-                        error: "Configuration Error: 잘못된 키가 입력되었습니다.",
-                        details: `현재 입력된 SUPABASE_SERVICE_ROLE_KEY는 '${payload.role}' 권한의 키입니다. 'service_role' 키를 복사해서 넣어주세요.`
-                    }, { status: 500 });
-                }
-            }
-        } catch (e) {
-            console.error("Key decode failed", e);
-        }
-
         const { data: articles, error: fetchError } = await supabase
             .from("articles")
             .select("id, title, content")
@@ -72,30 +38,22 @@ export async function POST() {
             const { count: pending } = await supabase.from("articles").select("*", { count: 'exact', head: true }).is("ai_score", null);
             return NextResponse.json({
                 message: "No new articles to analyze",
-                debug_info: {
-                    total, pending, availableModels // Send this to UI for debugging
-                }
+                debug_info: { total, pending }
             });
         }
 
         const results = [];
         const errors = [];
 
-        // Define Candidate Models - We will prioritize what is actually available if possible
-        let CANDIDATE_MODELS = [
-            "gemini-1.5-flash",
-            "gemini-1.5-pro",
-            "gemini-pro"
+        // [Verified] The user's key has access to these specific models.
+        // We prioritize the most stable/cost-effective ones from their available list.
+        const CANDIDATE_MODELS = [
+            "gemini-2.0-flash-lite-preview-02-05", // Preferred (User requested)
+            "gemini-2.0-flash-lite",              // Stable Lite
+            "gemini-2.0-flash",                   // Stable 2.0 Flash
+            "gemini-2.5-flash",                   // Bleeding edge (Available in user's key)
+            "gemini-2.0-flash-001"                // Explicit version
         ];
-
-        // If we successfully listed models, try to find a match dynamically
-        if (availableModels.length > 0) {
-            const bestMatch = availableModels.find(m => m.includes('flash')) || availableModels.find(m => m.includes('pro'));
-            if (bestMatch) {
-                console.log(`Dynamic Model Selection: Prioritizing ${bestMatch}`);
-                CANDIDATE_MODELS.unshift(bestMatch);
-            }
-        }
 
         for (const article of articles) {
             const prompt = `
@@ -130,8 +88,7 @@ export async function POST() {
                 }
 
                 if (!analysis) {
-                    // Propagate the available models info in the error to verify
-                    throw new Error(`All models failed. Available models for this key: [${availableModels.join(', ')}]. Last error: ${lastError?.message}`);
+                    throw new Error(`All candidate models failed. Checked: [${CANDIDATE_MODELS.join(', ')}]. Last error: ${lastError?.message}`);
                 }
 
                 const { error: updateError } = await supabase
@@ -159,8 +116,7 @@ export async function POST() {
             processed: results.length,
             failed: errors.length,
             results,
-            errors: errors.length > 0 ? errors : undefined,
-            debug_available_models: availableModels
+            errors: errors.length > 0 ? errors : undefined
         });
 
     } catch (error: any) {
