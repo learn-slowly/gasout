@@ -14,7 +14,7 @@ if (!supabaseServiceKey) {
 const supabase = createClient(supabaseUrl, supabaseServiceKey || "");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-export async function POST() {
+export async function POST(request: Request) {
     try {
         if (!process.env.GEMINI_API_KEY) {
             return NextResponse.json({ error: "Configuration Error: GEMINI_API_KEY is missing" }, { status: 500 });
@@ -23,11 +23,29 @@ export async function POST() {
             return NextResponse.json({ error: "Configuration Error: SUPABASE_SERVICE_ROLE_KEY is missing. Check Vercel Env Vars." }, { status: 500 });
         }
 
-        const { data: articles, error: fetchError } = await supabase
+        // 요청 body에서 articleId 확인
+        let targetArticleId: string | null = null;
+        try {
+            const body = await request.json();
+            targetArticleId = body.articleId || null;
+        } catch {
+            // body가 없으면 null로 처리
+        }
+
+        let query = supabase
             .from("articles")
             .select("id, title, content")
-            .is("ai_score", null)
-            .limit(1);
+            .is("ai_score", null);
+
+        if (targetArticleId) {
+            // 특정 기사 분석
+            query = query.eq("id", targetArticleId);
+        } else {
+            // 일반 분석 (1개만)
+            query = query.limit(1);
+        }
+
+        const { data: articles, error: fetchError } = await query;
 
         if (fetchError) {
             return NextResponse.json({ error: fetchError.message }, { status: 500 });

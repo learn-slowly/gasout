@@ -61,6 +61,12 @@ interface Article {
   si_gun_gu?: string;
   eup_myeon_dong?: string;
   created_at: string;
+  // AI 분석 필드
+  ai_score?: number;
+  is_relevant?: boolean;
+  ai_summary?: string;
+  ai_analyzed_at?: string;
+  ai_model_version?: string;
 }
 
 export default function ArticlesPage() {
@@ -88,6 +94,9 @@ export default function ArticlesPage() {
   // 발전소 목록 상태
   const [powerPlants, setPowerPlants] = useState<any[]>([]);
   const [loadingPlants, setLoadingPlants] = useState(false);
+
+  // AI 분석 상태
+  const [analyzingArticles, setAnalyzingArticles] = useState<Set<string>>(new Set());
 
   // 기사 데이터 로드
   useEffect(() => {
@@ -342,6 +351,80 @@ export default function ArticlesPage() {
     }
   };
 
+  const getAIBadge = (article: Article) => {
+    if (article.ai_score === null || article.ai_score === undefined) {
+      return <Badge variant="outline" className="bg-gray-100 text-gray-600 border-gray-200">미분석</Badge>;
+    }
+    
+    if (article.is_relevant) {
+      return (
+        <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300">
+          🤖 관련 ({article.ai_score}점)
+        </Badge>
+      );
+    } else {
+      return (
+        <Badge variant="outline" className="bg-gray-100 text-gray-600 border-gray-300">
+          무관 ({article.ai_score}점)
+        </Badge>
+      );
+    }
+  };
+
+  // AI 분석 실행
+  const analyzeArticle = async (articleId: string) => {
+    setAnalyzingArticles(prev => new Set(prev).add(articleId));
+
+    try {
+      const response = await fetch('/api/admin/analyze-news', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ articleId })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // 로컬 상태 업데이트
+        await loadArticles(); // 기사 목록 새로고침
+      } else {
+        console.error('AI 분석 실패:', result.error || result.errors);
+        alert(`AI 분석 실패: ${result.error || result.errors?.[0]?.error || '알 수 없는 오류'}`);
+      }
+    } catch (error) {
+      console.error('AI 분석 오류:', error);
+      alert('AI 분석 중 오류가 발생했습니다.');
+    } finally {
+      setAnalyzingArticles(prev => {
+        const next = new Set(prev);
+        next.delete(articleId);
+        return next;
+      });
+    }
+  };
+
+  // 모든 미분석 기사 분석
+  const analyzeAllPending = async () => {
+    const pendingArticles = articles.filter(a => 
+      a.status === 'pending' && (a.ai_score === null || a.ai_score === undefined)
+    );
+
+    if (pendingArticles.length === 0) {
+      alert('분석할 기사가 없습니다.');
+      return;
+    }
+
+    if (!confirm(`${pendingArticles.length}개의 기사를 분석하시겠습니까?`)) {
+      return;
+    }
+
+    for (const article of pendingArticles) {
+      await analyzeArticle(article.id);
+      // API 할당량을 고려하여 딜레이 추가
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ko-KR', {
       year: 'numeric',
@@ -415,6 +498,14 @@ export default function ArticlesPage() {
               <p className="text-sm text-slate-400 mt-1">Inoreader로부터 수집된 기사를 검토하고 승인하거나 편집합니다</p>
             </div>
           </div>
+          
+          <Button
+            variant="outline"
+            className="bg-purple-500/10 border-purple-500/20 text-purple-300 hover:bg-purple-500/20 hover:text-purple-200"
+            onClick={analyzeAllPending}
+          >
+            🤖 미분석 기사 AI 분석
+          </Button>
         </div>
 
         {/* 필터 및 검색 */}
@@ -576,12 +667,7 @@ export default function ArticlesPage() {
                             발전소 연결됨
                           </Badge>
                         )}
-                        {/* AI Score Badge if available (Optional, if you want to show it here too) */}
-                        {/* {article.ai_score !== null && (
-                            <Badge className={`border-0 ${article.is_relevant ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-700 text-slate-400'}`}>
-                                AI: {article.ai_score}
-                            </Badge>
-                        )} */}
+                        {getAIBadge(article)}
                       </div>
 
                       <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-indigo-300 transition-colors">
@@ -591,6 +677,13 @@ export default function ArticlesPage() {
                       <p className="text-slate-400 text-sm mb-4 line-clamp-3 leading-relaxed">
                         {stripHtmlTags(decodeHtmlEntities(article.content))}
                       </p>
+
+                      {article.ai_summary && (
+                        <div className="mb-4 p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
+                          <p className="text-xs text-indigo-300 font-medium mb-1">🤖 AI 요약</p>
+                          <p className="text-sm text-slate-300">{article.ai_summary}</p>
+                        </div>
+                      )}
 
                       <div className="flex items-center gap-4 text-xs text-slate-500">
                         <div className="flex items-center gap-1">
@@ -627,6 +720,28 @@ export default function ArticlesPage() {
                           <Edit className="w-4 h-4 mr-1" />
                           편집
                         </Button>
+
+                        {/* AI 분석 버튼 */}
+                        {(article.ai_score === null || article.ai_score === undefined) && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-purple-500/10 border-purple-500/20 text-purple-300 hover:bg-purple-500/20 hover:text-purple-200"
+                            onClick={() => analyzeArticle(article.id)}
+                            disabled={analyzingArticles.has(article.id)}
+                          >
+                            {analyzingArticles.has(article.id) ? (
+                              <>
+                                <div className="animate-spin w-4 h-4 mr-1 border-2 border-purple-300 border-t-transparent rounded-full" />
+                                분석 중...
+                              </>
+                            ) : (
+                              <>
+                                🤖 AI 분석
+                              </>
+                            )}
+                          </Button>
+                        )}
 
                         {/* 상태 변경 버튼들 */}
                         <div className="flex flex-col gap-2">

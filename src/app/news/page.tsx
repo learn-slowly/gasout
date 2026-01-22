@@ -50,11 +50,9 @@ export default function NewsPage() {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
 
-    const [showAIOnly, setShowAIOnly] = useState(true);
-
     useEffect(() => {
         fetchNews(true);
-    }, [filterType, searchTerm, showAIOnly]);
+    }, [filterType, searchTerm]);
 
     const fetchNews = async (reset: boolean = false, targetPage?: number) => {
         try {
@@ -68,12 +66,6 @@ export default function NewsPage() {
                 .select('*', { count: 'exact' })
                 .eq('status', 'approved')
                 .order('published_at', { ascending: false });
-
-            if (showAIOnly) {
-                // Filter for AI relevant articles. 
-                // Note: This requires 'is_relevant' column in 'articles' table.
-                query = query.eq('is_relevant', true);
-            }
 
             if (filterType !== 'all') {
                 query = query.eq('location_type', filterType);
@@ -140,21 +132,6 @@ export default function NewsPage() {
                                     <SelectItem value="power_plant">발전소 뉴스</SelectItem>
                                 </SelectContent>
                             </Select>
-                        </div>
-
-                        {/* AI Filter Toggle */}
-                        <div className="flex items-center gap-2">
-                            <Button
-                                variant={showAIOnly ? "default" : "outline"}
-                                onClick={() => setShowAIOnly(!showAIOnly)}
-                                className={`flex items-center gap-2 transition-all ${showAIOnly
-                                        ? "bg-slate-900 text-white hover:bg-slate-800"
-                                        : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-                                    }`}
-                            >
-                                <span className="text-lg">🤖</span>
-                                {showAIOnly ? "AI 추천 뉴스" : "모든 뉴스 보기"}
-                            </Button>
                         </div>
 
                         <div className="flex gap-2 w-full md:w-auto flex-1 max-w-md">
