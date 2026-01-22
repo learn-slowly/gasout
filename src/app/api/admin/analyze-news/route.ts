@@ -63,14 +63,13 @@ export async function POST(request: Request) {
         const results = [];
         const errors = [];
 
-        // [Verified] The user's key has access to these specific models.
-        // We prioritize "Lite" models as they typically have higher availability/quota for free tier.
+        // 무료 티어에서 작동하는 모델 우선순위
+        // gemini-2.0-flash-lite는 무료 티어 할당량이 0이므로 제외
         const CANDIDATE_MODELS = [
-            "gemini-2.0-flash-lite-preview-02-05", // Priority 1: User requested & Lite (Likely best quota)
-            "gemini-2.0-flash-lite",              // Priority 2: Stable Lite
-            "gemini-2.0-flash",                   // Priority 3: Standard Flash (might have stricter limits)
-            "gemini-2.5-flash",                   // Priority 4: Bleeding edge
-            "gemini-2.0-flash-001"                // Priority 5: Explicit version
+            "gemini-1.5-flash",                   // Priority 1: 무료 티어에서 안정적
+            "gemini-1.5-flash-latest",            // Priority 2: 최신 버전
+            "gemini-1.5-pro",                     // Priority 3: Pro 모델 (할당량 적음)
+            "gemini-pro",                         // Priority 4: 레거시 Pro
         ];
 
         for (const article of articles) {
