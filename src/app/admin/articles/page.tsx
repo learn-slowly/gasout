@@ -382,18 +382,32 @@ export default function ArticlesPage() {
         body: JSON.stringify({ articleId })
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const result = await response.json();
 
-      if (result.success) {
+      if (result.success && result.processed > 0) {
         // 로컬 상태 업데이트
         await loadArticles(); // 기사 목록 새로고침
+        console.log('✅ AI 분석 완료:', result.results);
+      } else if (result.errors && result.errors.length > 0) {
+        const errorMsg = result.errors[0].error;
+        console.error('AI 분석 실패:', errorMsg);
+        
+        // Gemini API 할당량 초과 에러 처리
+        if (errorMsg.includes('429') || errorMsg.includes('Quota exceeded')) {
+          alert('⚠️ AI 분석 할당량이 초과되었습니다.\n잠시 후 다시 시도해주세요.');
+        } else {
+          alert(`AI 분석 실패: ${errorMsg.substring(0, 100)}...`);
+        }
       } else {
-        console.error('AI 분석 실패:', result.error || result.errors);
-        alert(`AI 분석 실패: ${result.error || result.errors?.[0]?.error || '알 수 없는 오류'}`);
+        console.log('AI 분석 결과:', result);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('AI 분석 오류:', error);
-      alert('AI 분석 중 오류가 발생했습니다.');
+      alert(`AI 분석 중 오류가 발생했습니다.\n${error.message || '알 수 없는 오류'}`);
     } finally {
       setAnalyzingArticles(prev => {
         const next = new Set(prev);
