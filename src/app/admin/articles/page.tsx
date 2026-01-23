@@ -132,7 +132,13 @@ export default function ArticlesPage() {
     // AI 점수 필터
     if (aiFilter !== "all") {
       filtered = filtered.filter(article => {
-        if (aiFilter === "high") {
+        if (aiFilter === "review") {
+          // 검토 대기 (80점 이상 + 대기중)
+          return article.status === 'pending' && 
+                 article.ai_score !== null && 
+                 article.ai_score !== undefined && 
+                 article.ai_score >= 80;
+        } else if (aiFilter === "high") {
           // 관련성 높음 (70점 이상)
           return article.ai_score !== null && article.ai_score >= 70;
         } else if (aiFilter === "medium") {
@@ -657,6 +663,7 @@ export default function ArticlesPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="review">⭐ 검토 대기 (80점↑)</SelectItem>
                   <SelectItem value="high">🟢 관련성 높음 (70점↑)</SelectItem>
                   <SelectItem value="medium">🟡 중간 (30-70점)</SelectItem>
                   <SelectItem value="low">🔴 관련성 낮음 (30점↓)</SelectItem>
