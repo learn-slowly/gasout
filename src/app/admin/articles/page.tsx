@@ -67,6 +67,7 @@ interface Article {
   ai_summary?: string;
   ai_analyzed_at?: string;
   ai_model_version?: string;
+  tags?: string[];
 }
 
 export default function ArticlesPage() {
@@ -77,6 +78,8 @@ export default function ArticlesPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState<string>("all");
   const [aiFilter, setAiFilter] = useState<string>("all"); // AI 점수 필터
+  const [tagFilter, setTagFilter] = useState<string>("all"); // 주제 태그 필터
+  const [periodFilter, setPeriodFilter] = useState<string>("all"); // 기간 필터
 
   // 편집 모달 상태
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
@@ -155,8 +158,43 @@ export default function ArticlesPage() {
       });
     }
 
+    // 주제 태그 필터
+    if (tagFilter !== "all") {
+      filtered = filtered.filter(article => {
+        return article.tags && article.tags.includes(tagFilter);
+      });
+    }
+
+    // 기간 필터
+    if (periodFilter !== "all") {
+      const now = new Date();
+      let startDate = new Date();
+      
+      switch (periodFilter) {
+        case '1week':
+          startDate.setDate(now.getDate() - 7);
+          break;
+        case '1month':
+          startDate.setMonth(now.getMonth() - 1);
+          break;
+        case '3months':
+          startDate.setMonth(now.getMonth() - 3);
+          break;
+        case '6months':
+          startDate.setMonth(now.getMonth() - 6);
+          break;
+      }
+      
+      if (periodFilter !== 'all') {
+        filtered = filtered.filter(article => {
+          const publishedDate = new Date(article.published_at);
+          return publishedDate >= startDate;
+        });
+      }
+    }
+
     setFilteredArticles(filtered);
-  }, [articles, searchTerm, statusFilter, locationFilter, aiFilter]);
+  }, [articles, searchTerm, statusFilter, locationFilter, aiFilter, tagFilter, periodFilter]);
 
   const loadArticles = async () => {
     try {
@@ -688,18 +726,20 @@ export default function ArticlesPage() {
           <CardHeader className="border-b border-white/5 pb-4">
             <CardTitle className="text-lg text-white">필터 및 검색</CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                <Input
-                  placeholder="제목 또는 내용 검색..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-slate-800/50 border-white/10 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-indigo-500/20"
-                />
-              </div>
+          <CardContent className="pt-6 space-y-4">
+            {/* 첫 번째 행: 검색 */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+              <Input
+                placeholder="제목 또는 내용 검색..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-slate-800/50 border-white/10 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-indigo-500/20"
+              />
+            </div>
 
+            {/* 두 번째 행: 기본 필터 */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="bg-slate-800/50 border-white/10 text-white focus:ring-indigo-500/20">
                   <SelectValue placeholder="상태 선택" />
@@ -745,12 +785,46 @@ export default function ArticlesPage() {
                   setStatusFilter("all");
                   setLocationFilter("all");
                   setAiFilter("all");
+                  setTagFilter("all");
+                  setPeriodFilter("all");
                 }}
                 className="bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white"
               >
                 <Filter className="w-4 h-4 mr-2" />
                 필터 초기화
               </Button>
+            </div>
+
+            {/* 세 번째 행: 주제 및 기간 필터 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Select value={tagFilter} onValueChange={setTagFilter}>
+                <SelectTrigger className="bg-slate-800/50 border-white/10 text-white focus:ring-indigo-500/20">
+                  <SelectValue placeholder="주제 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">🏷️ 전체 주제</SelectItem>
+                  <SelectItem value="LNG 발전소">🏭 LNG 발전소</SelectItem>
+                  <SelectItem value="탄소중립">🌱 탄소중립</SelectItem>
+                  <SelectItem value="석탄화력">⚡ 석탄화력</SelectItem>
+                  <SelectItem value="시민단체">👥 시민단체</SelectItem>
+                  <SelectItem value="에너지정책">📋 에너지정책</SelectItem>
+                  <SelectItem value="원전">☢️ 원전</SelectItem>
+                  <SelectItem value="재생에너지">♻️ 재생에너지</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={periodFilter} onValueChange={setPeriodFilter}>
+                <SelectTrigger className="bg-slate-800/50 border-white/10 text-white focus:ring-indigo-500/20">
+                  <SelectValue placeholder="기간 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">📅 전체 기간</SelectItem>
+                  <SelectItem value="1week">최근 1주일</SelectItem>
+                  <SelectItem value="1month">최근 1개월</SelectItem>
+                  <SelectItem value="3months">최근 3개월</SelectItem>
+                  <SelectItem value="6months">최근 6개월</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
@@ -849,7 +923,7 @@ export default function ArticlesPage() {
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between gap-6">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-3">
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
                         {getStatusBadge(article.status)}
                         {getLocationBadge(article.location_type)}
                         {article.power_plant_id && (
@@ -859,6 +933,15 @@ export default function ArticlesPage() {
                           </Badge>
                         )}
                         {getAIBadge(article)}
+                        {article.tags && article.tags.length > 0 && (
+                          <>
+                            {article.tags.slice(0, 3).map((tag, idx) => (
+                              <Badge key={idx} variant="outline" className="bg-indigo-500/10 text-indigo-300 border-indigo-500/20 text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </>
+                        )}
                       </div>
 
                       <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-indigo-300 transition-colors">
