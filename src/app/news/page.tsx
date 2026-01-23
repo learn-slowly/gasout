@@ -38,6 +38,7 @@ interface NewsArticle {
     si_do?: string;
     si_gun_gu?: string;
     content?: string;
+    tags?: string[];
 }
 
 const ITEMS_PER_PAGE = 12;
@@ -47,12 +48,14 @@ export default function NewsPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [filterType, setFilterType] = useState<string>("all");
+    const [tagFilter, setTagFilter] = useState<string>("all");
+    const [periodFilter, setPeriodFilter] = useState<string>("all");
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
 
     useEffect(() => {
         fetchNews(true);
-    }, [filterType, searchTerm]);
+    }, [filterType, tagFilter, periodFilter, searchTerm]);
 
     const fetchNews = async (reset: boolean = false, targetPage?: number) => {
         try {
@@ -69,6 +72,34 @@ export default function NewsPage() {
 
             if (filterType !== 'all') {
                 query = query.eq('location_type', filterType);
+            }
+
+            if (tagFilter !== 'all') {
+                query = query.contains('tags', [tagFilter]);
+            }
+
+            if (periodFilter !== 'all') {
+                const now = new Date();
+                let startDate = new Date();
+                
+                switch (periodFilter) {
+                    case '1week':
+                        startDate.setDate(now.getDate() - 7);
+                        break;
+                    case '1month':
+                        startDate.setMonth(now.getMonth() - 1);
+                        break;
+                    case '3months':
+                        startDate.setMonth(now.getMonth() - 3);
+                        break;
+                    case '6months':
+                        startDate.setMonth(now.getMonth() - 6);
+                        break;
+                }
+                
+                if (periodFilter !== 'all') {
+                    query = query.gte('published_at', startDate.toISOString());
+                }
             }
 
             if (searchTerm) {
@@ -133,22 +164,70 @@ export default function NewsPage() {
             <main className="max-w-7xl mx-auto p-4 sm:p-8 lg:p-10 space-y-8">
                 <div className="space-y-8">
                     {/* 검색 및 필터 */}
-                    <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-6 rounded-2xl shadow-md border border-gray-200 animate-fade-in-up">
-                        <div className="flex items-center gap-2 w-full md:w-auto">
+                    <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200 animate-fade-in-up space-y-4">
+                        {/* 필터 행 */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                            {/* 지역 필터 */}
                             <Select value={filterType} onValueChange={setFilterType}>
-                                <SelectTrigger className="w-[140px] bg-white border-gray-300 text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                    <SelectValue placeholder="전체 보기" />
+                                <SelectTrigger className="bg-white border-gray-300 text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <SelectValue placeholder="지역" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-white border-gray-200">
-                                    <SelectItem value="all" className="text-gray-900 font-medium">전체 뉴스</SelectItem>
-                                    <SelectItem value="national" className="text-gray-900 font-medium">전국 뉴스</SelectItem>
-                                    <SelectItem value="regional" className="text-gray-900 font-medium">지역 뉴스</SelectItem>
-                                    <SelectItem value="power_plant" className="text-gray-900 font-medium">발전소 뉴스</SelectItem>
+                                    <SelectItem value="all" className="text-gray-900 font-medium">📍 전체 지역</SelectItem>
+                                    <SelectItem value="national" className="text-gray-900 font-medium">🇰🇷 전국</SelectItem>
+                                    <SelectItem value="regional" className="text-gray-900 font-medium">🏘️ 지역</SelectItem>
+                                    <SelectItem value="power_plant" className="text-gray-900 font-medium">🏭 발전소</SelectItem>
                                 </SelectContent>
                             </Select>
+
+                            {/* 주제 필터 */}
+                            <Select value={tagFilter} onValueChange={setTagFilter}>
+                                <SelectTrigger className="bg-white border-gray-300 text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <SelectValue placeholder="주제" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white border-gray-200">
+                                    <SelectItem value="all" className="text-gray-900 font-medium">🏷️ 전체 주제</SelectItem>
+                                    <SelectItem value="LNG 발전소" className="text-gray-900 font-medium">🏭 LNG 발전소</SelectItem>
+                                    <SelectItem value="탄소중립" className="text-gray-900 font-medium">🌱 탄소중립</SelectItem>
+                                    <SelectItem value="석탄화력" className="text-gray-900 font-medium">⚡ 석탄화력</SelectItem>
+                                    <SelectItem value="시민단체" className="text-gray-900 font-medium">👥 시민단체</SelectItem>
+                                    <SelectItem value="에너지정책" className="text-gray-900 font-medium">📋 에너지정책</SelectItem>
+                                    <SelectItem value="원전" className="text-gray-900 font-medium">☢️ 원전</SelectItem>
+                                    <SelectItem value="재생에너지" className="text-gray-900 font-medium">♻️ 재생에너지</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            {/* 기간 필터 */}
+                            <Select value={periodFilter} onValueChange={setPeriodFilter}>
+                                <SelectTrigger className="bg-white border-gray-300 text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <SelectValue placeholder="기간" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white border-gray-200">
+                                    <SelectItem value="all" className="text-gray-900 font-medium">📅 전체 기간</SelectItem>
+                                    <SelectItem value="1week" className="text-gray-900 font-medium">최근 1주일</SelectItem>
+                                    <SelectItem value="1month" className="text-gray-900 font-medium">최근 1개월</SelectItem>
+                                    <SelectItem value="3months" className="text-gray-900 font-medium">최근 3개월</SelectItem>
+                                    <SelectItem value="6months" className="text-gray-900 font-medium">최근 6개월</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            {/* 필터 초기화 버튼 */}
+                            <Button 
+                                variant="outline"
+                                onClick={() => {
+                                    setFilterType("all");
+                                    setTagFilter("all");
+                                    setPeriodFilter("all");
+                                    setSearchTerm("");
+                                }}
+                                className="bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100 font-medium"
+                            >
+                                🔄 초기화
+                            </Button>
                         </div>
 
-                        <div className="flex gap-2 w-full md:w-auto flex-1 max-w-md">
+                        {/* 검색 행 */}
+                        <div className="flex gap-2">
                             <Input
                                 placeholder="검색어를 입력하세요..."
                                 value={searchTerm}
@@ -156,7 +235,7 @@ export default function NewsPage() {
                                 className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 onKeyDown={(e) => e.key === 'Enter' && fetchNews(true)}
                             />
-                            <Button onClick={() => fetchNews(true)} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-md">
+                            <Button onClick={() => fetchNews(true)} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-md px-8">
                                 검색
                             </Button>
                         </div>
@@ -184,7 +263,7 @@ export default function NewsPage() {
                                 {news.map((item, index) => (
                                     <Card key={item.id} className="group bg-white border-2 border-gray-200 shadow-lg hover:shadow-2xl rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 animate-fade-in-up" style={{ animationDelay: `${index * 50}ms` }}>
                                         <CardContent className="p-6 flex flex-col h-full">
-                                            <div className="flex items-center gap-2 mb-4">
+                                            <div className="flex flex-wrap items-center gap-2 mb-4">
                                                 <span className={`text-xs px-3 py-1.5 rounded-full font-bold tracking-wide shadow-sm ${item.location_type === 'national' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
                                                     item.location_type === 'regional' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
                                                         'bg-purple-100 text-purple-800 border border-purple-200'
@@ -192,7 +271,16 @@ export default function NewsPage() {
                                                     {item.location_type === 'national' ? '전국' :
                                                         item.location_type === 'regional' ? '지역' : '발전소'}
                                                 </span>
-                                                <span className="text-xs text-gray-600 font-semibold">
+                                                {item.tags && item.tags.length > 0 && (
+                                                    <>
+                                                        {item.tags.slice(0, 2).map((tag, idx) => (
+                                                            <span key={idx} className="text-xs px-2.5 py-1 rounded-full font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                                                {tag}
+                                                            </span>
+                                                        ))}
+                                                    </>
+                                                )}
+                                                <span className="text-xs text-gray-600 font-semibold ml-auto">
                                                     {new Date(item.published_at).toLocaleDateString('ko-KR')}
                                                 </span>
                                             </div>
