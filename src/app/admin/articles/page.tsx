@@ -557,16 +557,57 @@ export default function ArticlesPage() {
             </div>
           </div>
           
-          <Button
-            variant="outline"
-            className="bg-purple-500/10 border-purple-500/20 text-purple-300 hover:bg-purple-500/20 hover:text-purple-200 px-6"
-            onClick={analyzeAllPending}
-          >
-            🤖 전체 AI 분석 실행
-            <span className="ml-2 text-xs text-purple-400">
-              ({articles.filter(a => a.status === 'pending' && (a.ai_score === null || a.ai_score === undefined)).length}개 대기중)
-            </span>
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              className="bg-purple-500/10 border-purple-500/20 text-purple-300 hover:bg-purple-500/20 hover:text-purple-200 px-6"
+              onClick={analyzeAllPending}
+            >
+              🤖 전체 AI 분석 실행
+              <span className="ml-2 text-xs text-purple-400">
+                ({articles.filter(a => a.status === 'pending' && (a.ai_score === null || a.ai_score === undefined)).length}개 대기중)
+              </span>
+            </Button>
+            
+            <Button
+              variant="outline"
+              className="bg-red-500/10 border-red-500/20 text-red-300 hover:bg-red-500/20 hover:text-red-200 px-6"
+              onClick={async () => {
+                const lowScoreArticles = articles.filter(a => 
+                  a.status === 'pending' && 
+                  a.ai_score !== null && 
+                  a.ai_score !== undefined && 
+                  a.ai_score < 80
+                );
+
+                if (lowScoreArticles.length === 0) {
+                  alert('80점 이하 기사가 없습니다.');
+                  return;
+                }
+
+                const message = `${lowScoreArticles.length}개의 80점 이하 기사를 일괄 거부합니다.\n\n계속하시겠습니까?`;
+                if (!confirm(message)) {
+                  return;
+                }
+
+                try {
+                  for (const article of lowScoreArticles) {
+                    await updateArticleStatus(article.id, 'rejected');
+                  }
+                  alert(`✅ ${lowScoreArticles.length}개 기사를 거부했습니다.`);
+                  await loadArticles();
+                } catch (error) {
+                  console.error('일괄 거부 오류:', error);
+                  alert('일괄 거부 중 오류가 발생했습니다.');
+                }
+              }}
+            >
+              ❌ 80점 이하 일괄 거부
+              <span className="ml-2 text-xs text-red-400">
+                ({articles.filter(a => a.status === 'pending' && a.ai_score !== null && a.ai_score !== undefined && a.ai_score < 80).length}개)
+              </span>
+            </Button>
+          </div>
         </div>
 
         {/* 필터 및 검색 */}
