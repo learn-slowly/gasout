@@ -111,25 +111,39 @@ export default function NewsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/50">
-
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+            {/* 헤더 */}
+            <div className="bg-white border-b border-gray-200 shadow-sm">
+                <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-10 py-8">
+                    <div className="flex items-center gap-4 mb-2">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-900">뉴스 아카이브</h1>
+                            <p className="text-sm text-gray-600 mt-1">LNG 발전소와 탄소중립 관련 최신 뉴스</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {/* 메인 컨텐츠 */}
             <main className="max-w-7xl mx-auto p-4 sm:p-8 lg:p-10 space-y-8">
                 <div className="space-y-8">
                     {/* 검색 및 필터 */}
-                    {/* 검색 및 필터 */}
-                    <div className="flex flex-col md:flex-row gap-4 items-center justify-between glass-card p-6 rounded-2xl shadow-lg shadow-slate-900/5 animate-fade-in-up">
+                    <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-6 rounded-2xl shadow-md border border-gray-200 animate-fade-in-up">
                         <div className="flex items-center gap-2 w-full md:w-auto">
                             <Select value={filterType} onValueChange={setFilterType}>
-                                <SelectTrigger className="w-[140px] border-slate-200 focus:ring-slate-900">
+                                <SelectTrigger className="w-[140px] bg-white border-gray-300 text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                     <SelectValue placeholder="전체 보기" />
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">전체 뉴스</SelectItem>
-                                    <SelectItem value="national">전국 뉴스</SelectItem>
-                                    <SelectItem value="regional">지역 뉴스</SelectItem>
-                                    <SelectItem value="power_plant">발전소 뉴스</SelectItem>
+                                <SelectContent className="bg-white border-gray-200">
+                                    <SelectItem value="all" className="text-gray-900 font-medium">전체 뉴스</SelectItem>
+                                    <SelectItem value="national" className="text-gray-900 font-medium">전국 뉴스</SelectItem>
+                                    <SelectItem value="regional" className="text-gray-900 font-medium">지역 뉴스</SelectItem>
+                                    <SelectItem value="power_plant" className="text-gray-900 font-medium">발전소 뉴스</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -139,10 +153,10 @@ export default function NewsPage() {
                                 placeholder="검색어를 입력하세요..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="border-slate-200 focus:ring-slate-900"
+                                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 onKeyDown={(e) => e.key === 'Enter' && fetchNews(true)}
                             />
-                            <Button onClick={() => fetchNews(true)} className="bg-slate-900 hover:bg-slate-800 text-white">
+                            <Button onClick={() => fetchNews(true)} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-md">
                                 검색
                             </Button>
                         </div>
@@ -150,44 +164,50 @@ export default function NewsPage() {
 
                     {/* 뉴스 그리드 */}
                     {loading && news.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20">
-                            <div className="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-slate-900"></div>
-                            <p className="mt-4 text-slate-500 font-medium">뉴스를 불러오는 중입니다...</p>
+                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl shadow-md">
+                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-100 border-t-blue-600"></div>
+                            <p className="mt-4 text-gray-700 font-semibold text-lg">뉴스를 불러오는 중입니다...</p>
                         </div>
                     ) : news.length === 0 ? (
-                        <div className="text-center py-20 bg-white rounded-2xl border border-slate-200 border-dashed">
-                            <p className="text-slate-500 text-lg">검색 결과가 없습니다.</p>
+                        <div className="text-center py-20 bg-white rounded-2xl border-2 border-gray-200 border-dashed shadow-md">
+                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <p className="text-gray-700 text-lg font-semibold">검색 결과가 없습니다.</p>
+                            <p className="text-gray-500 text-sm mt-2">다른 검색어로 시도해보세요.</p>
                         </div>
                     ) : (
                         <>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {news.map((item, index) => (
-                                    <Card key={item.id} className="group border-0 shadow-lg shadow-slate-900/5 glass-card ring-1 ring-white/20 rounded-2xl overflow-hidden hover-lift animate-fade-in-up" style={{ animationDelay: `${index * 100}ms` }}>
+                                    <Card key={item.id} className="group bg-white border-2 border-gray-200 shadow-lg hover:shadow-2xl rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 animate-fade-in-up" style={{ animationDelay: `${index * 50}ms` }}>
                                         <CardContent className="p-6 flex flex-col h-full">
                                             <div className="flex items-center gap-2 mb-4">
-                                                <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold tracking-wide ${item.location_type === 'national' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
-                                                    item.location_type === 'regional' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
-                                                        'bg-purple-50 text-purple-700 border border-purple-100'
+                                                <span className={`text-xs px-3 py-1.5 rounded-full font-bold tracking-wide shadow-sm ${item.location_type === 'national' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+                                                    item.location_type === 'regional' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
+                                                        'bg-purple-100 text-purple-800 border border-purple-200'
                                                     }`}>
                                                     {item.location_type === 'national' ? '전국' :
                                                         item.location_type === 'regional' ? '지역' : '발전소'}
                                                 </span>
-                                                <span className="text-xs text-slate-400 font-medium">
+                                                <span className="text-xs text-gray-600 font-semibold">
                                                     {new Date(item.published_at).toLocaleDateString('ko-KR')}
                                                 </span>
                                             </div>
 
-                                            <h3 className="font-bold text-lg text-slate-900 mb-3 line-clamp-2 group-hover:text-blue-700 transition-colors">
+                                            <h3 className="font-bold text-xl text-gray-900 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors leading-tight">
                                                 {decodeHtmlEntities(item.title)}
                                             </h3>
 
-                                            <p className="text-sm text-slate-500 line-clamp-3 mb-6 flex-1 leading-relaxed">
+                                            <p className="text-sm text-gray-700 line-clamp-3 mb-6 flex-1 leading-relaxed">
                                                 {stripHtmlTags(decodeHtmlEntities(item.content || '')).substring(0, 150)}...
                                             </p>
 
-                                            <div className="flex items-center justify-between pt-4 border-t border-slate-100 mt-auto">
+                                            <div className="flex items-center justify-between pt-4 border-t-2 border-gray-100 mt-auto">
                                                 {item.si_do && item.si_gun_gu ? (
-                                                    <div className="text-xs text-slate-500 flex items-center gap-1.5 font-medium">
+                                                    <div className="text-xs text-gray-700 flex items-center gap-1.5 font-semibold">
                                                         <span className="text-lg">📍</span> {item.si_do} {item.si_gun_gu}
                                                     </div>
                                                 ) : (
@@ -196,7 +216,7 @@ export default function NewsPage() {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    className="text-slate-600 hover:text-slate-900 hover:bg-slate-50 -mr-2"
+                                                    className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 font-semibold -mr-2"
                                                     onClick={() => window.open(item.url, '_blank')}
                                                 >
                                                     원문 보기
@@ -217,15 +237,20 @@ export default function NewsPage() {
                                         size="lg"
                                         onClick={handleLoadMore}
                                         disabled={loading}
-                                        className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 px-8 rounded-full shadow-sm"
+                                        className="bg-white border-2 border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-blue-500 hover:text-blue-600 px-10 py-3 rounded-full shadow-md font-semibold transition-all"
                                     >
                                         {loading ? (
                                             <>
-                                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-slate-400 border-t-slate-900 mr-2"></div>
+                                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600 mr-2"></div>
                                                 불러오는 중...
                                             </>
                                         ) : (
-                                            '더 보기'
+                                            <>
+                                                더 보기
+                                                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </>
                                         )}
                                     </Button>
                                 </div>
