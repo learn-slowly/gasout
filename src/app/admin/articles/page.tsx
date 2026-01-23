@@ -76,6 +76,7 @@ export default function ArticlesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState<string>("all");
+  const [aiFilter, setAiFilter] = useState<string>("all"); // AI 점수 필터
 
   // 편집 모달 상태
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
@@ -128,8 +129,28 @@ export default function ArticlesPage() {
       filtered = filtered.filter(article => article.location_type === locationFilter);
     }
 
+    // AI 점수 필터
+    if (aiFilter !== "all") {
+      filtered = filtered.filter(article => {
+        if (aiFilter === "high") {
+          // 관련성 높음 (70점 이상)
+          return article.ai_score !== null && article.ai_score >= 70;
+        } else if (aiFilter === "medium") {
+          // 중간 (30-70점)
+          return article.ai_score !== null && article.ai_score >= 30 && article.ai_score < 70;
+        } else if (aiFilter === "low") {
+          // 관련성 낮음 (30점 미만)
+          return article.ai_score !== null && article.ai_score < 30;
+        } else if (aiFilter === "unanalyzed") {
+          // 미분석
+          return article.ai_score === null || article.ai_score === undefined;
+        }
+        return true;
+      });
+    }
+
     setFilteredArticles(filtered);
-  }, [articles, searchTerm, statusFilter, locationFilter]);
+  }, [articles, searchTerm, statusFilter, locationFilter, aiFilter]);
 
   const loadArticles = async () => {
     try {
@@ -417,7 +438,7 @@ export default function ArticlesPage() {
     }
   };
 
-  // 모든 미분석 기사 분석
+  // 모든 미분석 기사 일괄 분석
   const analyzeAllPending = async () => {
     const pendingArticles = articles.filter(a => 
       a.status === 'pending' && (a.ai_score === null || a.ai_score === undefined)
@@ -428,15 +449,38 @@ export default function ArticlesPage() {
       return;
     }
 
-    if (!confirm(`${pendingArticles.length}개의 기사를 분석하시겠습니까?`)) {
+    const message = `${pendingArticles.length}개의 미분석 기사를 AI로 분석합니다.\n\n` +
+                    `분석 후 자동으로:\n` +
+                    `- 관련성 높은 기사 (70점 이상): 승인 추천\n` +
+                    `- 관련성 낮은 기사 (30점 미만): 거부 추천\n` +
+                    `- 중간 점수: 수동 검토 필요\n\n` +
+                    `계속하시겠습니까?`;
+
+    if (!confirm(message)) {
       return;
     }
 
+    let analyzed = 0;
+    let failed = 0;
+
     for (const article of pendingArticles) {
-      await analyzeArticle(article.id);
-      // API 할당량을 고려하여 딜레이 추가
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      try {
+        await analyzeArticle(article.id);
+        analyzed++;
+        
+        // 진행 상황 표시
+        console.log(`진행: ${analyzed + failed}/${pendingArticles.length}`);
+        
+        // API 할당량을 고려하여 딜레이 추가
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      } catch (error) {
+        failed++;
+        console.error(`기사 ${article.id} 분석 실패:`, error);
+      }
     }
+
+    alert(`분석 완료!\n성공: ${analyzed}개\n실패: ${failed}개\n\n페이지를 새로고침하여 결과를 확인하세요.`);
+    await loadArticles(); // 기사 목록 새로고침
   };
 
   const formatDate = (dateString: string) => {
@@ -515,10 +559,13 @@ export default function ArticlesPage() {
           
           <Button
             variant="outline"
-            className="bg-purple-500/10 border-purple-500/20 text-purple-300 hover:bg-purple-500/20 hover:text-purple-200"
+            className="bg-purple-500/10 border-purple-500/20 text-purple-300 hover:bg-purple-500/20 hover:text-purple-200 px-6"
             onClick={analyzeAllPending}
           >
-            🤖 미분석 기사 AI 분석
+            🤖 전체 AI 분석 실행
+            <span className="ml-2 text-xs text-purple-400">
+              ({articles.filter(a => a.status === 'pending' && (a.ai_score === null || a.ai_score === undefined)).length}개 대기중)
+            </span>
           </Button>
         </div>
 
@@ -563,12 +610,26 @@ export default function ArticlesPage() {
                 </SelectContent>
               </Select>
 
+              <Select value={aiFilter} onValueChange={setAiFilter}>
+                <SelectTrigger className="bg-slate-800/50 border-white/10 text-white focus:ring-indigo-500/20">
+                  <SelectValue placeholder="AI 점수" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="high">🟢 관련성 높음 (70점↑)</SelectItem>
+                  <SelectItem value="medium">🟡 중간 (30-70점)</SelectItem>
+                  <SelectItem value="low">🔴 관련성 낮음 (30점↓)</SelectItem>
+                  <SelectItem value="unanalyzed">⚪ 미분석</SelectItem>
+                </SelectContent>
+              </Select>
+
               <Button
                 variant="outline"
                 onClick={() => {
                   setSearchTerm("");
                   setStatusFilter("all");
                   setLocationFilter("all");
+                  setAiFilter("all");
                 }}
                 className="bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white"
               >
@@ -660,6 +721,7 @@ export default function ArticlesPage() {
                     setSearchTerm("");
                     setStatusFilter("all");
                     setLocationFilter("all");
+                    setAiFilter("all");
                   }}
                 >
                   필터 초기화
@@ -734,28 +796,6 @@ export default function ArticlesPage() {
                           <Edit className="w-4 h-4 mr-1" />
                           편집
                         </Button>
-
-                        {/* AI 분석 버튼 */}
-                        {(article.ai_score === null || article.ai_score === undefined) && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="bg-purple-500/10 border-purple-500/20 text-purple-300 hover:bg-purple-500/20 hover:text-purple-200"
-                            onClick={() => analyzeArticle(article.id)}
-                            disabled={analyzingArticles.has(article.id)}
-                          >
-                            {analyzingArticles.has(article.id) ? (
-                              <>
-                                <div className="animate-spin w-4 h-4 mr-1 border-2 border-purple-300 border-t-transparent rounded-full" />
-                                분석 중...
-                              </>
-                            ) : (
-                              <>
-                                🤖 AI 분석
-                              </>
-                            )}
-                          </Button>
-                        )}
 
                         {/* 상태 변경 버튼들 */}
                         <div className="flex flex-col gap-2">
