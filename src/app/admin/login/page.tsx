@@ -80,7 +80,7 @@ export default function AdminLogin() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@example.com"
-                  className="h-10 text-sm"
+                  className="h-10 text-sm bg-white text-gray-900 placeholder:text-gray-500 border-gray-300"
                   required
                 />
               </div>
@@ -92,7 +92,7 @@ export default function AdminLogin() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="비밀번호를 입력하세요"
-                  className="h-10 text-sm"
+                  className="h-10 text-sm bg-white text-gray-900 placeholder:text-gray-500 border-gray-300"
                   required
                 />
               </div>
