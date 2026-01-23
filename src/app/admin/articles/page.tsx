@@ -160,13 +160,32 @@ export default function ArticlesPage() {
 
   const loadArticles = async () => {
     try {
-      const { data, error } = await supabase
-        .from('articles')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Supabase는 기본적으로 1000개 제한이 있으므로, 
+      // 모든 기사를 가져오기 위해 페이지네이션 사용
+      let allArticles: Article[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      let hasMore = true;
 
-      if (error) throw error;
-      setArticles(data || []);
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('articles')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          allArticles = [...allArticles, ...data];
+          from += pageSize;
+          hasMore = data.length === pageSize;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      setArticles(allArticles);
     } catch (error) {
       console.error('Error loading articles:', error);
     } finally {
