@@ -632,6 +632,54 @@ export default function ArticlesPage() {
                 ({articles.filter(a => a.status === 'pending' && a.ai_score !== null && a.ai_score !== undefined && a.ai_score < 80).length}개)
               </span>
             </Button>
+
+            <Button
+              variant="outline"
+              className="bg-orange-500/10 border-orange-500/20 text-orange-300 hover:bg-orange-500/20 hover:text-orange-200 px-6"
+              onClick={async () => {
+                try {
+                  // 먼저 삭제될 기사 수 확인
+                  const countResponse = await fetch('/api/admin/cleanup-rejected');
+                  const countData = await countResponse.json();
+
+                  if (!countData.success) {
+                    alert('삭제 대상 확인 중 오류가 발생했습니다.');
+                    return;
+                  }
+
+                  if (countData.count === 0) {
+                    alert('삭제할 오래된 거부 기사가 없습니다.');
+                    return;
+                  }
+
+                  const message = `거부된 지 30일이 지난 ${countData.count}개의 기사를 영구 삭제합니다.\n\n이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?`;
+                  if (!confirm(message)) {
+                    return;
+                  }
+
+                  // 삭제 실행
+                  const deleteResponse = await fetch('/api/admin/cleanup-rejected', {
+                    method: 'POST'
+                  });
+                  const deleteData = await deleteResponse.json();
+
+                  if (deleteData.success) {
+                    alert(`✅ ${deleteData.deletedCount}개의 오래된 거부 기사가 삭제되었습니다.`);
+                    await loadArticles();
+                  } else {
+                    alert(`삭제 중 오류가 발생했습니다: ${deleteData.error}`);
+                  }
+                } catch (error) {
+                  console.error('삭제 오류:', error);
+                  alert('삭제 중 오류가 발생했습니다.');
+                }
+              }}
+            >
+              🗑️ 오래된 거부 기사 삭제
+              <span className="ml-2 text-xs text-orange-400">
+                (30일 이상)
+              </span>
+            </Button>
           </div>
         </div>
 
