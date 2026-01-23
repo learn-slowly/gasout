@@ -44,11 +44,11 @@ export default function Footer() {
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             <li className="flex items-center gap-2">
                                 <Mail className="w-4 h-4" />
-                                <a href="mailto:contact@gasout.kr" className="hover:text-primary transition-colors">contact@gasout.kr</a>
+                                <a href="mailto:gnclimateaction@gmail.com" className="hover:text-primary transition-colors">gnclimateaction@gmail.com</a>
                             </li>
                             <li className="flex items-center gap-2">
                                 <Github className="w-4 h-4" />
-                                <a href="https://github.com/gasout-kr" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GitHub</a>
+                                <a href="https://github.com/learn-slowly/gasout" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GitHub</a>
                             </li>
                         </ul>
                     </div>
