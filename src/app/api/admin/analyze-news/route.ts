@@ -64,12 +64,11 @@ export async function POST(request: Request) {
         const errors = [];
 
         // 무료 티어에서 작동하는 모델 우선순위
-        // v1beta API에서 지원하는 모델만 사용
         const CANDIDATE_MODELS = [
-            "gemini-2.5-flash-lite",              // Priority 1: 최신 2.5 flash lite 모델
-            "gemini-1.5-flash",                   // Priority 2: 무료 티어에서 안정적 (15 RPM)
-            "gemini-1.5-flash-8b",                // Priority 3: 경량 모델 (15 RPM)
-            "gemini-1.5-pro",                     // Priority 4: Pro 모델 (2 RPM, 할당량 적음)
+            "gemini-3-flash-preview",             // Priority 1: 최신 Gemini 3 Flash (빠르고 효율적)
+            "gemini-2.5-flash-lite",              // Priority 2: Gemini 2.5 Flash Lite (15 RPM)
+            "gemini-1.5-flash",                   // Priority 3: 안정적인 1.5 Flash
+            "gemini-1.5-flash-8b",                // Priority 4: 경량 모델
         ];
 
         for (const article of articles) {
