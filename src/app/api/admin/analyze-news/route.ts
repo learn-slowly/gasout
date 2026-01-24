@@ -1,5 +1,5 @@
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
@@ -12,12 +12,14 @@ if (!supabaseServiceKey) {
 }
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey || "");
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY || "",
+});
 
 export async function POST(request: Request) {
     try {
-        if (!process.env.GEMINI_API_KEY) {
-            return NextResponse.json({ error: "Configuration Error: GEMINI_API_KEY is missing" }, { status: 500 });
+        if (!process.env.OPENAI_API_KEY) {
+            return NextResponse.json({ error: "Configuration Error: OPENAI_API_KEY is missing" }, { status: 500 });
         }
         if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
             return NextResponse.json({ error: "Configuration Error: SUPABASE_SERVICE_ROLE_KEY is missing. Check Vercel Env Vars." }, { status: 500 });
@@ -63,63 +65,58 @@ export async function POST(request: Request) {
         const results = [];
         const errors = [];
 
-        // 무료 티어에서 작동하는 모델 우선순위
-        const CANDIDATE_MODELS = [
-            "gemini-3-flash-preview",             // Priority 1: 최신 Gemini 3 Flash (빠르고 효율적)
-            "gemini-2.5-flash-lite",              // Priority 2: Gemini 2.5 Flash Lite (15 RPM)
-            "gemini-1.5-flash",                   // Priority 3: 안정적인 1.5 Flash
-            "gemini-1.5-flash-8b",                // Priority 4: 경량 모델
-        ];
-
         for (const article of articles) {
-            const prompt = `
-        Analyze the following news article for its relevance to 'LNG Power Plants', 'Climate Crisis', or 'Carbon Neutrality' in South Korea.
-        Title: ${article.title}
-        Content (brief): ${article.content?.substring(0, 500)}...
-        Respond ONLY with a JSON object in this format: { "relevance_score": number, "is_relevant": boolean, "summary": string }
-      `;
+            const prompt = `다음 뉴스 기사를 분석하여 한국의 'LNG 발전소', '기후위기', '탄소중립'과의 관련성을 평가해주세요.
+
+제목: ${article.title}
+내용: ${article.content?.substring(0, 500)}...
+
+다음 JSON 형식으로만 응답해주세요:
+{
+  "relevance_score": 0-100 사이의 숫자 (관련성 점수),
+  "is_relevant": true 또는 false (70점 이상이면 true),
+  "summary": "한국어로 1-2문장 요약"
+}`;
 
             try {
-                let analysis = null;
-                let lastError = null;
-                let successModel = "";
+                console.log(`Analyzing article ${article.id} with OpenAI GPT-4o-mini`);
+                
+                const completion = await openai.chat.completions.create({
+                    model: "gpt-4o-mini",
+                    messages: [
+                        {
+                            role: "system",
+                            content: "당신은 한국의 에너지 및 기후 정책 전문가입니다. 뉴스 기사를 분석하여 LNG 발전소, 기후위기, 탄소중립과의 관련성을 평가합니다."
+                        },
+                        {
+                            role: "user",
+                            content: prompt
+                        }
+                    ],
+                    temperature: 0.3,
+                    response_format: { type: "json_object" }
+                });
 
-                for (const modelName of CANDIDATE_MODELS) {
-                    try {
-                        console.log(`Trying model: ${modelName} for article ${article.id}`);
-                        const model = genAI.getGenerativeModel({ model: modelName });
-                        const result = await model.generateContent(prompt);
-                        const response = await result.response;
-                        const text = response.text();
-                        const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
-                        analysis = JSON.parse(jsonStr);
-                        successModel = modelName;
-                        console.log(`Success with model: ${modelName}`);
-                        break;
-                    } catch (e: any) {
-                        console.warn(`Failed with model ${modelName}: ${e.message}`);
-                        lastError = e;
-                        if (e.message.includes("429") || e.message.includes("Quota")) throw e;
-                    }
-                }
+                const responseText = completion.choices[0].message.content || "{}";
+                const analysis = JSON.parse(responseText);
 
-                if (!analysis) {
-                    throw new Error(`All candidate models failed. Checked: [${CANDIDATE_MODELS.join(', ')}]. Last error: ${lastError?.message}`);
-                }
+                console.log(`Successfully analyzed article ${article.id}`);
 
                 const { error: updateError } = await supabase
                     .from("articles")
                     .update({
                         ai_score: analysis.relevance_score,
                         is_relevant: analysis.is_relevant,
-                        ai_summary: analysis.summary
+                        ai_summary: analysis.summary,
+                        ai_analyzed_at: new Date().toISOString(),
+                        ai_model_version: "gpt-4o-mini"
                     })
                     .eq("id", article.id);
 
                 if (updateError) {
                     throw new Error(`Supabase update failed: ${updateError.message}`);
                 } else {
-                    results.push({ id: article.id, model: successModel, ...analysis });
+                    results.push({ id: article.id, model: "gpt-4o-mini", ...analysis });
                 }
             } catch (err: any) {
                 console.error(`Failed to analyze article ${article.id}:`, err);
