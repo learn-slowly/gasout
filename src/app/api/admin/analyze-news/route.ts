@@ -75,8 +75,20 @@ export async function POST(request: Request) {
 {
   "relevance_score": 0-100 사이의 숫자 (관련성 점수),
   "is_relevant": true 또는 false (70점 이상이면 true),
-  "summary": "한국어로 1-2문장 요약"
-}`;
+  "summary": "한국어로 1-2문장 요약",
+  "tags": ["태그1", "태그2", ...] (아래 목록에서 관련있는 태그만 선택)
+}
+
+사용 가능한 태그:
+- "LNG 발전소": LNG, 가스발전, 복합발전 관련
+- "탄소중립": 탄소중립, 기후위기, 기후변화, 온실가스 감축 관련
+- "석탄화력": 석탄발전, 화력발전 폐지 관련
+- "시민단체": 환경단체, 시민단체, 환경운동 관련
+- "에너지정책": 에너지믹스, 에너지정책, 전력수급, 전기요금 관련
+- "원전": 원자력발전, 원전 관련
+- "재생에너지": 태양광, 풍력, 수소, 재생에너지 관련
+
+점수가 70점 이상인 경우에만 태그를 부여하세요.`;
 
             try {
                 console.log(`Analyzing article ${article.id} with OpenAI GPT-4o-mini`);
@@ -86,7 +98,7 @@ export async function POST(request: Request) {
                     messages: [
                         {
                             role: "system",
-                            content: "당신은 한국의 에너지 및 기후 정책 전문가입니다. 뉴스 기사를 분석하여 LNG 발전소, 기후위기, 탄소중립과의 관련성을 평가합니다."
+                            content: "당신은 한국의 에너지 및 기후 정책 전문가입니다. 뉴스 기사를 분석하여 LNG 발전소, 기후위기, 탄소중립과의 관련성을 평가하고 적절한 태그를 부여합니다."
                         },
                         {
                             role: "user",
@@ -100,7 +112,10 @@ export async function POST(request: Request) {
                 const responseText = completion.choices[0].message.content || "{}";
                 const analysis = JSON.parse(responseText);
 
-                console.log(`Successfully analyzed article ${article.id}`);
+                console.log(`Successfully analyzed article ${article.id}`, analysis);
+
+                // 태그가 없거나 빈 배열이면 null로 설정
+                const tags = (analysis.tags && analysis.tags.length > 0) ? analysis.tags : null;
 
                 const { error: updateError } = await supabase
                     .from("articles")
@@ -108,6 +123,7 @@ export async function POST(request: Request) {
                         ai_score: analysis.relevance_score,
                         is_relevant: analysis.is_relevant,
                         ai_summary: analysis.summary,
+                        tags: tags,
                         ai_analyzed_at: new Date().toISOString(),
                         ai_model_version: "gpt-4o-mini"
                     })
