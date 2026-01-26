@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "전국 화력 발전소 현황",
-  description: "전국 화력 발전소 및 뉴스 정보",
+  title: "전국 LNG발전소 현황",
+  description: "전국 LNG발전소 및 기후·에너지 뉴스 정보",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
 };
 
