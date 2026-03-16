@@ -20,9 +20,6 @@ export default function TestStartPage() {
                     <p>
                         석탄을 LNG로 바꾸는 것은 나쁜 것을 다른 나쁜 것으로 바꾸는 것입니다.
                     </p>
-                    <p>
-                        우리가 바라는 에너지 전환은 모두가 참여하는 정의로운 방식으로 친환경 재생에너지 중심의 체계로 이동하는 것입니다.
-                    </p>
                 </div>
 
                 <div className="rounded-xl bg-gray-50 border border-gray-100 p-5 mb-10">
