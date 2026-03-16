@@ -1,12 +1,24 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { useEffect, useRef, useState } from "react";
+
 import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
-import L from "leaflet";
-import "leaflet.markercluster";
-import { useEffect, useRef, useState } from "react";
+
+// Leaflet JS imports - lazy loaded to avoid SSR "window is not defined" error
+let MapContainer: any, TileLayer: any, Marker: any, Popup: any, useMap: any;
+let L: any;
+if (typeof window !== "undefined") {
+  const rl = require("react-leaflet");
+  MapContainer = rl.MapContainer;
+  TileLayer = rl.TileLayer;
+  Marker = rl.Marker;
+  Popup = rl.Popup;
+  useMap = rl.useMap;
+  L = require("leaflet");
+  require("leaflet.markercluster");
+}
 import PlantOverlay from "../PlantOverlay";
 
 // 발전원 분류 함수 (연료 기반)

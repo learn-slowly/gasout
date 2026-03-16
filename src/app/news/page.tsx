@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,16 +12,17 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
+import { ArrowLeft, ExternalLink, Search, X, ChevronDown } from "lucide-react";
 
-// HTML 엔티티 디코딩 함수
 function decodeHtmlEntities(text: string): string {
+    if (typeof document === 'undefined') return text;
     const textArea = document.createElement('textarea');
     textArea.innerHTML = text;
     return textArea.value;
 }
 
-// HTML 태그 제거 함수
 function stripHtmlTags(html: string): string {
+    if (typeof document === 'undefined') return html;
     const tmp = document.createElement("DIV");
     tmp.innerHTML = html;
     return tmp.textContent || tmp.innerText || "";
@@ -43,6 +43,25 @@ interface NewsArticle {
 
 const ITEMS_PER_PAGE = 12;
 
+const LOCATION_LABELS: Record<string, string> = {
+    national: '전국',
+    regional: '지역',
+    power_plant: '발전소',
+};
+
+function formatRelativeDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffHours < 1) return '방금 전';
+    if (diffHours < 24) return `${diffHours}시간 전`;
+    if (diffDays < 7) return `${diffDays}일 전`;
+    return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+}
+
 export default function NewsPage() {
     const [news, setNews] = useState<NewsArticle[]>([]);
     const [loading, setLoading] = useState(true);
@@ -52,12 +71,9 @@ export default function NewsPage() {
     const [periodFilter, setPeriodFilter] = useState<string>("all");
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
+    const [totalCount, setTotalCount] = useState(0);
 
-    useEffect(() => {
-        fetchNews(true);
-    }, [filterType, tagFilter, periodFilter, searchTerm]);
-
-    const fetchNews = async (reset: boolean = false, targetPage?: number) => {
+    const fetchNews = useCallback(async (reset: boolean = false, targetPage?: number) => {
         try {
             if (reset) {
                 setLoading(true);
@@ -70,54 +86,27 @@ export default function NewsPage() {
                 .eq('status', 'approved')
                 .order('published_at', { ascending: false });
 
-            if (filterType !== 'all') {
-                query = query.eq('location_type', filterType);
-            }
-
-            if (tagFilter !== 'all') {
-                query = query.contains('tags', [tagFilter]);
-            }
+            if (filterType !== 'all') query = query.eq('location_type', filterType);
+            if (tagFilter !== 'all') query = query.contains('tags', [tagFilter]);
 
             if (periodFilter !== 'all') {
-                const now = new Date();
-                let startDate = new Date();
-                
+                const startDate = new Date();
                 switch (periodFilter) {
-                    case '1week':
-                        startDate.setDate(now.getDate() - 7);
-                        break;
-                    case '1month':
-                        startDate.setMonth(now.getMonth() - 1);
-                        break;
-                    case '3months':
-                        startDate.setMonth(now.getMonth() - 3);
-                        break;
-                    case '6months':
-                        startDate.setMonth(now.getMonth() - 6);
-                        break;
+                    case '1week': startDate.setDate(startDate.getDate() - 7); break;
+                    case '1month': startDate.setMonth(startDate.getMonth() - 1); break;
+                    case '3months': startDate.setMonth(startDate.getMonth() - 3); break;
                 }
-                
-                if (periodFilter !== 'all') {
-                    query = query.gte('published_at', startDate.toISOString());
-                }
+                query = query.gte('published_at', startDate.toISOString());
             }
 
-            if (searchTerm) {
-                query = query.ilike('title', `%${searchTerm}%`);
-            }
+            if (searchTerm) query = query.ilike('title', `%${searchTerm}%`);
 
             const currentPage = reset ? 1 : (targetPage ?? page);
             const from = (currentPage - 1) * ITEMS_PER_PAGE;
             const to = from + ITEMS_PER_PAGE - 1;
 
             const { data, error, count } = await query.range(from, to);
-
-            if (error) {
-                // Fallback if column doesn't exist yet, just ignore error and try fetching without filter? 
-                // Or just throw. Let's log it.
-                console.error("Supabase query error (possibly missing columns):", error);
-                throw error;
-            }
+            if (error) throw error;
 
             if (reset) {
                 setNews(data || []);
@@ -125,7 +114,8 @@ export default function NewsPage() {
                 setNews(prev => [...prev, ...(data || [])]);
             }
 
-            if (count) {
+            if (count != null) {
+                setTotalCount(count);
                 setHasMore(to < count - 1);
             }
         } catch (error) {
@@ -133,7 +123,11 @@ export default function NewsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [filterType, tagFilter, periodFilter, searchTerm, page]);
+
+    useEffect(() => {
+        fetchNews(true);
+    }, [filterType, tagFilter, periodFilter, searchTerm]);
 
     const handleLoadMore = () => {
         const nextPage = page + 1;
@@ -141,211 +135,204 @@ export default function NewsPage() {
         fetchNews(false, nextPage);
     };
 
+    const hasActiveFilters = filterType !== 'all' || tagFilter !== 'all' || periodFilter !== 'all' || searchTerm !== '';
+
+    const clearFilters = () => {
+        setFilterType("all");
+        setTagFilter("all");
+        setPeriodFilter("all");
+        setSearchTerm("");
+    };
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-            {/* 헤더 */}
-            <div className="bg-white border-b border-gray-200 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-10 py-8">
-                    <div className="flex items-center gap-4 mb-2">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900">뉴스 아카이브</h1>
-                            <p className="text-sm text-gray-600 mt-1">LNG 발전소와 탄소중립 관련 최신 뉴스</p>
-                        </div>
-                    </div>
+        <div className="min-h-screen bg-background">
+            <main className="max-w-3xl mx-auto px-5 pt-28 pb-20">
+
+                {/* Back */}
+                <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-10">
+                    <ArrowLeft className="w-4 h-4" />
+                    지도로 돌아가기
+                </Link>
+
+                {/* Header */}
+                <div className="mb-8">
+                    <h1 className="text-3xl font-black tracking-tight text-foreground mb-2">
+                        뉴스
+                    </h1>
+                    <p className="text-sm text-muted-foreground">
+                        LNG 인프라 관련 뉴스를 실시간으로 수집합니다
+                        {totalCount > 0 && <span className="ml-1 text-slate-500">({totalCount}건)</span>}
+                    </p>
                 </div>
-            </div>
 
-            {/* 메인 컨텐츠 */}
-            <main className="max-w-7xl mx-auto p-4 sm:p-8 lg:p-10 space-y-8">
-                <div className="space-y-8">
-                    {/* 검색 및 필터 */}
-                    <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200 animate-fade-in-up space-y-4">
-                        {/* 필터 행 */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                            {/* 지역 필터 */}
-                            <Select value={filterType} onValueChange={setFilterType}>
-                                <SelectTrigger className="bg-white border-gray-300 text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                    <SelectValue placeholder="지역" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-white border-gray-200">
-                                    <SelectItem value="all" className="text-gray-900 font-medium">📍 전체 지역</SelectItem>
-                                    <SelectItem value="national" className="text-gray-900 font-medium">🇰🇷 전국</SelectItem>
-                                    <SelectItem value="regional" className="text-gray-900 font-medium">🏘️ 지역</SelectItem>
-                                    <SelectItem value="power_plant" className="text-gray-900 font-medium">🏭 발전소</SelectItem>
-                                </SelectContent>
-                            </Select>
-
-                            {/* 주제 필터 */}
-                            <Select value={tagFilter} onValueChange={setTagFilter}>
-                                <SelectTrigger className="bg-white border-gray-300 text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                    <SelectValue placeholder="주제" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-white border-gray-200">
-                                    <SelectItem value="all" className="text-gray-900 font-medium">🏷️ 전체 주제</SelectItem>
-                                    <SelectItem value="LNG 발전소" className="text-gray-900 font-medium">🏭 LNG 발전소</SelectItem>
-                                    <SelectItem value="탄소중립" className="text-gray-900 font-medium">🌱 탄소중립</SelectItem>
-                                    <SelectItem value="석탄화력" className="text-gray-900 font-medium">⚡ 석탄화력</SelectItem>
-                                    <SelectItem value="시민단체" className="text-gray-900 font-medium">👥 시민단체</SelectItem>
-                                    <SelectItem value="에너지정책" className="text-gray-900 font-medium">📋 에너지정책</SelectItem>
-                                    <SelectItem value="원전" className="text-gray-900 font-medium">☢️ 원전</SelectItem>
-                                    <SelectItem value="재생에너지" className="text-gray-900 font-medium">♻️ 재생에너지</SelectItem>
-                                </SelectContent>
-                            </Select>
-
-                            {/* 기간 필터 */}
-                            <Select value={periodFilter} onValueChange={setPeriodFilter}>
-                                <SelectTrigger className="bg-white border-gray-300 text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                    <SelectValue placeholder="기간" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-white border-gray-200">
-                                    <SelectItem value="all" className="text-gray-900 font-medium">📅 전체 기간</SelectItem>
-                                    <SelectItem value="1week" className="text-gray-900 font-medium">최근 1주일</SelectItem>
-                                    <SelectItem value="1month" className="text-gray-900 font-medium">최근 1개월</SelectItem>
-                                    <SelectItem value="3months" className="text-gray-900 font-medium">최근 3개월</SelectItem>
-                                    <SelectItem value="6months" className="text-gray-900 font-medium">최근 6개월</SelectItem>
-                                </SelectContent>
-                            </Select>
-
-                            {/* 필터 초기화 버튼 */}
-                            <Button 
-                                variant="outline"
-                                onClick={() => {
-                                    setFilterType("all");
-                                    setTagFilter("all");
-                                    setPeriodFilter("all");
-                                    setSearchTerm("");
-                                }}
-                                className="bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100 font-medium"
-                            >
-                                🔄 초기화
-                            </Button>
-                        </div>
-
-                        {/* 검색 행 */}
-                        <div className="flex gap-2">
-                            <Input
-                                placeholder="검색어를 입력하세요..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                onKeyDown={(e) => e.key === 'Enter' && fetchNews(true)}
-                            />
-                            <Button onClick={() => fetchNews(true)} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-md px-8">
-                                검색
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* 뉴스 그리드 */}
-                    {loading && news.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl shadow-md">
-                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-100 border-t-blue-600"></div>
-                            <p className="mt-4 text-gray-700 font-semibold text-lg">뉴스를 불러오는 중입니다...</p>
-                        </div>
-                    ) : news.length === 0 ? (
-                        <div className="text-center py-20 bg-white rounded-2xl border-2 border-gray-200 border-dashed shadow-md">
-                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <p className="text-gray-700 text-lg font-semibold">검색 결과가 없습니다.</p>
-                            <p className="text-gray-500 text-sm mt-2">다른 검색어로 시도해보세요.</p>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {news.map((item, index) => (
-                                    <Card key={item.id} className="group bg-white border-2 border-gray-200 shadow-lg hover:shadow-2xl rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 animate-fade-in-up" style={{ animationDelay: `${index * 50}ms` }}>
-                                        <CardContent className="p-6 flex flex-col h-full">
-                                            <div className="flex flex-wrap items-center gap-2 mb-4">
-                                                <span className={`text-xs px-3 py-1.5 rounded-full font-bold tracking-wide shadow-sm ${item.location_type === 'national' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
-                                                    item.location_type === 'regional' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
-                                                        'bg-purple-100 text-purple-800 border border-purple-200'
-                                                    }`}>
-                                                    {item.location_type === 'national' ? '전국' :
-                                                        item.location_type === 'regional' ? '지역' : '발전소'}
-                                                </span>
-                                                {item.tags && item.tags.length > 0 && (
-                                                    <>
-                                                        {item.tags.slice(0, 2).map((tag, idx) => (
-                                                            <span key={idx} className="text-xs px-2.5 py-1 rounded-full font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                                                                {tag}
-                                                            </span>
-                                                        ))}
-                                                    </>
-                                                )}
-                                                <span className="text-xs text-gray-600 font-semibold ml-auto">
-                                                    {new Date(item.published_at).toLocaleDateString('ko-KR')}
-                                                </span>
-                                            </div>
-
-                                            <h3 className="font-bold text-xl text-gray-900 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors leading-tight">
-                                                {decodeHtmlEntities(item.title)}
-                                            </h3>
-
-                                            <p className="text-sm text-gray-700 line-clamp-3 mb-6 flex-1 leading-relaxed">
-                                                {stripHtmlTags(decodeHtmlEntities(item.content || '')).substring(0, 150)}...
-                                            </p>
-
-                                            <div className="flex items-center justify-between pt-4 border-t-2 border-gray-100 mt-auto">
-                                                {item.si_do && item.si_gun_gu ? (
-                                                    <div className="text-xs text-gray-700 flex items-center gap-1.5 font-semibold">
-                                                        <span className="text-lg">📍</span> {item.si_do} {item.si_gun_gu}
-                                                    </div>
-                                                ) : (
-                                                    <div></div>
-                                                )}
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 font-semibold -mr-2"
-                                                    onClick={() => window.open(item.url, '_blank')}
-                                                >
-                                                    원문 보기
-                                                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                    </svg>
-                                                </Button>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </div>
-
-                            {hasMore && (
-                                <div className="flex justify-center pt-8">
-                                    <Button
-                                        variant="outline"
-                                        size="lg"
-                                        onClick={handleLoadMore}
-                                        disabled={loading}
-                                        className="bg-white border-2 border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-blue-500 hover:text-blue-600 px-10 py-3 rounded-full shadow-md font-semibold transition-all"
-                                    >
-                                        {loading ? (
-                                            <>
-                                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600 mr-2"></div>
-                                                불러오는 중...
-                                            </>
-                                        ) : (
-                                            <>
-                                                더 보기
-                                                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                </svg>
-                                            </>
-                                        )}
-                                    </Button>
-                                </div>
-                            )}
-                        </>
+                {/* Search */}
+                <div className="relative mb-6">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                        placeholder="뉴스 검색..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 bg-slate-900/50 border-slate-800 text-foreground placeholder:text-slate-500 h-11 rounded-xl"
+                        onKeyDown={(e) => e.key === 'Enter' && fetchNews(true)}
+                    />
+                    {searchTerm && (
+                        <button onClick={() => setSearchTerm("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                            <X className="w-4 h-4" />
+                        </button>
                     )}
                 </div>
+
+                {/* Filters */}
+                <div className="flex flex-wrap gap-2 mb-8">
+                    <Select value={filterType} onValueChange={setFilterType}>
+                        <SelectTrigger className="w-auto min-w-[100px] bg-slate-900/50 border-slate-800 text-slate-200 h-9 rounded-lg text-sm">
+                            <SelectValue placeholder="지역" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-900 border-slate-700">
+                            <SelectItem value="all">전체 지역</SelectItem>
+                            <SelectItem value="national">전국</SelectItem>
+                            <SelectItem value="regional">지역</SelectItem>
+                            <SelectItem value="power_plant">발전소</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select value={tagFilter} onValueChange={setTagFilter}>
+                        <SelectTrigger className="w-auto min-w-[100px] bg-slate-900/50 border-slate-800 text-slate-200 h-9 rounded-lg text-sm">
+                            <SelectValue placeholder="주제" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-900 border-slate-700">
+                            <SelectItem value="all">전체 주제</SelectItem>
+                            <SelectItem value="LNG 발전소">LNG 발전소</SelectItem>
+                            <SelectItem value="탄소중립">탄소중립</SelectItem>
+                            <SelectItem value="석탄화력">석탄화력</SelectItem>
+                            <SelectItem value="시민단체">시민단체</SelectItem>
+                            <SelectItem value="에너지정책">에너지정책</SelectItem>
+                            <SelectItem value="원전">원전</SelectItem>
+                            <SelectItem value="재생에너지">재생에너지</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select value={periodFilter} onValueChange={setPeriodFilter}>
+                        <SelectTrigger className="w-auto min-w-[100px] bg-slate-900/50 border-slate-800 text-slate-200 h-9 rounded-lg text-sm">
+                            <SelectValue placeholder="기간" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-900 border-slate-700">
+                            <SelectItem value="all">전체 기간</SelectItem>
+                            <SelectItem value="1week">최근 1주일</SelectItem>
+                            <SelectItem value="1month">최근 1개월</SelectItem>
+                            <SelectItem value="3months">최근 3개월</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    {hasActiveFilters && (
+                        <button
+                            onClick={clearFilters}
+                            className="h-9 px-3 text-sm text-slate-400 hover:text-white transition-colors"
+                        >
+                            초기화
+                        </button>
+                    )}
+                </div>
+
+                {/* News List */}
+                {loading && news.length === 0 ? (
+                    <div className="flex items-center justify-center py-20">
+                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-700 border-t-slate-300"></div>
+                        <span className="ml-3 text-sm text-muted-foreground">불러오는 중...</span>
+                    </div>
+                ) : news.length === 0 ? (
+                    <div className="text-center py-20">
+                        <p className="text-muted-foreground">검색 결과가 없습니다</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="divide-y divide-slate-800/50">
+                            {news.map((item) => (
+                                <article
+                                    key={item.id}
+                                    className="py-5 group"
+                                >
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-1 min-w-0">
+                                            {/* Meta */}
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-md ${
+                                                    item.location_type === 'national' ? 'bg-blue-500/15 text-blue-400' :
+                                                    item.location_type === 'regional' ? 'bg-emerald-500/15 text-emerald-400' :
+                                                    'bg-purple-500/15 text-purple-400'
+                                                }`}>
+                                                    {LOCATION_LABELS[item.location_type] || item.location_type}
+                                                </span>
+                                                {item.tags && item.tags.slice(0, 2).map((tag, idx) => (
+                                                    <span key={idx} className="text-[11px] text-slate-500">
+                                                        {tag}
+                                                    </span>
+                                                ))}
+                                                <span className="text-[11px] text-slate-600 ml-auto shrink-0">
+                                                    {formatRelativeDate(item.published_at)}
+                                                </span>
+                                            </div>
+
+                                            {/* Title */}
+                                            <a
+                                                href={item.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="block"
+                                            >
+                                                <h3 className="text-[15px] font-semibold text-slate-200 leading-snug group-hover:text-white transition-colors line-clamp-2">
+                                                    {decodeHtmlEntities(item.title)}
+                                                </h3>
+                                            </a>
+
+                                            {/* Content preview */}
+                                            {item.content && (
+                                                <p className="text-sm text-slate-500 mt-1.5 line-clamp-1">
+                                                    {stripHtmlTags(decodeHtmlEntities(item.content)).substring(0, 120)}
+                                                </p>
+                                            )}
+
+                                            {/* Location */}
+                                            {item.si_do && (
+                                                <div className="text-[11px] text-slate-600 mt-2">
+                                                    {item.si_do}{item.si_gun_gu ? ` ${item.si_gun_gu}` : ''}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Link icon */}
+                                        <a
+                                            href={item.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="shrink-0 mt-1 p-2 rounded-lg text-slate-600 hover:text-slate-300 hover:bg-slate-800/50 transition-colors"
+                                        >
+                                            <ExternalLink className="w-4 h-4" />
+                                        </a>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+
+                        {hasMore && (
+                            <div className="flex justify-center pt-8">
+                                <Button
+                                    variant="ghost"
+                                    onClick={handleLoadMore}
+                                    disabled={loading}
+                                    className="text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-full px-6"
+                                >
+                                    {loading ? '불러오는 중...' : (
+                                        <>
+                                            더 보기
+                                            <ChevronDown className="w-4 h-4 ml-1" />
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        )}
+                    </>
+                )}
             </main>
         </div>
     );

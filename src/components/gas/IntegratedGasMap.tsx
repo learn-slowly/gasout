@@ -1,12 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
 import { supabase } from "@/lib/supabase";
 import type { GasPlant } from "@/types/gasPlant";
 import type { GasTerminal } from "@/types/gasTerminal";
+import { KOREAN_REGIONS, extractRegion } from "@/lib/regions";
+
+// CSS import is safe on server (handled by bundler, doesn't need window)
+import "leaflet/dist/leaflet.css";
+
+// Leaflet JS imports - lazy loaded to avoid SSR "window is not defined" error
+let MapContainer: any, TileLayer: any, Marker: any, Popup: any, useMap: any;
+let L: any;
+if (typeof window !== "undefined") {
+  const rl = require("react-leaflet");
+  MapContainer = rl.MapContainer;
+  TileLayer = rl.TileLayer;
+  Marker = rl.Marker;
+  Popup = rl.Popup;
+  useMap = rl.useMap;
+  L = require("leaflet");
+}
 
 /**
  * Leaflet의 기본 마커 아이콘 경로 문제를 해결합니다.
@@ -22,15 +36,48 @@ const fixDefaultIcon = () => {
   });
 };
 
+// 발전소를 plant_name 기준으로 그룹핑한 사이트 타입
+type PlantSite = {
+  plant_name: string;
+  type: GasPlant['type'];
+  owner: string;
+  status: GasPlant['status'];
+  location: GasPlant['location'];
+  latitude: GasPlant['latitude'];
+  longitude: GasPlant['longitude'];
+  totalCapacity: number;
+  unitCount: number;
+  units: GasPlant[];
+};
+
+function groupPlantsBySite(plants: GasPlant[]): PlantSite[] {
+  const siteMap = new Map<string, GasPlant[]>();
+  for (const plant of plants) {
+    const key = plant.plant_name;
+    if (!siteMap.has(key)) siteMap.set(key, []);
+    siteMap.get(key)!.push(plant);
+  }
+  return Array.from(siteMap.entries()).map(([name, units]) => ({
+    plant_name: name,
+    type: units[0].type,
+    owner: units[0].owner,
+    status: units[0].status,
+    location: units[0].location,
+    latitude: units[0].latitude,
+    longitude: units[0].longitude,
+    totalCapacity: units.reduce((sum, u) => sum + (u.capacity_mw || 0), 0),
+    unitCount: units.length,
+    units,
+  }));
+}
+
 /**
- * 발전소 마커 아이콘을 생성합니다.
- * 발전소 유형에 따라 색상을 다르게 하고, 용량에 따라 크기를 조절합니다.
- * L.divIcon을 사용하여 CSS로 스타일링된 커스텀 마커를 만듭니다.
+ * 발전소 사이트 마커 아이콘을 생성합니다.
+ * 발전소 유형에 따라 색상을 다르게 하고, 총 용량에 따라 크기를 조절합니다.
  */
-function createPlantIcon(plant: GasPlant) {
-  const color = plant.type === '복합발전' ? '#000000' : '#4b5563'; // 검정 / 어두운 회색
-  // 용량에 비례하여 마커 크기 계산 (최소 15px, 최대 30px)
-  const size = Math.max(15, Math.min(30, Math.sqrt(plant.capacity_mw) / 2));
+function createPlantIcon(site: PlantSite) {
+  const color = site.type === '복합발전' ? '#60a5fa' : '#a78bfa';
+  const size = Math.max(15, Math.min(30, Math.sqrt(site.totalCapacity) / 2));
 
   return L.divIcon({
     className: 'custom-gas-plant-marker',
@@ -59,7 +106,7 @@ function createPlantIcon(plant: GasPlant) {
  * 마름모 형태(45도 회전)로 발전소와 시각적으로 구분합니다.
  */
 function createTerminalIcon(terminal: GasTerminal) {
-  const color = terminal.category === '가스공사' ? '#dc2626' : '#f97316';
+  const color = terminal.category === '가스공사' ? '#f87171' : '#fb923c';
   const size = 20;
 
   return L.divIcon({
@@ -84,6 +131,9 @@ function createTerminalIcon(terminal: GasTerminal) {
   });
 }
 
+// KOREAN_REGIONS와 extractRegion은 @/lib/regions에서 가져옴
+export { KOREAN_REGIONS, extractRegion } from "@/lib/regions";
+
 /**
  * 지도의 줌 레벨과 중심을 모든 마커가 보이도록 자동으로 조정하는 컴포넌트입니다.
  * useMap 훅을 사용하여 Leaflet 지도 인스턴스에 접근합니다.
@@ -106,12 +156,34 @@ function FitToMarkers({ points }: { points: Array<{ lat: number; lng: number }> 
   return null;
 }
 
+/**
+ * 지역 필터 변경 시 해당 지역으로 지도를 이동시키는 컴포넌트입니다.
+ */
+function FlyToRegion({ regionFilter }: { regionFilter: string }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (regionFilter === 'all') {
+      // 전체 보기: 한국 전체가 보이도록
+      map.flyTo([36.5, 127.8], 7, { duration: 1 });
+    } else {
+      const region = KOREAN_REGIONS[regionFilter];
+      if (region) {
+        map.flyTo(region.center, region.zoom, { duration: 1 });
+      }
+    }
+  }, [map, regionFilter]);
+
+  return null;
+}
+
 type Props = {
   showPlants?: boolean;
   showTerminals?: boolean;
   plantTypeFilter?: '복합발전' | '열병합발전' | 'all';
   terminalCategoryFilter?: '가스공사' | '민간' | 'all';
   statusFilter?: '운영' | '건설' | '계획' | 'all';
+  regionFilter?: string;
   onPlantClick?: (plant: GasPlant) => void;
   onTerminalClick?: (terminal: GasTerminal) => void;
 };
@@ -122,6 +194,7 @@ export default function IntegratedGasMap({
   plantTypeFilter = 'all',
   terminalCategoryFilter = 'all',
   statusFilter = 'all',
+  regionFilter = 'all',
   onPlantClick,
   onTerminalClick
 }: Props) {
@@ -205,7 +278,8 @@ export default function IntegratedGasMap({
     if (!showPlants) return false;
     const typeMatch = plantTypeFilter === 'all' || plant.type === plantTypeFilter;
     const statusMatch = statusFilter === 'all' || plant.status === statusFilter;
-    return typeMatch && statusMatch;
+    const regionMatch = regionFilter === 'all' || extractRegion(plant.location) === regionFilter;
+    return typeMatch && statusMatch && regionMatch;
   });
 
   // 필터링된 터미널
@@ -213,7 +287,8 @@ export default function IntegratedGasMap({
     if (!showTerminals) return false;
     const categoryMatch = terminalCategoryFilter === 'all' || terminal.category === terminalCategoryFilter;
     const statusMatch = statusFilter === 'all' || terminal.status === statusFilter;
-    return categoryMatch && statusMatch;
+    const regionMatch = regionFilter === 'all' || extractRegion(terminal.location) === regionFilter;
+    return categoryMatch && statusMatch && regionMatch;
   });
 
   if (!isClient || !isMounted) {
@@ -273,9 +348,12 @@ export default function IntegratedGasMap({
       .filter((t): t is { lat: number; lng: number } => t != null)
   ];
 
-  const plantsWithCoords = filteredPlants.filter(p => {
-    const lat = normalizeCoordinate(p.latitude);
-    const lng = normalizeCoordinate(p.longitude);
+  // 발전소를 사이트별로 그룹핑
+  const plantSites = groupPlantsBySite(filteredPlants);
+
+  const sitesWithCoords = plantSites.filter(s => {
+    const lat = normalizeCoordinate(s.latitude);
+    const lng = normalizeCoordinate(s.longitude);
     return lat != null && lng != null && isValidCoordinate(lat) && isValidCoordinate(lng);
   });
 
@@ -285,9 +363,8 @@ export default function IntegratedGasMap({
     return lat != null && lng != null && isValidCoordinate(lat) && isValidCoordinate(lng);
   });
 
-  console.log(`IntegratedGasMap: Filtered plants: ${filteredPlants.length}, terminals: ${filteredTerminals.length}`);
-  console.log(`IntegratedGasMap: Plants with valid coords: ${plantsWithCoords.length}, Terminals with valid coords: ${terminalsWithCoords.length}`);
-  console.log(`IntegratedGasMap: Total points for map: ${allPoints.length}`);
+  console.log(`IntegratedGasMap: Plant sites: ${plantSites.length} (from ${filteredPlants.length} units), terminals: ${filteredTerminals.length}`);
+  console.log(`IntegratedGasMap: Sites with valid coords: ${sitesWithCoords.length}, Terminals with valid coords: ${terminalsWithCoords.length}`);
 
   return (
     <div className="w-full h-full">
@@ -300,58 +377,53 @@ export default function IntegratedGasMap({
           scrollWheelZoom={true}
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           />
-          {allPoints.length > 0 && <FitToMarkers points={allPoints} />}
+          {allPoints.length > 0 && regionFilter === 'all' && <FitToMarkers points={allPoints} />}
+          <FlyToRegion regionFilter={regionFilter} />
 
-          {/* 발전소 마커 */}
-          {filteredPlants
-            .map(plant => {
-              const lat = normalizeCoordinate(plant.latitude);
-              const lng = normalizeCoordinate(plant.longitude);
-              if (lat != null && lng != null && isValidCoordinate(lat) && isValidCoordinate(lng)) {
-                return { plant, lat, lng };
-              }
-              return null;
-            })
-            .filter((item): item is { plant: GasPlant; lat: number; lng: number } => item != null)
-            .map(({ plant, lat, lng }) => (
+          {/* 발전소 마커 (사이트별 그룹) */}
+          {sitesWithCoords.map(site => {
+              const lat = normalizeCoordinate(site.latitude)!;
+              const lng = normalizeCoordinate(site.longitude)!;
+              return (
               <Marker
-                key={`plant-${plant.id}`}
+                key={`site-${site.plant_name}`}
                 position={[lat, lng]}
-                icon={createPlantIcon(plant)}
+                icon={createPlantIcon(site)}
                 eventHandlers={{
-                  click: () => onPlantClick?.(plant),
+                  click: () => onPlantClick?.(site.units[0]),
                 }}
               >
                 <Popup>
                   <div className="min-w-[250px]">
-                    <div className="font-bold text-base mb-2">{plant.plant_name}</div>
-                    <div className="text-xs text-blue-600 mb-2">발전소</div>
+                    <div className="font-bold text-base mb-1">{site.plant_name}</div>
+                    <div className="text-xs text-blue-600 mb-2">발전소 · {site.unitCount}기</div>
                     <div className="text-sm space-y-1">
-                      <div><strong>유형:</strong> {plant.type}</div>
-                      <div><strong>소유주:</strong> {plant.owner}</div>
-                      <div><strong>용량:</strong> {plant.capacity_mw.toLocaleString()} MW</div>
-                      {plant.status && (
+                      <div><strong>유형:</strong> {site.type}</div>
+                      <div><strong>소유주:</strong> {site.owner}</div>
+                      <div><strong>총 용량:</strong> {site.totalCapacity.toLocaleString()} MW</div>
+                      {site.status && (
                         <div>
                           <strong>상태:</strong>{' '}
-                          <span className={`inline-block px-2 py-0.5 rounded text-xs ${plant.status === '운영' ? 'bg-green-100 text-green-800' :
-                            plant.status === '건설' ? 'bg-orange-100 text-orange-800' :
+                          <span className={`inline-block px-2 py-0.5 rounded text-xs ${site.status === '운영' ? 'bg-green-100 text-green-800' :
+                            site.status === '건설' ? 'bg-orange-100 text-orange-800' :
                               'bg-blue-100 text-blue-800'
                             }`}>
-                            {plant.status}
+                            {site.status}
                           </span>
                         </div>
                       )}
-                      {plant.location && (
-                        <div><strong>위치:</strong> {plant.location}</div>
+                      {site.location && (
+                        <div><strong>위치:</strong> {site.location}</div>
                       )}
                     </div>
                   </div>
                 </Popup>
               </Marker>
-            ))}
+              );
+            })}
 
           {/* 터미널 마커 */}
           {filteredTerminals

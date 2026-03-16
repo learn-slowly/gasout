@@ -1,11 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
 import { supabase } from "@/lib/supabase";
 import type { GasPlant } from "@/types/gasPlant";
+
+import "leaflet/dist/leaflet.css";
+
+// Leaflet JS imports - lazy loaded to avoid SSR "window is not defined" error
+let MapContainer: any, TileLayer: any, Marker: any, Popup: any, useMap: any;
+let L: any;
+if (typeof window !== "undefined") {
+  const rl = require("react-leaflet");
+  MapContainer = rl.MapContainer;
+  TileLayer = rl.TileLayer;
+  Marker = rl.Marker;
+  Popup = rl.Popup;
+  useMap = rl.useMap;
+  L = require("leaflet");
+}
 
 // Leaflet 기본 아이콘 설정
 const fixDefaultIcon = () => {

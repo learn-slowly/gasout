@@ -4,9 +4,6 @@ import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { testResults } from "@/data/climateResults";
 import { TestResult, MBTIType } from "@/types/climateTest";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { initKakao, shareToKakao } from "@/lib/kakao";
 
 interface Stats {
@@ -30,53 +27,30 @@ function ResultContent() {
     if (type && testResults[type]) {
       setResult(testResults[type]);
       setLoading(false);
-      // 통계 조회
       fetchStats(type);
     } else if (sessionId) {
-      // 세션 ID로 결과 조회
       fetchResultBySession(sessionId);
     } else {
-      // 결과가 없으면 테스트 시작 페이지로
       router.push("/test");
     }
   }, [searchParams, router]);
 
-  // 카카오 SDK 초기화
   useEffect(() => {
-    console.log('[Result Page] Attempting to initialize Kakao SDK...');
-
-    // SDK 로드를 위해 여러 번 시도
     let attempts = 0;
     const maxAttempts = 10;
-
     const tryInitialize = () => {
       attempts++;
-      console.log(`[Result Page] Initialization attempt ${attempts}/${maxAttempts}`);
-
       const success = initKakao();
-
-      if (!success && attempts < maxAttempts) {
-        setTimeout(tryInitialize, 500);
-      } else if (success) {
-        console.log('[Result Page] Kakao SDK initialized successfully');
-      } else {
-        console.error('[Result Page] Failed to initialize Kakao SDK after', maxAttempts, 'attempts');
-      }
+      if (!success && attempts < maxAttempts) setTimeout(tryInitialize, 500);
     };
-
-    // 초기 지연 후 시작
     const timer = setTimeout(tryInitialize, 500);
-
     return () => clearTimeout(timer);
   }, []);
 
   const fetchStats = async (type: MBTIType) => {
     try {
       const response = await fetch(`/api/climate-test/stats?type=${type}`);
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data);
-      }
+      if (response.ok) setStats(await response.json());
     } catch (error) {
       console.error("Error fetching stats:", error);
     }
@@ -101,47 +75,38 @@ function ResultContent() {
   const handleShare = (platform: string) => {
     const type = result?.type || "";
     const typeName = result?.typeName || "";
-    const emoji = result?.emoji || "🌍";
+    const emoji = result?.emoji || "";
     const quote = result?.quote || "";
     const url = `${window.location.origin}/test/result?type=${type}`;
-    const text = `나의 기후행동 스타일은 "${typeName}"이에요!`;
 
     switch (platform) {
       case "kakao":
-        // 카카오톡 공유
         const success = shareToKakao({
           title: `${emoji} 나의 기후행동 스타일: ${typeName}`,
-          description: `"${quote}"\n\n🌱 16가지 기후시민 유형 중 나는 어떤 타입?\n⏱️ 3분이면 알 수 있어요!`,
+          description: `"${quote}"\n\n16가지 기후시민 유형 중 나는 어떤 타입?\n3분이면 알 수 있어요!`,
           linkUrl: url,
           buttonText: '나도 테스트하기',
-          imageUrl: `${window.location.origin}/climate-mbti-og.png`,
+          imageUrl: `${window.location.origin}/test.jpg`,
         });
-
-        // 공유 실패 시 링크 복사로 폴백
         if (!success) {
           navigator.clipboard.writeText(url);
         }
         break;
-
       case "url":
         navigator.clipboard.writeText(url);
         alert("링크가 복사되었습니다!");
         break;
-
       default:
-        // 다른 플랫폼은 기본 공유 다이얼로그
         if (navigator.share) {
           navigator.share({
             title: `나의 기후행동 스타일: ${typeName}`,
-            text: text,
+            text: `나의 기후행동 스타일은 "${typeName}"이에요!`,
             url: url,
           }).catch(() => {
-            // 공유 취소 시 링크 복사로 대체
             navigator.clipboard.writeText(url);
             alert("링크가 복사되었습니다!");
           });
         } else {
-          // 공유 API가 없으면 링크 복사
           navigator.clipboard.writeText(url);
           alert("링크가 복사되었습니다!");
         }
@@ -151,21 +116,15 @@ function ResultContent() {
   const handleDeclare = () => {
     const type = result?.type || "";
     const sessionId = searchParams.get("session");
-
-    // session ID가 있으면 함께 전달
-    if (sessionId) {
-      router.push(`/test/declare?type=${type}&session=${sessionId}`);
-    } else {
-      router.push(`/test/declare?type=${type}`);
-    }
+    router.push(sessionId ? `/test/declare?type=${type}&session=${sessionId}` : `/test/declare?type=${type}`);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-center justify-center p-4 pb-safe">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 text-sm sm:text-base">결과를 분석 중이에요...</p>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-200 border-t-gray-600 mx-auto"></div>
+          <p className="text-sm text-gray-400">결과를 분석 중이에요...</p>
         </div>
       </div>
     );
@@ -173,377 +132,227 @@ function ResultContent() {
 
   if (!result) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-center justify-center p-4 pb-safe">
-        <Card className="max-w-2xl w-full">
-          <CardContent className="p-6 sm:p-8 text-center">
-            <p className="text-gray-600 mb-4 text-sm sm:text-base">결과를 찾을 수 없습니다.</p>
-            <Button
-              onClick={() => router.push("/test")}
-              className="min-h-[44px] touch-manipulation"
-            >
-              테스트 다시 하기
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-white flex items-center justify-center px-5">
+        <div className="text-center space-y-4">
+          <p className="text-sm text-gray-500">결과를 찾을 수 없습니다.</p>
+          <button
+            onClick={() => router.push("/test")}
+            className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+          >
+            테스트 다시 하기
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 py-6 sm:py-8 px-4 pb-safe overflow-x-hidden w-full max-w-full">
-      <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6 w-full overflow-hidden">
-        {/* 결과 헤더 */}
-        <Card className="border-0 shadow-2xl w-full overflow-hidden bg-gradient-to-br from-white to-green-50">
-          <CardContent className="p-6 sm:p-8 md:p-12 text-center space-y-4 sm:space-y-6 w-full overflow-hidden">
-            {/* 이모지와 MBTI 타입 */}
-            <div className="text-7xl sm:text-8xl mb-4">{result.emoji}</div>
-            <Badge className="mb-3 sm:mb-4 bg-green-600 text-white text-base sm:text-lg px-4 sm:px-6 py-2 sm:py-3 font-bold">
-              {result.type}
-            </Badge>
+    <div className="min-h-screen bg-white px-5 py-16">
+      <div className="max-w-lg mx-auto">
 
-            {/* 캐릭터명 */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3 sm:mb-4 leading-tight px-2 break-words w-full">
-              {result.typeName}
-            </h1>
-
-            {/* 인용구 */}
-            <div className="bg-green-100 border-l-4 border-green-600 p-4 sm:p-6 rounded-r-lg mb-4">
-              <p className="text-lg sm:text-xl text-green-900 font-medium italic leading-relaxed break-words">
-                &ldquo;{result.quote}&rdquo;
-              </p>
-            </div>
-
-            {/* 설명 */}
-            <p className="text-base sm:text-lg text-gray-700 leading-relaxed px-2 break-words w-full">
-              {result.description}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* 기후시민 선언 CTA */}
-        <Card className="border-0 shadow-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full overflow-hidden">
-          <CardContent className="p-6 sm:p-8 md:p-10 text-center w-full overflow-hidden">
-            <div className="text-4xl sm:text-5xl mb-4">🌱</div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 sm:mb-4 break-words">
-              첫 번째 실천을 시작하세요
-            </h2>
-            <p className="text-base sm:text-lg text-green-50 mb-6 sm:mb-8 leading-relaxed break-words">
-              당신이 할 수 있는 첫 번째 실천은<br />
-              <strong className="text-white text-xl sm:text-2xl">기후시민 선언</strong>입니다
-            </p>
-            <Button
-              onClick={handleDeclare}
-              size="lg"
-              className="w-full bg-white hover:bg-gray-50 active:bg-gray-100 text-green-600 text-base sm:text-lg font-bold py-5 sm:py-6 rounded-xl shadow-lg hover:shadow-xl active:shadow-md transition-all touch-manipulation min-h-[56px] whitespace-normal"
-            >
-              지금 바로 기후시민 선언하기 →
-            </Button>
-            <p className="text-xs sm:text-sm text-green-100 mt-4">
-              {stats?.totalDeclarations ? (
-                <>이미 <strong className="text-white">{stats.totalDeclarations.toLocaleString()}명</strong>이 함께하고 있어요!</>
-              ) : (
-                <>지금 바로 기후시민이 되어주세요!</>
-              )}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* 특징 */}
-        <Card className="border-0 shadow-xl w-full overflow-hidden">
-          <CardContent className="p-5 sm:p-6 md:p-8 w-full overflow-hidden">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 break-words">당신의 특징</h2>
-            <ul className="space-y-2.5 sm:space-y-3 w-full">
-              {result.characteristics.map((char, index) => (
-                <li key={index} className="flex items-start gap-3 w-full min-w-0">
-                  <span className="text-green-600 mt-1 flex-shrink-0 text-lg">✓</span>
-                  <span className="text-gray-700 text-sm sm:text-base leading-relaxed break-words flex-1 min-w-0">{char}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-
-        {/* 강점 */}
-        <Card className="border-0 shadow-xl bg-green-50 w-full overflow-hidden">
-          <CardContent className="p-5 sm:p-6 md:p-8 w-full overflow-hidden">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 break-words">당신의 강점</h2>
-            <p className="text-base sm:text-lg text-gray-700 leading-relaxed break-words w-full">{result.strengths}</p>
-          </CardContent>
-        </Card>
-
-        {/* 통계 */}
-        {stats && (
-          <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-50 to-purple-50 w-full overflow-hidden">
-            <CardContent className="p-5 sm:p-6 md:p-8 w-full overflow-hidden">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 break-words flex items-center gap-2">
-                <span>📊</span>
-                <span>함께하는 기후시민</span>
-              </h2>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-                {/* 전체 테스트 완료자 */}
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 sm:p-5 text-center border border-blue-100">
-                  <div className="text-3xl sm:text-4xl font-bold text-blue-600 mb-2">
-                    {stats.totalTests.toLocaleString()}
-                  </div>
-                  <div className="text-sm sm:text-base text-gray-600 font-medium">
-                    테스트 완료
-                  </div>
-                </div>
-
-                {/* 같은 유형 */}
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 sm:p-5 text-center border border-purple-100">
-                  <div className="text-3xl sm:text-4xl font-bold text-purple-600 mb-2">
-                    {stats.sameTypeCount.toLocaleString()}
-                  </div>
-                  <div className="text-sm sm:text-base text-gray-600 font-medium">
-                    나와 같은 유형
-                    {stats.sameTypePercentage > 0 && (
-                      <span className="block text-xs text-purple-500 mt-1">
-                        ({stats.sameTypePercentage}%)
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* 기후시민 선언 */}
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 sm:p-5 text-center border border-green-100">
-                  <div className="text-3xl sm:text-4xl font-bold text-green-600 mb-2">
-                    {stats.totalDeclarations.toLocaleString()}
-                  </div>
-                  <div className="text-sm sm:text-base text-gray-600 font-medium">
-                    기후시민 선언
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-sm text-gray-500 text-center mt-4 sm:mt-6">
-                지금까지 <strong className="text-green-600">{stats.totalTests.toLocaleString()}명</strong>이
-                테스트를 완료했고, <strong className="text-green-600">{stats.totalDeclarations.toLocaleString()}명</strong>이
-                기후시민으로 선언했어요! 🌱
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* 추천 기후행동 */}
-        <Card className="border-0 shadow-xl w-full overflow-hidden">
-          <CardContent className="p-5 sm:p-6 md:p-8 w-full overflow-hidden">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 break-words">
-              추천 기후행동
-            </h2>
-            <div className="space-y-3 sm:space-y-4 w-full">
-              {result.recommendedActions.map((action, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 bg-white rounded-xl border border-gray-200 w-full min-w-0 overflow-hidden"
-                >
-                  <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-green-600 text-white rounded-full flex items-center justify-center font-bold text-sm sm:text-base">
-                    {index + 1}
-                  </div>
-                  <p className="text-gray-700 flex-1 text-sm sm:text-base leading-relaxed break-words min-w-0">{action}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 나와 잘 맞는 기후동지 */}
-        {(result.bestPartner || result.heartPartner || result.synergyPartner) && (
-          <Card className="border-0 shadow-xl bg-gradient-to-br from-purple-50 to-pink-50 w-full overflow-hidden">
-            <CardContent className="p-5 sm:p-6 md:p-8 w-full overflow-hidden">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 break-words flex items-center gap-2">
-                <span>🤝</span>
-                <span>나와 잘 맞는 기후동지</span>
-              </h2>
-              <p className="text-gray-600 mb-5 sm:mb-6 text-sm sm:text-base italic">
-                &ldquo;당신의 방식으로 지구를 지킬 수 있어요&rdquo;
-              </p>
-
-              <div className="space-y-4 sm:space-y-5">
-                {/* 최고의 파트너 */}
-                {result.bestPartner && (
-                  <div className="bg-white rounded-xl p-4 sm:p-5 border-2 border-yellow-200 shadow-sm">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-2xl">{result.bestPartner.emoji}</span>
-                      <div>
-                        <span className="text-yellow-600 font-bold text-sm">🌟 최고의 파트너</span>
-                        <h3 className="font-bold text-gray-900 text-base sm:text-lg">
-                          {result.bestPartner.type} - {result.bestPartner.typeName}
-                        </h3>
-                      </div>
-                    </div>
-                    <ul className="space-y-2 text-sm sm:text-base text-gray-700">
-                      <li className="flex items-start gap-2">
-                        <span className="flex-shrink-0 text-yellow-500">•</span>
-                        <span className="break-words flex-1">{result.bestPartner.description}</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="flex-shrink-0 text-yellow-500">•</span>
-                        <span className="break-words flex-1">함께하면: {result.bestPartner.together}</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="flex-shrink-0 text-yellow-500">•</span>
-                        <span className="break-words flex-1">추천 활동: {result.bestPartner.activity}</span>
-                      </li>
-                    </ul>
-                  </div>
-                )}
-
-                {/* 마음이 통하는 파트너 */}
-                {result.heartPartner && (
-                  <div className="bg-white rounded-xl p-4 sm:p-5 border-2 border-green-200 shadow-sm">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-2xl">{result.heartPartner.emoji}</span>
-                      <div>
-                        <span className="text-green-600 font-bold text-sm">💚 마음이 통하는 파트너</span>
-                        <h3 className="font-bold text-gray-900 text-base sm:text-lg">
-                          {result.heartPartner.type} - {result.heartPartner.typeName}
-                        </h3>
-                      </div>
-                    </div>
-                    <ul className="space-y-2 text-sm sm:text-base text-gray-700">
-                      <li className="flex items-start gap-2">
-                        <span className="flex-shrink-0 text-green-500">•</span>
-                        <span className="break-words flex-1">{result.heartPartner.description}</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="flex-shrink-0 text-green-500">•</span>
-                        <span className="break-words flex-1">함께하면: {result.heartPartner.together}</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="flex-shrink-0 text-green-500">•</span>
-                        <span className="break-words flex-1">추천 활동: {result.heartPartner.activity}</span>
-                      </li>
-                    </ul>
-                  </div>
-                )}
-
-                {/* 시너지 파트너 */}
-                {result.synergyPartner && (
-                  <div className="bg-white rounded-xl p-4 sm:p-5 border-2 border-orange-200 shadow-sm">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-2xl">{result.synergyPartner.emoji}</span>
-                      <div>
-                        <span className="text-orange-600 font-bold text-sm">🔥 시너지 파트너</span>
-                        <h3 className="font-bold text-gray-900 text-base sm:text-lg">
-                          {result.synergyPartner.type} - {result.synergyPartner.typeName}
-                        </h3>
-                      </div>
-                    </div>
-                    <ul className="space-y-2 text-sm sm:text-base text-gray-700">
-                      <li className="flex items-start gap-2">
-                        <span className="flex-shrink-0 text-orange-500">•</span>
-                        <span className="break-words flex-1">{result.synergyPartner.description}</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="flex-shrink-0 text-orange-500">•</span>
-                        <span className="break-words flex-1">함께하면: {result.synergyPartner.together}</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="flex-shrink-0 text-orange-500">•</span>
-                        <span className="break-words flex-1">추천 활동: {result.synergyPartner.activity}</span>
-                      </li>
-                    </ul>
-                  </div>
-                )}
-              </div>
-
-              <p className="text-sm text-gray-500 text-center mt-5 sm:mt-6">
-                친구도 테스트하고 궁합을 확인해보세요! 🌱
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* LNG 팩트 요약 */}
-        <Card className="border-0 shadow-xl bg-blue-50 w-full overflow-hidden">
-          <CardContent className="p-5 sm:p-6 md:p-8 w-full overflow-hidden">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-5 break-words">
-              💡 LNG의 진실
-            </h2>
-
-            {/* 핵심 요약 */}
-            <div className="bg-white rounded-xl p-4 sm:p-5 mb-4 sm:mb-5 border border-blue-100">
-              <h3 className="font-bold text-gray-900 mb-3 text-base sm:text-lg">핵심 요약</h3>
-              <ul className="space-y-2 text-sm sm:text-base text-gray-700">
-                <li className="flex items-start gap-2">
-                  <span className="flex-shrink-0 text-green-600">✅</span>
-                  <span className="break-words flex-1">기후위기 시대, 에너지 전환은 필수</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="flex-shrink-0 text-green-600">✅</span>
-                  <span className="break-words flex-1">지역 주민이 배제되지 않는 정의로운 전환이 중요</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="flex-shrink-0 text-green-600">✅</span>
-                  <span className="break-words flex-1">정부의 LNG 확대는 한계</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* LNG의 문제점 */}
-            <div className="bg-white rounded-xl p-4 sm:p-5 border border-blue-100">
-              <h3 className="font-bold text-gray-900 mb-3 text-base sm:text-lg">LNG의 문제점</h3>
-              <div className="space-y-3 text-sm sm:text-base text-gray-700">
-                <div>
-                  <strong className="text-red-600">화석연료:</strong>
-                  <span className="ml-2">LNG는 화석연료로 탄소중립 역행</span>
-                </div>
-                <div>
-                  <strong className="text-red-600">경제적 손실:</strong>
-                  <span className="ml-2">장기적 가동률이 매우 낮아져 경제적 손실이 전기요금과 세금 부담으로 이어짐</span>
-                </div>
-                <div>
-                  <strong className="text-red-600">구조적 불평등:</strong>
-                  <span className="ml-2">지역은 피해, 혜택은 외부인 구조 개선 필요</span>
-                </div>
-              </div>
-            </div>
-
-            <a
-              href="/learn-more"
-              className="text-blue-600 hover:text-blue-800 active:text-blue-900 text-sm sm:text-base mt-4 inline-block touch-manipulation font-semibold"
-            >
-              자세히 보기 →
-            </a>
-          </CardContent>
-        </Card>
-
-
-        {/* 공유 버튼 */}
-        <div className="space-y-3 sm:space-y-4 w-full overflow-hidden">
-          <div className="text-center">
-            <p className="text-sm sm:text-base text-gray-600 mb-3">
-              친구들에게도 알려주세요!
-            </p>
+        {/* Header */}
+        <div className="text-center mb-10">
+          <div className="text-5xl mb-4">{result.emoji}</div>
+          <div className="inline-block text-xs font-bold text-green-700 bg-green-50 px-3 py-1 rounded-full mb-3">
+            {result.type}
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full">
-            <Button
+          <h1 className="text-3xl font-black tracking-tight text-gray-900 mb-4">
+            {result.typeName}
+          </h1>
+          <p className="text-[15px] text-gray-500 italic leading-relaxed">
+            &ldquo;{result.quote}&rdquo;
+          </p>
+        </div>
+
+        <p className="text-[15px] text-gray-600 leading-relaxed mb-10">
+          {result.description}
+        </p>
+
+        {/* CTA */}
+        <div className="rounded-xl bg-green-700 p-6 mb-10 text-center">
+          <h2 className="text-lg font-bold text-white mb-2">
+            첫 번째 실천을 시작하세요
+          </h2>
+          <p className="text-sm text-green-200 mb-5">
+            당신이 할 수 있는 첫 번째 실천은 기후시민 선언입니다
+          </p>
+          <button
+            onClick={handleDeclare}
+            className="w-full h-12 bg-white hover:bg-green-50 text-green-800 text-[15px] font-semibold rounded-xl transition-colors"
+          >
+            기후시민 선언하기
+          </button>
+          {stats?.totalDeclarations ? (
+            <p className="text-xs text-green-200 mt-3">
+              이미 {stats.totalDeclarations.toLocaleString()}명이 함께하고 있어요
+            </p>
+          ) : null}
+        </div>
+
+        {/* Characteristics */}
+        <div className="mb-10">
+          <h2 className="text-sm font-semibold text-gray-900 mb-4">당신의 특징</h2>
+          <ul className="space-y-3">
+            {result.characteristics.map((char, index) => (
+              <li key={index} className="flex items-start gap-3">
+                <span className="text-green-500 mt-0.5 shrink-0">&#8226;</span>
+                <span className="text-sm text-gray-600 leading-relaxed">{char}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Strengths */}
+        <div className="rounded-xl bg-gray-50 border border-gray-100 p-5 mb-10">
+          <h2 className="text-sm font-semibold text-gray-900 mb-2">당신의 강점</h2>
+          <p className="text-sm text-gray-600 leading-relaxed">{result.strengths}</p>
+        </div>
+
+        {/* Stats */}
+        {stats && (
+          <div className="mb-10">
+            <h2 className="text-sm font-semibold text-gray-900 mb-4">함께하는 기후시민</h2>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="text-center py-4 rounded-xl bg-gray-50 border border-gray-100">
+                <div className="text-2xl font-black text-gray-900">{stats.totalTests.toLocaleString()}</div>
+                <div className="text-xs text-gray-400 mt-1">테스트 완료</div>
+              </div>
+              <div className="text-center py-4 rounded-xl bg-gray-50 border border-gray-100">
+                <div className="text-2xl font-black text-gray-900">{stats.sameTypeCount.toLocaleString()}</div>
+                <div className="text-xs text-gray-400 mt-1">같은 유형</div>
+              </div>
+              <div className="text-center py-4 rounded-xl bg-gray-50 border border-gray-100">
+                <div className="text-2xl font-black text-gray-900">{stats.totalDeclarations.toLocaleString()}</div>
+                <div className="text-xs text-gray-400 mt-1">기후시민 선언</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Recommended actions */}
+        <div className="mb-10">
+          <h2 className="text-sm font-semibold text-gray-900 mb-4">추천 기후행동</h2>
+          <div className="space-y-3">
+            {result.recommendedActions.map((action, index) => (
+              <div key={index} className="flex items-start gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
+                <div className="shrink-0 w-6 h-6 bg-green-700 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                  {index + 1}
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">{action}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Partners */}
+        {(result.bestPartner || result.heartPartner || result.synergyPartner) && (
+          <div className="mb-10">
+            <h2 className="text-sm font-semibold text-gray-900 mb-4">나와 잘 맞는 기후동지</h2>
+            <div className="space-y-3">
+              {result.bestPartner && (
+                <PartnerCard
+                  label="최고의 파트너"
+                  partner={result.bestPartner}
+                />
+              )}
+              {result.heartPartner && (
+                <PartnerCard
+                  label="마음이 통하는 파트너"
+                  partner={result.heartPartner}
+                />
+              )}
+              {result.synergyPartner && (
+                <PartnerCard
+                  label="시너지 파트너"
+                  partner={result.synergyPartner}
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* LNG Facts */}
+        <div className="rounded-xl bg-gray-50 border border-gray-100 p-5 mb-10">
+          <h2 className="text-sm font-semibold text-gray-900 mb-4">LNG의 진실</h2>
+
+          <div className="space-y-3 text-sm text-gray-600 mb-4">
+            <div className="flex items-start gap-2">
+              <span className="text-gray-300 mt-0.5 shrink-0">&#8226;</span>
+              기후위기 시대, 에너지 전환은 필수
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-gray-300 mt-0.5 shrink-0">&#8226;</span>
+              지역 주민이 배제되지 않는 정의로운 전환이 중요
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-gray-300 mt-0.5 shrink-0">&#8226;</span>
+              정부의 LNG 확대는 한계
+            </div>
+          </div>
+
+          <div className="border-t border-gray-200 pt-3 space-y-2 text-sm text-gray-500">
+            <p><span className="font-semibold text-gray-700">화석연료:</span> LNG는 화석연료로 탄소중립 역행</p>
+            <p><span className="font-semibold text-gray-700">경제적 손실:</span> 장기적 가동률이 매우 낮아져 세금 부담으로 이어짐</p>
+            <p><span className="font-semibold text-gray-700">구조적 불평등:</span> 지역은 피해, 혜택은 외부인 구조 개선 필요</p>
+          </div>
+        </div>
+
+        {/* Share */}
+        <div className="text-center mb-6">
+          <p className="text-sm text-gray-500 mb-4">친구들에게도 알려주세요</p>
+          <div className="grid grid-cols-2 gap-3">
+            <button
               onClick={() => handleShare("kakao")}
-              variant="outline"
-              className="border-2 min-h-[48px] touch-manipulation text-sm sm:text-base whitespace-normal bg-white text-gray-900 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+              className="h-11 border border-gray-200 hover:bg-gray-50 text-sm font-semibold text-gray-700 rounded-xl transition-colors"
             >
               카카오톡 공유
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={() => handleShare("url")}
-              variant="outline"
-              className="border-2 min-h-[48px] touch-manipulation text-sm sm:text-base whitespace-normal bg-white text-gray-900 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+              className="h-11 border border-gray-200 hover:bg-gray-50 text-sm font-semibold text-gray-700 rounded-xl transition-colors"
             >
               링크 복사
-            </Button>
+            </button>
           </div>
+        </div>
 
-          <Button
-            onClick={() => router.push("/test")}
-            variant="ghost"
-            className="w-full min-h-[44px] touch-manipulation whitespace-normal text-gray-500"
-          >
-            다시 테스트하기
-          </Button>
+        <button
+          onClick={() => router.push("/test")}
+          className="w-full text-sm text-gray-400 hover:text-gray-900 transition-colors"
+        >
+          다시 테스트하기
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PartnerCard({ label, partner }: { label: string; partner: { emoji: string; type: string; typeName: string; description: string; together: string; activity: string } }) {
+  return (
+    <div className="rounded-xl bg-gray-50 border border-gray-100 p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-xl">{partner.emoji}</span>
+        <div>
+          <span className="text-xs text-gray-400">{label}</span>
+          <h3 className="text-sm font-bold text-gray-900">
+            {partner.type} - {partner.typeName}
+          </h3>
         </div>
       </div>
+      <ul className="space-y-1.5 text-sm text-gray-600">
+        <li className="flex items-start gap-2">
+          <span className="text-gray-300 mt-0.5 shrink-0">&#8226;</span>
+          {partner.description}
+        </li>
+        <li className="flex items-start gap-2">
+          <span className="text-gray-300 mt-0.5 shrink-0">&#8226;</span>
+          함께하면: {partner.together}
+        </li>
+        <li className="flex items-start gap-2">
+          <span className="text-gray-300 mt-0.5 shrink-0">&#8226;</span>
+          추천 활동: {partner.activity}
+        </li>
+      </ul>
     </div>
   );
 }
@@ -551,10 +360,10 @@ function ResultContent() {
 export default function TestResultPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50 flex items-center justify-center p-4">
-        <div className="flex flex-col items-center justify-center gap-3 text-gray-500">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-green-600"></div>
-          <p className="text-sm font-medium">결과를 불러오는 중...</p>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-200 border-t-gray-600 mx-auto"></div>
+          <p className="text-sm text-gray-400">결과를 불러오는 중...</p>
         </div>
       </div>
     }>
@@ -562,4 +371,3 @@ export default function TestResultPage() {
     </Suspense>
   );
 }
-

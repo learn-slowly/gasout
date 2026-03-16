@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import L from "leaflet";
+
+// Leaflet import - lazy loaded to avoid SSR "window is not defined" error
+let L: any;
+if (typeof window !== "undefined") {
+  L = require("leaflet");
+}
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(

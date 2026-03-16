@@ -90,7 +90,7 @@ export function shareToKakao(params: {
       content: {
         title: params.title,
         description: params.description,
-        imageUrl: params.imageUrl || `${window.location.origin}/climate-mbti-og.png`,
+        imageUrl: params.imageUrl || `${window.location.origin}/test.jpg`,
         link: {
           mobileWebUrl: testStartUrl,
           webUrl: testStartUrl,
