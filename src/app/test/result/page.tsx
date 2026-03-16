@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { testResults } from "@/data/climateResults";
 import { TestResult, MBTIType } from "@/types/climateTest";
@@ -19,6 +19,18 @@ function ResultContent() {
   const [result, setResult] = useState<TestResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [showDeclareForm, setShowDeclareForm] = useState(false);
+  const [declareSubmitting, setDeclareSubmitting] = useState(false);
+  const [declared, setDeclared] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    region: "",
+    phone: "",
+    consentPrivacy: false,
+    consentMarketing: false,
+  });
+  const declareFormRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const type = searchParams.get("type") as MBTIType;
@@ -113,10 +125,41 @@ function ResultContent() {
     }
   };
 
-  const handleDeclare = () => {
-    const type = result?.type || "";
-    const sessionId = searchParams.get("session");
-    router.push(sessionId ? `/test/declare?type=${type}&session=${sessionId}` : `/test/declare?type=${type}`);
+  const handleDeclareToggle = () => {
+    setShowDeclareForm(true);
+    setTimeout(() => {
+      declareFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
+
+  const handleDeclareSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.consentPrivacy) {
+      alert("개인정보 수집에 동의해주세요.");
+      return;
+    }
+    setDeclareSubmitting(true);
+    try {
+      const testType = result?.type || "";
+      const sessionId = searchParams.get("session");
+      const response = await fetch("/api/climate-test/declare", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...formData, testType, sessionId }),
+      });
+      if (response.ok) {
+        setDeclared(true);
+        setShowDeclareForm(false);
+      } else {
+        const error = await response.json();
+        alert(error.message || "오류가 발생했습니다.");
+      }
+    } catch (error) {
+      console.error("Error submitting declaration:", error);
+      alert("오류가 발생했습니다. 다시 시도해주세요.");
+    } finally {
+      setDeclareSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -168,25 +211,138 @@ function ResultContent() {
           {result.description}
         </p>
 
-        {/* CTA */}
-        <div className="rounded-xl bg-green-700 p-6 mb-10 text-center">
-          <h2 className="text-lg font-bold text-white mb-2">
-            첫 번째 실천을 시작하세요
-          </h2>
-          <p className="text-sm text-green-200 mb-5">
-            당신이 할 수 있는 첫 번째 실천은 기후시민 선언입니다
-          </p>
-          <button
-            onClick={handleDeclare}
-            className="w-full h-12 bg-white hover:bg-green-50 text-green-800 text-[15px] font-semibold rounded-xl transition-colors"
-          >
-            기후시민 선언하기
-          </button>
-          {stats?.totalDeclarations ? (
-            <p className="text-xs text-green-200 mt-3">
-              이미 {stats.totalDeclarations.toLocaleString()}명이 함께하고 있어요
-            </p>
-          ) : null}
+        {/* CTA / Inline Declaration */}
+        <div ref={declareFormRef} className="mb-10">
+          {declared ? (
+            <div className="rounded-xl bg-green-700 p-6 text-center">
+              <h2 className="text-lg font-bold text-white mb-2">
+                기후시민이 되신 것을 환영합니다
+              </h2>
+              <p className="text-sm text-green-200">
+                당신의 선언이 기후위기 대응에 큰 힘이 됩니다.
+              </p>
+            </div>
+          ) : showDeclareForm ? (
+            <div className="rounded-xl border border-green-200 bg-green-50/30 p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-1">
+                기후시민 선언
+              </h2>
+              <p className="text-sm text-gray-500 mb-6">
+                기후위기에 맞서 행동하겠다는 의지를 선언해주세요.
+              </p>
+              <form onSubmit={handleDeclareSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-1.5">
+                    이름 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="name"
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full h-12 px-4 text-base text-gray-900 bg-white border border-gray-200 rounded-xl outline-none focus:border-green-500 transition-colors"
+                    inputMode="text"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-1.5">
+                    이메일 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full h-12 px-4 text-base text-gray-900 bg-white border border-gray-200 rounded-xl outline-none focus:border-green-500 transition-colors"
+                    inputMode="email"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="region" className="block text-sm font-semibold text-gray-900 mb-1.5">
+                    지역
+                  </label>
+                  <input
+                    id="region"
+                    type="text"
+                    placeholder="예: 경남 양산시"
+                    value={formData.region}
+                    onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+                    className="w-full h-12 px-4 text-base text-gray-900 bg-white border border-gray-200 rounded-xl outline-none focus:border-green-500 transition-colors placeholder:text-gray-400"
+                    inputMode="text"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-semibold text-gray-900 mb-1.5">
+                    전화번호
+                  </label>
+                  <input
+                    id="phone"
+                    type="tel"
+                    placeholder="010-0000-0000"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full h-12 px-4 text-base text-gray-900 bg-white border border-gray-200 rounded-xl outline-none focus:border-green-500 transition-colors placeholder:text-gray-400"
+                    inputMode="tel"
+                  />
+                </div>
+                <div className="border-t border-gray-200 pt-4 space-y-3">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.consentPrivacy}
+                      onChange={(e) => setFormData({ ...formData, consentPrivacy: e.target.checked })}
+                      className="mt-0.5 w-[18px] h-[18px] shrink-0 accent-green-700"
+                    />
+                    <div>
+                      <span className="text-sm text-gray-800">개인정보 수집 및 이용에 동의합니다 (필수)</span>
+                      <span className="block text-xs text-gray-400 mt-0.5">기후시민 선언 참여 및 관련 소식 전달을 위해 개인정보를 수집합니다.</span>
+                    </div>
+                  </label>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.consentMarketing}
+                      onChange={(e) => setFormData({ ...formData, consentMarketing: e.target.checked })}
+                      className="mt-0.5 w-[18px] h-[18px] shrink-0 accent-green-700"
+                    />
+                    <div>
+                      <span className="text-sm text-gray-800">마케팅 정보 수신에 동의합니다 (선택)</span>
+                      <span className="block text-xs text-gray-400 mt-0.5">기후 관련 캠페인 및 이벤트 정보를 받아보실 수 있습니다.</span>
+                    </div>
+                  </label>
+                </div>
+                <button
+                  type="submit"
+                  disabled={declareSubmitting}
+                  className="w-full h-13 bg-green-700 hover:bg-green-800 active:bg-green-900 text-white text-[15px] font-semibold rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {declareSubmitting ? "제출 중..." : "선언하기"}
+                </button>
+              </form>
+            </div>
+          ) : (
+            <div className="rounded-xl bg-green-700 p-6 text-center">
+              <h2 className="text-lg font-bold text-white mb-2">
+                첫 번째 실천을 시작하세요
+              </h2>
+              <p className="text-sm text-green-200 mb-5">
+                당신이 할 수 있는 첫 번째 실천은 기후시민 선언입니다
+              </p>
+              <button
+                onClick={handleDeclareToggle}
+                className="w-full h-12 bg-white hover:bg-green-50 text-green-800 text-[15px] font-semibold rounded-xl transition-colors"
+              >
+                기후시민 선언하기
+              </button>
+              {stats?.totalDeclarations ? (
+                <p className="text-xs text-green-200 mt-3">
+                  이미 {stats.totalDeclarations.toLocaleString()}명이 함께하고 있어요
+                </p>
+              ) : null}
+            </div>
+          )}
         </div>
 
         {/* Characteristics */}
