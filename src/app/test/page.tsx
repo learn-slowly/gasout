@@ -29,15 +29,23 @@ export default function TestStartPage() {
                     </p>
                 </div>
 
-                <button
-                    onClick={() => router.push("/test/take")}
-                    className="w-full h-13 bg-green-700 hover:bg-green-800 active:bg-green-900 text-white text-[15px] font-semibold rounded-xl transition-colors"
-                >
-                    테스트 시작하기
-                </button>
+                <div className="space-y-3">
+                    <button
+                        onClick={() => router.push("/test/declare")}
+                        className="w-full h-13 bg-green-700 hover:bg-green-800 active:bg-green-900 text-white text-[15px] font-semibold rounded-xl transition-colors"
+                    >
+                        지금 바로 선언하기
+                    </button>
+                    <button
+                        onClick={() => router.push("/test/take")}
+                        className="w-full h-13 border border-gray-200 hover:bg-gray-50 active:bg-gray-100 text-gray-700 text-[15px] font-semibold rounded-xl transition-colors"
+                    >
+                        내 기후 성향 먼저 알아보기
+                    </button>
+                </div>
 
                 <p className="text-xs text-gray-400 mt-4 text-center">
-                    약 3분 · 20개 질문
+                    성향 테스트 약 3분 · 20개 질문
                 </p>
             </div>
         </div>

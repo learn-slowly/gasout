@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { questions, miniFacts } from "@/data/climateQuestions";
 import { factDetails } from "@/data/factDetails";
 import { TestAnswer, MiniFact } from "@/types/climateTest";
@@ -17,8 +17,9 @@ const renderBoldText = (text: string) => {
   });
 };
 
-export default function TestTakePage() {
+function TestTakeContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<TestAnswer[]>([]);
   const [sessionId, setSessionId] = useState<string>("");
@@ -73,7 +74,9 @@ export default function TestTakePage() {
   const saveTestResult = (finalAnswers: TestAnswer[]) => {
     try {
       const resultType = calculateMBTIType(finalAnswers);
-      router.push(`/test/result?session=${sessionId}&type=${resultType}`);
+      const fromDeclare = searchParams.get("from") === "declare";
+      const declaredParam = fromDeclare ? "&declared=true" : "&declared=false";
+      router.push(`/test/result?session=${sessionId}&type=${resultType}${declaredParam}`);
 
       const utmParams = getUTMParams();
       fetch("/api/climate-test/save", {
@@ -83,7 +86,9 @@ export default function TestTakePage() {
       }).catch((e) => console.warn("Failed to save:", e));
     } catch (error) {
       console.error("Error calculating test result:", error);
-      router.push(`/test/result?session=${sessionId}&type=ENFP`);
+      const fromDeclare = searchParams.get("from") === "declare";
+      const declaredParam = fromDeclare ? "&declared=true" : "&declared=false";
+      router.push(`/test/result?session=${sessionId}&type=ENFP${declaredParam}`);
     }
   };
 
@@ -285,5 +290,20 @@ export default function TestTakePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function TestTakePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-200 border-t-gray-600 mx-auto"></div>
+          <p className="text-sm text-gray-400">테스트를 준비하는 중...</p>
+        </div>
+      </div>
+    }>
+      <TestTakeContent />
+    </Suspense>
   );
 }

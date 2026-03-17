@@ -81,27 +81,28 @@ export function shareToKakao(params: {
 
   try {
     console.log('[Kakao Share] Sending default share...');
-    
-    // 테스트 시작 페이지 URL (결과 페이지가 아닌)
-    const testStartUrl = `${window.location.origin}/test`;
-    
+
+    const shareUrl = params.linkUrl || `${window.location.origin}/test`;
+
     window.Kakao.Share.sendDefault({
       objectType: 'feed',
       content: {
         title: params.title,
         description: params.description,
         imageUrl: params.imageUrl || `${window.location.origin}/test.jpg`,
+        imageWidth: 800,
+        imageHeight: 400,
         link: {
-          mobileWebUrl: testStartUrl,
-          webUrl: testStartUrl,
+          mobileWebUrl: shareUrl,
+          webUrl: shareUrl,
         },
       },
       buttons: [
         {
-          title: '나도 테스트하기',
+          title: params.buttonText || '나도 테스트하기',
           link: {
-            mobileWebUrl: testStartUrl,
-            webUrl: testStartUrl,
+            mobileWebUrl: shareUrl,
+            webUrl: shareUrl,
           },
         },
       ],
