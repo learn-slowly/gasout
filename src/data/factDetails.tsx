@@ -157,7 +157,7 @@ export const factDetails: FactDetail[] = [
                                 <span className="text-green-600 text-xl">✅</span>
                                 <div>
                                     <h4 className="font-bold">직접 재생에너지로 전환</h4>
-                                    <p className="text-sm text-gray-600">LNG를 &quot;징검다리&quot;로 거치면 시간과 비용 낭비. 바로 태양광, 풍력, 수소로 가는 게 효율적</p>
+                                    <p className="text-sm text-gray-600">LNG를 &quot;징검다리&quot;로 거치면 시간과 비용 낭비. 바로 태양광, 풍력 등의 재생에너지로 가는 게 효율적</p>
                                 </div>
                             </div>
                             <div className="flex items-start gap-3">
@@ -170,8 +170,8 @@ export const factDetails: FactDetail[] = [
                             <div className="flex items-start gap-3">
                                 <span className="text-green-600 text-xl">✅</span>
                                 <div>
-                                    <h4 className="font-bold">기존 LNG 발전소 조기 폐쇄 계획</h4>
-                                    <p className="text-sm text-gray-600">새로 짓지 말고, 있는 것도 줄여나가기</p>
+                                    <h4 className="font-bold">기존 LNG 발전소 및 신규 LNG 발전 계획 전체 적정용량 재검토</h4>
+                                    <p className="text-sm text-gray-600">새로 짓지 말고, 적정 LNG 용량 재검토 요구</p>
                                 </div>
                             </div>
                         </div>
