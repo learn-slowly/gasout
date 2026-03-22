@@ -21,6 +21,10 @@ export const factDetails: FactDetail[] = [
                         </p>
                     </div>
                 ),
+                sources: [
+                    "IEA, \"Natural Gas Information: Overview\" (2023)",
+                    "U.S. Energy Information Administration (EIA), \"Natural Gas Explained\"",
+                ],
             },
             {
                 title: "2. 왜 '깨끗하다'는 오해가 생겼을까요?",
@@ -48,6 +52,10 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "IPCC AR6 WG III, \"Climate Change 2022: Mitigation of Climate Change\", Chapter 6",
+                    "U.S. EIA, \"Carbon Dioxide Emissions Coefficients by Fuel\" (2024)",
+                ],
             },
             {
                 title: "3. 메탄 누출의 심각성",
@@ -78,6 +86,11 @@ export const factDetails: FactDetail[] = [
                         </p>
                     </div>
                 ),
+                sources: [
+                    "IPCC AR6 WG I, \"Climate Change 2021: The Physical Science Basis\", Chapter 7, Table 7.15 (GWP 20yr: 82.5, 100yr: 29.8)",
+                    "Alvarez et al., \"Assessment of methane emissions from the U.S. oil and gas supply chain\", Science 361(6398), 2018",
+                    "Howarth, R.W., \"Is shale gas a major driver of recent increase in global atmospheric methane?\", Biogeosciences 16, 2019",
+                ],
             },
             {
                 title: "4. 실제 사례",
@@ -102,6 +115,11 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "Zhang et al., \"Quantifying methane emissions from the largest oil-producing basin in the United States from space\", Science Advances 6(17), 2020",
+                    "Western Australian Government, \"Gorgon Gas Development Revised and Expanded Proposal: Audit Report\" (2022)",
+                    "IEEFA, \"Gorgon Carbon Capture and Storage: The Sting in the Tail\", 2021",
+                ],
             },
             {
                 title: "5. 국제사회의 평가",
@@ -124,6 +142,11 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "IPCC AR6 WG III, \"Climate Change 2022: Mitigation of Climate Change\", Summary for Policymakers, C.3",
+                    "European Commission, \"EU Taxonomy Complementary Climate Delegated Act\" (2022/1214)",
+                    "European Parliament, \"EU taxonomy: MEPs do not object to inclusion of gas and nuclear activities\" (2022.7.6)",
+                ],
             },
             {
                 title: "6. 그렇다면 어떻게 해야 할까요?",
@@ -154,14 +177,18 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "IEA, \"Net Zero by 2050: A Roadmap for the Global Energy Sector\" (2021)",
+                    "UNEP, \"International Methane Emissions Observatory (IMEO)\" (2022~)",
+                    "기후솔루션, \"한국의 LNG 전환 정책 평가\" (2023)",
+                ],
             },
         ],
         sources: [
-            "IPCC 6차 평가보고서 (2023)",
-            "국제에너지기구(IEA), \"World Energy Outlook 2024\"",
-            "환경재단, \"LNG의 진실\" 리포트 (2023)",
+            "IPCC, \"Climate Change 2021/2022\" AR6 WG I & III",
+            "IEA, \"World Energy Outlook 2024\"",
+            "Alvarez et al., Science 361(6398), 2018",
             "기후솔루션, \"LNG 메탄 누출의 기후 영향\" (2024)",
-            "Science 저널, \"Methane emissions from natural gas systems\" (2024)",
         ],
         closingMessage: "LNG가 화석연료인 줄 몰랐어요. 정부 발표만 들으면 친환경인 줄 알았는데... 이런 오해는 당연해요. 의도적으로 만들어진 프레임이니까요. 중요한 건 이제 알았다는 거, 그리고 목소리를 낼 수 있다는 거예요.",
     },
@@ -187,6 +214,10 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "Carbon Tracker Initiative, \"Unburnable Carbon: Are the World's Financial Markets Carrying a Carbon Bubble?\" (2011)",
+                    "IEA, \"Net Zero by 2050: A Roadmap for the Global Energy Sector\" (2021)",
+                ],
             },
             {
                 title: "2. 왜 LNG 발전소가 좌초자산이 될까요?",
@@ -219,6 +250,11 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "대한민국 정부, \"2050 탄소중립 시나리오\" (2021)",
+                    "산업통상자원부, \"제11차 전력수급기본계획\" (2024)",
+                    "IEA, \"The Role of Gas in Today's Energy Transitions\" (2019)",
+                ],
             },
             {
                 title: "3. 실제로 일어나고 있어요",
@@ -255,40 +291,14 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "Rocky Mountain Institute, \"Clean Energy Is Canceling Gas Plants\" (2023)",
+                    "IEEFA, \"Gorgon Carbon Capture and Storage: The Sting in the Tail\" (2021)",
+                    "European Commission, \"REPowerEU Plan\" COM(2022) 230",
+                ],
             },
             {
-                title: "4. 경남 LNG 발전소, 얼마나 위험할까요?",
-                content: (
-                    <div className="space-y-4">
-                        <div className="bg-gray-100 rounded-lg p-4">
-                            <h4 className="font-bold mb-2">💰 예상 건설비</h4>
-                            <ul className="space-y-1">
-                                <li>• 1기당 약 <strong>1조 원</strong></li>
-                                <li>• 경남 삼천포 등 계획: <strong>2~3기</strong></li>
-                                <li>• 총 <strong className="text-red-600">2~3조 원</strong></li>
-                            </ul>
-                        </div>
-
-                        <h4 className="font-bold">📉 손실 시나리오</h4>
-                        <div className="space-y-3">
-                            <div className="bg-yellow-50 rounded-lg p-3">
-                                <h5 className="font-bold text-sm">시나리오 A: 2040년 조기 폐쇄</h5>
-                                <p className="text-sm">회수 못 한 투자비: <strong className="text-red-600">1.5조 원</strong></p>
-                            </div>
-                            <div className="bg-orange-50 rounded-lg p-3">
-                                <h5 className="font-bold text-sm">시나리오 B: 2050년 강제 폐쇄</h5>
-                                <p className="text-sm">회수 못 한 투자비: <strong className="text-red-600">1조 원</strong></p>
-                            </div>
-                            <div className="bg-red-50 rounded-lg p-3">
-                                <h5 className="font-bold text-sm">시나리오 C: 계속 운영 (최악)</h5>
-                                <p className="text-sm">국민 부담 <strong className="text-red-600">연 5,000억 원 이상</strong></p>
-                            </div>
-                        </div>
-                    </div>
-                ),
-            },
-            {
-                title: "5. 이미 경고받고 있어요",
+                title: "4. 이미 경고받고 있어요",
                 content: (
                     <div className="space-y-4">
                         <h4 className="font-bold">🏦 국제 금융기관들의 탈출</h4>
@@ -308,9 +318,14 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "BlackRock, \"Larry Fink's 2020 Letter to CEOs: A Fundamental Reshaping of Finance\"",
+                    "World Bank, \"World Bank Group Climate Change Action Plan 2021-2025\"",
+                    "국민연금 ESG 투자 정책 보고서 (2022)",
+                ],
             },
             {
-                title: "6. 누가 손해를 보나요?",
+                title: "5. 누가 손해를 보나요?",
                 content: (
                     <div className="space-y-4">
                         <div className="bg-red-50 rounded-lg p-4">
@@ -341,9 +356,13 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "한국전력공사, \"2023 사업보고서\"",
+                    "한국은행, \"에너지 전환과 좌초자산 리스크\" (2023)",
+                ],
             },
             {
-                title: "7. 다른 나라는 어떻게 하고 있나요?",
+                title: "6. 다른 나라는 어떻게 하고 있나요?",
                 content: (
                     <div className="space-y-4">
                         <div className="grid gap-3">
@@ -365,34 +384,16 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
-            },
-            {
-                title: "8. 과거의 실수를 반복하지 말아야 해요",
-                content: (
-                    <div className="space-y-4">
-                        <div className="space-y-2">
-                            <div className="bg-gray-100 rounded-lg p-3">
-                                <p className="text-sm">🏭 <strong>4대강 사업:</strong> 22조 원 → 쓸모없는 보</p>
-                            </div>
-                            <div className="bg-gray-100 rounded-lg p-3">
-                                <p className="text-sm">🚄 <strong>경전선 복선전철:</strong> 2조 원 → 적자 노선</p>
-                            </div>
-                            <div className="bg-gray-100 rounded-lg p-3">
-                                <p className="text-sm">🏗️ <strong>새만금:</strong> 40년째 미완성</p>
-                            </div>
-                        </div>
-                        <p className="font-bold text-center text-lg">
-                            이제는 <span className="text-green-600">20년 후를 보고 결정</span>해야 해요.
-                        </p>
-                    </div>
-                ),
+                sources: [
+                    "Danish Energy Agency, \"Denmark's Climate and Energy Outlook\" (2023)",
+                    "UK DESNZ, \"Powering Up Britain: Energy Security Plan\" (2023)",
+                    "Ontario Ministry of Energy, \"The End of Coal\" (2014)",
+                ],
             },
         ],
         sources: [
             "Carbon Tracker Initiative, \"Stranded Assets and Fossil Fuels\" (2024)",
-            "국제에너지기구(IEA), \"World Energy Outlook 2024\"",
-            "에너지경제연구원, \"LNG 발전소 경제성 분석\" (2024)",
-            "기후솔루션, \"좌초자산 위험 보고서\" (2024)",
+            "IEA, \"World Energy Outlook 2024\"",
             "한국은행, \"에너지 전환과 좌초자산 리스크\" (2023)",
         ],
         closingMessage: "10년 뒤 우리 아이들이 물어볼 거예요. '왜 그때 알면서도 지었어요?' 답할 수 있나요?",
@@ -457,6 +458,12 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "IRENA, \"Renewable Power Generation Costs in 2023\" (2024)",
+                    "BloombergNEF, \"New Energy Outlook 2024\"",
+                    "IEA, \"World Energy Outlook 2024\", Chapter 3",
+                    "한국에너지공단, \"2024 신재생에너지백서\"",
+                ],
             },
             {
                 title: "2. 왜 이렇게 싸졌을까요?",
@@ -489,6 +496,11 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "IRENA, \"Renewable Power Generation Costs in 2023\" (2024)",
+                    "IEA, \"World Energy Investment 2024\"",
+                    "NREL (미국 국립재생에너지연구소), \"Solar Cell Efficiency Chart\" (2024)",
+                ],
             },
             {
                 title: "3. 화석연료는 점점 비싸져요",
@@ -522,6 +534,12 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "IEA, \"World Energy Outlook 2024\", Chapter 4",
+                    "European Commission, \"Carbon Border Adjustment Mechanism (CBAM)\" Regulation (EU) 2023/956",
+                    "한국거래소, \"배출권시장 동향\" (2024)",
+                    "IGU, \"Wholesale Gas Price Survey\" (2024)",
+                ],
             },
             {
                 title: "4. 세계는 이미 움직이고 있어요",
@@ -547,6 +565,12 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "European Commission, \"REPowerEU Plan\" COM(2022) 230, 재생에너지 목표 42.5%",
+                    "China National Energy Administration, \"2023 Renewable Energy Statistics\" (2024)",
+                    "U.S. Congress, \"Inflation Reduction Act of 2022\" (Public Law 117-169)",
+                    "일본 경제산업성, \"제6차 에너지기본계획\" (2021)",
+                ],
             },
             {
                 title: "5. 한국은 왜 느릴까요?",
@@ -557,17 +581,16 @@ export const factDetails: FactDetail[] = [
                             <ul className="space-y-1 text-sm">
                                 <li>• 2023년 재생에너지 발전 비중: <strong className="text-red-600">9.5%</strong></li>
                                 <li>• OECD 평균(30%)의 <strong>1/3 수준</strong></li>
-                                <li>• 아직도 LNG, 석탄 신규 발전소 계획 중</li>
+                                <li>• 아직도 LNG 신규 발전소 계획 중</li>
                             </ul>
                         </div>
 
                         <div className="bg-amber-50 rounded-lg p-4">
                             <h4 className="font-bold mb-2">❓ 왜 이럴까요?</h4>
                             <ul className="space-y-1 text-sm">
-                                <li>• 기존 발전사업자의 <strong>기득권</strong></li>
-                                <li>• 전력 시스템의 경직성</li>
-                                <li>• &quot;안정성&quot; 핑계로 변화 거부</li>
-                                <li>• 정부의 소극적 태도</li>
+                                <li>• 기존 화석연료 중심의 전력시스템의 <strong>경로 의존성</strong></li>
+                                <li>• 계통 유연성 자원 부족</li>
+                                <li>• 재생에너지 도입에 따른 변화 경계</li>
                             </ul>
                         </div>
 
@@ -581,6 +604,11 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "한국에너지공단, \"2023년 신재생에너지 보급통계\"",
+                    "OECD/IEA, \"Energy Policies of IEA Countries: Korea 2024 Review\"",
+                    "RE100 Climate Group, \"RE100 Members\" (2024)",
+                ],
             },
             {
                 title: "6. 실제 사례: 포르투갈의 기적",
@@ -609,64 +637,67 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "APREN (Portuguese Renewable Energy Association), \"Electricity Generation in Portugal 2024\"",
+                    "IEA, \"Portugal 2021: Energy Policy Review\"",
+                ],
             },
             {
-                title: "7. 비용 비교: 경남에 투자한다면?",
+                title: "7. 사례: 하동 LNG 발전소",
                 content: (
                     <div className="space-y-4">
                         <div className="bg-gray-100 rounded-lg p-4">
-                            <h4 className="font-bold mb-2">📊 건설비 비교</h4>
+                            <h4 className="font-bold mb-2">🏭 하동 석탄→LNG 전환 계획</h4>
                             <ul className="space-y-1 text-sm">
-                                <li>• LNG 발전소 건설비: <strong>2조 원</strong></li>
-                                <li>• 같은 용량의 태양광+풍력+ESS: <strong className="text-green-600">1.5~1.8조 원</strong></li>
+                                <li>• 하동화력 노후 석탄발전소를 LNG 복합화력으로 전환 추진</li>
+                                <li>• 예상 건설비: <strong>약 1조 원 이상</strong></li>
+                                <li>• 설비 수명: <strong>30~40년</strong> (2050 탄소중립 목표와 충돌)</li>
                             </ul>
                         </div>
 
-                        <div className="bg-blue-50 rounded-lg p-4">
-                            <h4 className="font-bold mb-2">💡 30년 운영 비용</h4>
+                        <div className="bg-red-50 rounded-lg p-4">
+                            <h4 className="font-bold mb-2">❓ 같은 비용으로 재생에너지라면?</h4>
                             <ul className="space-y-1 text-sm">
-                                <li>• LNG: 연료비 + 유지비 = 매년 3,000억 원 → 30년간 <strong className="text-red-600">9조 원</strong></li>
-                                <li>• 재생에너지: 유지비만 = 매년 500억 원 → 30년간 <strong className="text-green-600">1.5조 원</strong></li>
+                                <li>• 같은 투자로 태양광+풍력+ESS 구축 가능</li>
+                                <li>• 연료비 <strong className="text-green-600">0원</strong> (LNG는 매년 수천억 원 연료비 발생)</li>
+                                <li>• 탄소 배출 <strong className="text-green-600">제로</strong></li>
+                                <li>• 지역 주민 참여형 수익 모델 가능</li>
                             </ul>
                         </div>
 
-                        <div className="bg-green-100 rounded-lg p-4 text-center">
-                            <p className="font-bold text-lg">🎉 결론</p>
-                            <p>재생에너지가 <strong className="text-green-700">7.5조 원 더 싸고</strong>,</p>
-                            <p>게다가 <strong className="text-green-700">탄소 배출 제로</strong>!</p>
+                        <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
+                            <p className="font-medium">
+                                <strong>핵심:</strong> 하동에 LNG 발전소를 새로 짓는 대신, 재생에너지로 전환하면 장기적으로 비용도 줄이고 탄소중립 목표에도 부합합니다.
+                            </p>
                         </div>
                     </div>
                 ),
+                sources: [
+                    "산업통상자원부, \"제11차 전력수급기본계획\" (2024)",
+                    "한국남부발전, \"하동화력 전환 사업계획\"",
+                    "에너지경제연구원, \"발전원별 균등화발전비용(LCOE) 분석\" (2024)",
+                ],
             },
         ],
         sources: [
-            "한국에너지공단, \"2024 신재생에너지백서\"",
-            "국제재생에너지기구(IRENA), \"Renewable Power Generation Costs 2024\"",
-            "에너지경제연구원, \"발전원별 균등화발전비용(LCOE) 분석\" (2024)",
+            "IRENA, \"Renewable Power Generation Costs in 2023\" (2024)",
             "BloombergNEF, \"New Energy Outlook 2024\"",
-            "기후솔루션, \"한국 재생에너지 비용 분석\" (2024)",
+            "에너지경제연구원, \"발전원별 LCOE 분석\" (2024)",
+            "IEA, \"World Energy Outlook 2024\"",
         ],
-        closingMessage: "환경을 생각해서가 아니라, 내 지갑을 생각해서라도 재생에너지를 선택해야 할 때예요. 재생에너지는 더 이상 '비싼 착한 선택'이 아니에요. 더 싸고, 더 똑똑한 선택이에요.",
+        closingMessage: "환경을 생각해서도 있지만, 내 지갑을 생각해서라도 재생에너지를 선택해야 할 때예요. 재생에너지는 더 이상 '비싼 착한 선택'이 아니에요. 더 싸고, 똑똑한 선택이에요.",
     },
     {
         id: 4,
         emoji: "💎",
-        pageTitle: "경남, 재생에너지의 보물창고예요",
-        subtitle: "경남에는 더 좋은 대안이 있습니다",
+        pageTitle: "한국, 재생에너지 할 수 있습니다.",
+        subtitle: "경남도 재생에너지 전환 가능합니다",
         sections: [
             {
                 title: "1. 경남의 지리적 장점",
                 content: (
                     <div className="space-y-4">
                         <div className="grid gap-3">
-                            <div className="bg-blue-50 rounded-lg p-4">
-                                <h4 className="font-bold mb-2">🌊 해안선 길이</h4>
-                                <ul className="space-y-1 text-sm">
-                                    <li>• 남해안 <strong>1,100km</strong> 이상</li>
-                                    <li>• 전국에서 <strong>가장 긴 해안선</strong></li>
-                                    <li>• 섬만 <strong>400개 이상</strong></li>
-                                </ul>
-                            </div>
                             <div className="bg-yellow-50 rounded-lg p-4">
                                 <h4 className="font-bold mb-2">☀️ 일조량</h4>
                                 <ul className="space-y-1 text-sm">
@@ -686,6 +717,11 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "기상청, \"한국 기후평년값 (2011~2020)\"",
+                    "해양수산부, \"해양영토 통계\" (2023)",
+                    "경상남도청, \"경남 통계연보\" (2024)",
+                ],
             },
             {
                 title: "2. 경남의 재생에너지 잠재력",
@@ -712,15 +748,10 @@ export const factDetails: FactDetail[] = [
                                         <td className="py-2 text-right font-bold">15~18 GW</td>
                                         <td className="py-2 text-right">15~18기</td>
                                     </tr>
-                                    <tr className="border-b">
-                                        <td className="py-2">육상풍력</td>
-                                        <td className="py-2 text-right font-bold">3~5 GW</td>
-                                        <td className="py-2 text-right">3~5기</td>
-                                    </tr>
                                     <tr className="bg-green-50">
                                         <td className="py-2 font-bold">합계</td>
-                                        <td className="py-2 text-right font-bold text-green-600">38~48 GW</td>
-                                        <td className="py-2 text-right font-bold text-green-600">38~48기</td>
+                                        <td className="py-2 text-right font-bold text-green-600">35~43 GW</td>
+                                        <td className="py-2 text-right font-bold text-green-600">35~43기</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -731,6 +762,11 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "한국에너지기술평가원, \"재생에너지 자원잠재량 조사\" (2023)",
+                    "녹색에너지전략연구소, \"경남 재생에너지 잠재량 분석\" (2023)",
+                    "경상남도청, \"경남 지역에너지계획\" (2024)",
+                ],
             },
             {
                 title: "3. 이미 진행 중인 프로젝트",
@@ -764,6 +800,11 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "한국풍력산업협회, \"국내 해상풍력 사업 현황\" (2024)",
+                    "거제시, \"거제 해상풍력 발전사업 추진계획\" (2023)",
+                    "남해군, \"남해 해상풍력 발전사업 계획\" (2023)",
+                ],
             },
             {
                 title: "4. 경제적 효과 비교",
@@ -800,14 +841,18 @@ export const factDetails: FactDetail[] = [
                         </div>
                     </div>
                 ),
+                sources: [
+                    "에너지경제연구원, \"LNG 발전소 경제성 분석\" (2024)",
+                    "IRENA, \"Renewable Power Generation Costs in 2023\" (2024)",
+                    "한국풍력산업협회, \"해상풍력 경제 효과 보고서\" (2024)",
+                ],
             },
         ],
         sources: [
             "경상남도청, \"경남 지역에너지계획\" (2024)",
-            "녹색에너지전략연구소, \"경남 재생에너지 잠재량 분석\" (2023)",
-            "한국풍력산업협회, \"해상풍력 경제 효과 보고서\"",
-            "거제시/남해군 해상풍력 사업계획서",
+            "한국에너지기술평가원, \"재생에너지 자원잠재량 조사\" (2023)",
+            "한국풍력산업협회, \"해상풍력 경제 효과 보고서\" (2024)",
         ],
-        closingMessage: "경남은 이미 준비되어 있어요. LNG라는 '과거'가 아니라, 재생에너지라는 '미래'를 선택할 골든타임, 바로 지금입니다!",
+        closingMessage: "우리는 이미 준비되어 있어요. LNG라는 '과거'가 아니라, 재생에너지라는 '미래'를 선택할 골든타임, 바로 지금입니다!",
     },
 ];

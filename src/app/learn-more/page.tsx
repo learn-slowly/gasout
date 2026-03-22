@@ -72,6 +72,18 @@ function LearnMoreContent() {
                     <div className="text-sm text-gray-600 leading-relaxed">
                       {section.content}
                     </div>
+                    {section.sources && section.sources.length > 0 && (
+                      <div className="mt-2 pt-2 border-t border-gray-100">
+                        <ul className="space-y-0.5">
+                          {section.sources.map((src, idx) => (
+                            <li key={idx} className="text-[11px] text-gray-400 flex items-start gap-1.5">
+                              <span className="text-gray-300 mt-0.5 shrink-0">📎</span>
+                              {src}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

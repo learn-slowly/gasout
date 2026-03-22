@@ -86,6 +86,7 @@ export interface ClimateDeclaration {
 export interface Section {
   title: string;
   content: React.ReactNode;
+  sources?: string[];
 }
 
 export interface FactDetail {

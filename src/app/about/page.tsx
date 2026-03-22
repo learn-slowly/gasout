@@ -68,20 +68,13 @@ export default function AboutPage() {
 
           <div className="space-y-5 text-[15px] text-slate-300 leading-[1.8]">
             <p>
-              우리는 경남기후위기비상행동에서 전국의 탈가스 운동을 고민하는 활동가들입니다.
+              화석연료를넘어서(Korea Beyond Fossil Fuels, KBF)는 국내 30여개 시민사회단체가 기후위기 대응과 온실가스 감축을 위해 활동하는 전국 탈화석연료 네트워크입니다. 우리는 &lsquo;화석연료퇴출&rsquo;과 &lsquo;재생에너지 확대&rsquo;를 목표로 정책 변화, 금융 전환, 지역사회 연대 등 다양한 캠페인을 전개합니다.
             </p>
             <p>
-              2023년, 하동석탄화력발전소 1호기가 폐지되는 대신 한국남부발전이 안동에 LNG 복합화력발전소를 건설하겠다는 계획을 목격했습니다. 우리 지역의 오염이 다른 지역으로 떠넘겨지는 광경이었습니다.
+              정부는 2038년까지 전체 60기의 석탄발전소 가운데 40기만을 폐쇄하고, 이 중 37기는 가스발전 또는 수소/암모니아 혼소 발전으로 전환할 예정입니다. 석탄발전을 가스가 아닌 재생에너지로 대체해야 기후·환경뿐 아니라 경제적으로 유리하다는 사실은 이미 입증되었습니다. 정부는 노후화된 석탄발전소를 가스발전으로 전환하려는 계획을 철회하고 재생에너지 확대 정책을 강화해야 합니다.
             </p>
-
-            <div className="py-5 px-6 rounded-xl bg-slate-800/60 border border-slate-700/50">
-              <p className="text-white font-semibold">
-                결국 전국적인 운동만이 기후위기를 해결할 수 있다는 것을 알게 되었습니다.
-              </p>
-            </div>
-
             <p>
-              석탄발전소를 꺼야 한다는 시민적 합의는 이루어졌고, 재생에너지가 미래라는 데도 이견이 없습니다. 하지만 &ldquo;브릿지 전원&rdquo;이라는 이름으로 LNG발전을 경유하려는 움직임에 대해 우려합니다.
+              작년말 정부의 탈석탄동맹(PPCA)가입으로 석탄발전소를 꺼야 한다는 국가적합의는 이루어졌고, 재생에너지가 미래라는 데도 이견이 없습니다. 하지만 &ldquo;브릿지 전원&rdquo;이라는 이름으로 LNG발전을 경유하려는 움직임에 대해 우려합니다.
             </p>
           </div>
         </motion.div>
@@ -144,7 +137,7 @@ export default function AboutPage() {
 
           <Button className="bg-white text-black hover:bg-slate-200 rounded-full px-6 h-11 text-sm font-semibold">
             <Mail className="w-4 h-4 mr-2" />
-            경남기후위기비상행동 연락하기
+            담당자에게 연락하기
           </Button>
         </motion.div>
 

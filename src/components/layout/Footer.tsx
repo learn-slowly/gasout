@@ -24,7 +24,7 @@ export default function Footer() {
                             <span className="text-lg font-bold text-foreground tracking-tight">GasOut.kr</span>
                         </Link>
                         <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">
-                            전국 화력 발전소 현황과 기후 위기 관련 뉴스를 제공하는<br />
+                            전국 LNG가스 발전소 현황과 관련 뉴스를 제공하는<br />
                             시민 참여형 데이터 플랫폼입니다.
                         </p>
                     </div>
@@ -55,11 +55,7 @@ export default function Footer() {
                 </div>
 
                 <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground/60">
-                    <p>© 2024 GasOut.kr. All rights reserved.</p>
-                    <div className="flex gap-4">
-                        <Link href="/privacy" className="hover:text-foreground">개인정보처리방침</Link>
-                        <Link href="/terms" className="hover:text-foreground">이용약관</Link>
-                    </div>
+                    <p>© 2026 GasOut.kr. All rights reserved.</p>
                 </div>
             </div>
         </footer>
