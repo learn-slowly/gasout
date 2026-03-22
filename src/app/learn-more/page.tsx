@@ -95,20 +95,6 @@ function LearnMoreContent() {
                 </p>
               </div>
 
-              {/* Sources */}
-              <details className="group">
-                <summary className="text-xs text-gray-400 cursor-pointer hover:text-gray-600 transition-colors">
-                  출처 보기
-                </summary>
-                <ul className="mt-2 space-y-1">
-                  {fact.sources.map((source, idx) => (
-                    <li key={idx} className="text-xs text-gray-400 flex items-start gap-1.5">
-                      <span className="w-1 h-1 rounded-full bg-gray-300 mt-1.5 shrink-0"></span>
-                      {source}
-                    </li>
-                  ))}
-                </ul>
-              </details>
             </article>
           ))}
         </div>
