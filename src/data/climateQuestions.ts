@@ -8,7 +8,7 @@ export const questions: Question[] = [
   {
     id: 1,
     dimension: 'E/I',
-    question: '기후활동을 할 때 어떤 방식이 더 힘이 나나요?',
+    question: '기후활동을 한다면 어떤 방식이 더 힘이 나나요?',
     optionA: {
       text: '여러 사람과 함께 플로깅·캠페인·집회 같은 활동을 할 때',
       value: 'E',
@@ -34,7 +34,7 @@ export const questions: Question[] = [
   {
     id: 3,
     dimension: 'E/I',
-    question: '환경 활동 후 나의 충전 방식은?',
+    question: '열정적인 기후 활동 후 조금 지친 당신, 충전 방식은?',
     optionA: {
       text: '사람들과 이야기하며 기후 에너지 급속 충전',
       value: 'E',
@@ -129,7 +129,7 @@ export const questions: Question[] = [
   {
     id: 10,
     dimension: 'S/N',
-    question: '친환경 제품을 선택할 때 중요한 건?',
+    question: '친환경 제품을 선택한다면 무엇을 따져보나요?',
     optionA: {
       text: '성분, 인증 마크, 실제 사용 후기',
       value: 'S',
@@ -146,7 +146,7 @@ export const questions: Question[] = [
   {
     id: 11,
     dimension: 'T/F',
-    question: 'LNG 발전소 건설 반대 이유를 묻는다면 당신의 대답은?',
+    question: '만약 LNG 발전소 건설 반대 이유를 묻는다면 뭐라고 대답할까요?',
     optionA: {
       text: '"재생에너지가 더 싸고 탄소 배출량도 적어"',
       value: 'T',
