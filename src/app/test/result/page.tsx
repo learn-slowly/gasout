@@ -162,23 +162,23 @@ function ResultContent() {
     const typeName = result?.typeName || "";
     const emoji = result?.emoji || "";
     const shareQuote = result?.shareQuote || "";
-    const url = `${window.location.origin}/test/result?type=${type}`;
+    const testUrl = `${window.location.origin}/test`;
 
     switch (platform) {
       case "kakao":
         const success = shareToKakao({
           title: `${emoji} 나의 기후시민 유형: ${typeName}`,
           description: `"${shareQuote}"\n\n4문항 밸런스게임으로 나의 기후시민 유형 알아보기!`,
-          linkUrl: url,
+          linkUrl: testUrl,
           buttonText: '나도 테스트하기',
           imageUrl: `${window.location.origin}/test.jpg`,
         });
         if (!success) {
-          navigator.clipboard.writeText(url);
+          navigator.clipboard.writeText(testUrl);
         }
         break;
       case "url":
-        navigator.clipboard.writeText(url);
+        navigator.clipboard.writeText(testUrl);
         alert("링크가 복사되었습니다!");
         break;
       default:
@@ -186,13 +186,13 @@ function ResultContent() {
           navigator.share({
             title: `나의 기후시민 유형: ${typeName}`,
             text: `"${shareQuote}" — 나의 기후시민 유형은 ${typeName}!`,
-            url: url,
+            url: testUrl,
           }).catch(() => {
-            navigator.clipboard.writeText(url);
+            navigator.clipboard.writeText(testUrl);
             alert("링크가 복사되었습니다!");
           });
         } else {
-          navigator.clipboard.writeText(url);
+          navigator.clipboard.writeText(testUrl);
           alert("링크가 복사되었습니다!");
         }
     }

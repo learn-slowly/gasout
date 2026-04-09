@@ -52,21 +52,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 기후시민 선언 저장 (MBTI 결과 포함)
+    // 기후시민 선언 저장
     console.log("[Declare API] Saving declaration with result type:", resultType);
+    const insertData: Record<string, unknown> = {
+      session_id: sessionId || null,
+      result_type: resultType,
+      name,
+      email,
+      region: region || null,
+      phone: phone || null,
+      consent_privacy: consentPrivacy,
+      consent_marketing: consentMarketing || false,
+    };
+    // FK 제약이 있으므로, test_response_id가 실제로 존재할 때만 포함
+    if (testResponseId) {
+      insertData.test_response_id = testResponseId;
+    }
+
     const { data, error } = await supabase
       .from("climate_declarations")
-      .insert({
-        test_response_id: testResponseId,
-        session_id: sessionId || null,
-        result_type: resultType, // MBTI 결과 저장
-        name,
-        email,
-        region: region || null,
-        phone: phone || null,
-        consent_privacy: consentPrivacy,
-        consent_marketing: consentMarketing || false,
-      })
+      .insert(insertData)
       .select()
       .single();
 
