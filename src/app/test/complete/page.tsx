@@ -28,7 +28,7 @@ export default function TestCompletePage() {
       case "kakao":
         shareToKakao({
           title: "나는 기후시민입니다!",
-          description: "LNG 발전소 건설을 막고, 재생에너지로 전환하는 첫걸음!\n3분 테스트로 나의 기후행동 스타일 알아보기",
+          description: "LNG 발전소 건설을 막고, 재생에너지로 전환하는 첫걸음!\n1분 밸런스게임으로 나�� 기후시민 유형 알아보기",
           linkUrl: url,
           buttonText: '나도 테스트하기',
           imageUrl: `${window.location.origin}/test.jpg`,

@@ -95,7 +95,7 @@ function DeclareForm() {
                   const url = `${window.location.origin}/test`;
                   shareToKakao({
                     title: "나는 기후시민입니다!",
-                    description: "기후위기에 맞서 행동하겠다는 선언에 참여하세요.\n3분 테스트로 나의 기후행동 스타일도 알아보기!",
+                    description: "기후위기에 맞서 행동하겠다는 선언에 참여하세요.\n1분 밸런스게임으로 나의 기후시민 유형도 알아보기!",
                     linkUrl: url,
                     buttonText: "나도 참여하기",
                     imageUrl: `${window.location.origin}/test.jpg`,
@@ -120,18 +120,18 @@ function DeclareForm() {
           {/* 테스트 */}
           <div className="rounded-xl bg-green-50 border border-green-200 p-6 mb-6">
             <h2 className="text-sm font-semibold text-gray-900 mb-2">
-              나에게 맞는 기후행동을 알아보세요
+              나의 기후시민 유형을 알아보세요
             </h2>
             <p className="text-sm text-gray-500 mb-5">
-              20개 질문으로 나만의 기후행동 스타일을 찾아보세요.
+              4문항 밸런스게���으로 나만의 기후시민 유형을 찾아보세요.
             </p>
             <button
               onClick={() => router.push("/test/take?from=declare")}
               className="w-full h-13 bg-green-700 hover:bg-green-800 active:bg-green-900 text-white text-[15px] font-semibold rounded-xl transition-colors"
             >
-              기후 성향 테스트 시작하기
+              기후시민 유형 알아보기
             </button>
-            <p className="text-xs text-gray-400 mt-3">약 3분 소요</p>
+            <p className="text-xs text-gray-400 mt-3">약 1분 소요</p>
           </div>
 
           <button

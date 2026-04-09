@@ -1,5 +1,19 @@
 
-import { FactDetail } from "@/types/climateTest";
+interface Section {
+  title: string;
+  content: React.ReactNode;
+  sources?: string[];
+}
+
+interface FactDetail {
+  id: number;
+  emoji: string;
+  pageTitle: string;
+  subtitle: string;
+  sections: Section[];
+  sources: string[];
+  closingMessage: string;
+}
 
 export const factDetails: FactDetail[] = [
     {

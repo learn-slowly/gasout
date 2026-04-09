@@ -1,40 +1,47 @@
-// 기후시민 MBTI 테스트 유틸리티 함수
-import { MBTIDimension, MBTIType, TestAnswer } from '@/types/climateTest';
+// 기후시민 밸런스게임 유틸리티 함수
+import { ClimateType, TestAnswer } from '@/types/climateTest';
 
 /**
- * 테스트 응답을 기반으로 MBTI 유형을 계산합니다.
+ * 테스트 응답을 기반으로 기후시민 유형을 계산합니다.
+ * 각 축 2문항 중 다수결, 동점 시 첫 문항 우선.
  */
-export function calculateMBTIType(answers: TestAnswer[]): MBTIType {
-  const counts: Record<MBTIDimension, number> = {
-    E: 0,
-    I: 0,
-    S: 0,
-    N: 0,
-    T: 0,
-    F: 0,
-    J: 0,
-    P: 0,
-  };
+export function calculateClimateType(answers: TestAnswer[]): ClimateType {
+  // 축1: 개인실천 vs 구조변화 (Q1, Q2)
+  let personalCount = 0;
+  let structuralCount = 0;
+  // 축2: 감성 vs 이성 (Q3, Q4)
+  let emotionalCount = 0;
+  let rationalCount = 0;
 
-  // 각 답변을 카운트
-  answers.forEach((answer) => {
-    counts[answer.answer]++;
-  });
+  for (const answer of answers) {
+    switch (answer.answer) {
+      case 'personal':
+        personalCount++;
+        break;
+      case 'structural':
+        structuralCount++;
+        break;
+      case 'emotional':
+        emotionalCount++;
+        break;
+      case 'rational':
+        rationalCount++;
+        break;
+    }
+  }
 
-  // 각 차원별로 결정
-  const eOrI: 'E' | 'I' = counts.E >= counts.I ? 'E' : 'I';
-  const sOrN: 'S' | 'N' = counts.S >= counts.N ? 'S' : 'N';
-  const tOrF: 'T' | 'F' = counts.T >= counts.F ? 'T' : 'F';
-  const jOrP: 'J' | 'P' = counts.J >= counts.P ? 'J' : 'P';
+  // 동점 시 첫 문항 우선 (personal/emotional이 A이므로 그쪽 우선)
+  const isPersonal = personalCount >= structuralCount;
+  const isEmotional = emotionalCount >= rationalCount;
 
-  // MBTI 유형 조합
-  return `${eOrI}${sOrN}${tOrF}${jOrP}` as MBTIType;
+  if (isPersonal && isEmotional) return 'earth-healer';
+  if (isPersonal && !isEmotional) return 'data-doer';
+  if (!isPersonal && isEmotional) return 'crying-fighter';
+  return 'system-analyst';
 }
 
-/**
- * calculateResultType은 calculateMBTIType의 별칭입니다.
- */
-export const calculateResultType = calculateMBTIType;
+// 하위 호환성 별칭
+export const calculateMBTIType = calculateClimateType;
 
 /**
  * 세션 ID를 생성합니다.
@@ -62,16 +69,3 @@ export function getUTMParams(): {
     utm_campaign: params.get('utm_campaign') || undefined,
   };
 }
-
-/**
- * 결과 이미지를 생성합니다 (나중에 구현)
- */
-export async function generateResultImage(
-  type: MBTIType,
-  typeName: string
-): Promise<string> {
-  // TODO: Canvas API를 사용하여 결과 이미지 생성
-  // 현재는 placeholder 반환
-  return '';
-}
-

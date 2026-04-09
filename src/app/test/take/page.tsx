@@ -2,20 +2,10 @@
 
 import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { questions, miniFacts } from "@/data/climateQuestions";
-import { factDetails } from "@/data/factDetails";
-import { TestAnswer, MiniFact } from "@/types/climateTest";
-import { generateSessionId, getUTMParams, calculateMBTIType } from "@/lib/climateTest";
-
-const renderBoldText = (text: string) => {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((part, index) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={index} className="font-bold text-gray-900">{part.slice(2, -2)}</strong>;
-    }
-    return part;
-  });
-};
+import { questions } from "@/data/climateQuestions";
+import { TestAnswer } from "@/types/climateTest";
+import { generateSessionId, getUTMParams, calculateClimateType } from "@/lib/climateTest";
+import { motion, AnimatePresence } from "framer-motion";
 
 function TestTakeContent() {
   const router = useRouter();
@@ -23,21 +13,21 @@ function TestTakeContent() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<TestAnswer[]>([]);
   const [sessionId, setSessionId] = useState<string>("");
-  const [showMiniFact, setShowMiniFact] = useState<MiniFact | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [selected, setSelected] = useState<'A' | 'B' | null>(null);
 
   const currentQuestion = questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   useEffect(() => {
-    const newSessionId = generateSessionId();
-    setSessionId(newSessionId);
+    setSessionId(generateSessionId());
     setTimeout(() => setIsReady(true), 100);
   }, []);
 
-  const handleAnswer = (answer: TestAnswer["answer"]) => {
-    if (!currentQuestion) return;
+  const handleAnswer = (answer: TestAnswer["answer"], option: 'A' | 'B') => {
+    if (!currentQuestion || selected) return;
+
+    setSelected(option);
 
     const newAnswer: TestAnswer = {
       questionId: currentQuestion.id,
@@ -47,33 +37,20 @@ function TestTakeContent() {
     const newAnswers = [...answers, newAnswer];
     setAnswers(newAnswers);
 
-    const answeredQuestionNumber = currentQuestionIndex + 1;
-
-    if (currentQuestionIndex === questions.length - 1) {
-      saveTestResult(newAnswers);
-      return;
-    }
-
-    const factMapping: Record<number, number> = {
-      5: 0,
-      10: 1,
-      12: 2,
-      15: 3,
-    };
-
-    if (factMapping[answeredQuestionNumber] !== undefined) {
-      const factIndex = factMapping[answeredQuestionNumber];
-      setShowMiniFact(miniFacts[factIndex]);
-    } else {
-      setTimeout(() => {
+    // 짧은 딜레이 후 다음 질문 또는 결과
+    setTimeout(() => {
+      if (currentQuestionIndex === questions.length - 1) {
+        saveTestResult(newAnswers);
+      } else {
+        setSelected(null);
         setCurrentQuestionIndex(currentQuestionIndex + 1);
-      }, 300);
-    }
+      }
+    }, 500);
   };
 
   const saveTestResult = (finalAnswers: TestAnswer[]) => {
     try {
-      const resultType = calculateMBTIType(finalAnswers);
+      const resultType = calculateClimateType(finalAnswers);
       const fromDeclare = searchParams.get("from") === "declare";
       const declaredParam = fromDeclare ? "&declared=true" : "&declared=false";
       router.push(`/test/result?session=${sessionId}&type=${resultType}${declaredParam}`);
@@ -86,120 +63,29 @@ function TestTakeContent() {
       }).catch((e) => console.warn("Failed to save:", e));
     } catch (error) {
       console.error("Error calculating test result:", error);
-      const fromDeclare = searchParams.get("from") === "declare";
-      const declaredParam = fromDeclare ? "&declared=true" : "&declared=false";
-      router.push(`/test/result?session=${sessionId}&type=ENFP${declaredParam}`);
+      router.push(`/test/result?session=${sessionId}&type=earth-healer`);
     }
   };
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
+      setSelected(null);
       setCurrentQuestionIndex(currentQuestionIndex - 1);
       setAnswers(answers.slice(0, -1));
     }
   };
 
-  const handleCloseMiniFact = () => {
-    setShowMiniFact(null);
-    setCurrentQuestionIndex(currentQuestionIndex + 1);
-  };
-
-  // Mini fact
-  if (showMiniFact) {
-    const factDetail = factDetails.find(f => f.id === showMiniFact.id);
-
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-5 py-16">
-        <div className="w-full max-w-lg">
-          <h2 className="text-2xl font-black tracking-tight text-gray-900 mb-6 leading-tight">
-            {showMiniFact.title}
-          </h2>
-
-          <div className="rounded-xl bg-gray-50 border border-gray-100 p-5 mb-8">
-            <p className="text-[15px] text-gray-700 leading-relaxed">
-              {renderBoldText(showMiniFact.content)}
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="w-full h-12 border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-semibold rounded-xl transition-colors"
-            >
-              자세히 알아보기
-            </button>
-
-            <button
-              onClick={handleCloseMiniFact}
-              className="w-full h-13 bg-green-700 hover:bg-green-800 active:bg-green-900 text-white text-[15px] font-semibold rounded-xl transition-colors"
-            >
-              다음 질문으로
-            </button>
-          </div>
-        </div>
-
-        {/* Detail modal */}
-        {isModalOpen && factDetail && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-xl">
-              <div className="sticky top-0 z-10 bg-white border-b border-gray-100 p-5 flex justify-between items-center">
-                <h2 className="text-lg font-bold text-gray-900">{factDetail.pageTitle}</h2>
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="p-5 space-y-6">
-                {factDetail.sections.map((section, idx) => (
-                  <div key={idx}>
-                    <h4 className="text-sm font-bold text-gray-900 mb-2">{section.title}</h4>
-                    <div className="text-sm text-gray-600 leading-relaxed">
-                      {section.content}
-                    </div>
-                  </div>
-                ))}
-
-                <div className="rounded-xl bg-gray-50 p-4 text-xs text-gray-500">
-                  <h4 className="font-bold mb-2">출처</h4>
-                  <ul className="list-disc list-inside space-y-1">
-                    {factDetail.sources.map((source, idx) => (
-                      <li key={idx}>{source}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-
-              <div className="sticky bottom-0 bg-white border-t border-gray-100 p-5">
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="w-full h-12 bg-gray-900 text-white text-sm font-semibold rounded-xl"
-                >
-                  닫기
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // Loading
   if (!isReady) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center space-y-3">
           <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-200 border-t-gray-600 mx-auto"></div>
-          <p className="text-sm text-gray-400">테스트를 준비하는 중...</p>
+          <p className="text-sm text-gray-400">준비 중...</p>
         </div>
       </div>
     );
   }
 
-  // No question
   if (!currentQuestion) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center px-5">
@@ -216,13 +102,12 @@ function TestTakeContent() {
     );
   }
 
-  // Question
   return (
     <div className="min-h-screen bg-white flex items-start justify-center px-5 pt-20 pb-16">
       <div className="w-full max-w-lg">
 
         {/* Progress */}
-        <div className="mb-8">
+        <div className="mb-10">
           <div className="flex justify-between items-center mb-2">
             <span className="text-xs font-medium text-gray-400">
               {currentQuestionIndex + 1} / {questions.length}
@@ -230,60 +115,91 @@ function TestTakeContent() {
           </div>
           <div className="w-full bg-gray-100 rounded-full h-1.5">
             <div
-              className="bg-green-600 h-1.5 rounded-full transition-all duration-300"
+              className="bg-green-600 h-1.5 rounded-full transition-all duration-500"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
 
         {/* Question */}
-        <div className="mb-8">
-          <h2 className="text-xl font-bold text-gray-900 leading-snug mb-2">
-            {currentQuestion.question}
-          </h2>
-          {currentQuestion.id === 16 && (
-            <p className="text-sm text-gray-400 italic">
-              *제로웨이스트: 쓰레기를 만들지 않는 생활방식
-            </p>
-          )}
-        </div>
-
-        {/* Options */}
-        <div className="space-y-3 mb-8">
-          <button
-            onClick={() => handleAnswer(currentQuestion.optionA.value)}
-            className="w-full p-5 text-left border border-gray-200 hover:border-green-500 hover:bg-green-50/50 active:bg-green-50 rounded-xl transition-all"
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentQuestionIndex}
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -30 }}
+            transition={{ duration: 0.3 }}
           >
-            <div className="flex items-start gap-3">
-              <div className="shrink-0 w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center mt-0.5">
-                <span className="text-sm font-semibold text-gray-500">A</span>
-              </div>
-              <span className="text-[15px] text-gray-800 leading-relaxed">
-                {currentQuestion.optionA.text}
-              </span>
+            <div className="mb-10">
+              <h2 className="text-xl font-bold text-gray-900 leading-snug">
+                {currentQuestion.question}
+              </h2>
             </div>
-          </button>
 
-          <button
-            onClick={() => handleAnswer(currentQuestion.optionB.value)}
-            className="w-full p-5 text-left border border-gray-200 hover:border-green-500 hover:bg-green-50/50 active:bg-green-50 rounded-xl transition-all"
-          >
-            <div className="flex items-start gap-3">
-              <div className="shrink-0 w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center mt-0.5">
-                <span className="text-sm font-semibold text-gray-500">B</span>
+            {/* Options - 밸런스게임 스타일 */}
+            <div className="space-y-3">
+              <button
+                onClick={() => handleAnswer(currentQuestion.optionA.value, 'A')}
+                disabled={selected !== null}
+                className={`w-full p-6 text-left border-2 rounded-2xl transition-all duration-300 ${
+                  selected === 'A'
+                    ? 'border-green-500 bg-green-50 scale-[1.02]'
+                    : selected === 'B'
+                    ? 'border-gray-100 bg-gray-50 opacity-50'
+                    : 'border-gray-200 hover:border-green-400 hover:bg-green-50/30 active:scale-[0.98]'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5 transition-colors duration-300 ${
+                    selected === 'A'
+                      ? 'bg-green-500 text-white'
+                      : 'border-2 border-gray-300 text-gray-400'
+                  }`}>
+                    <span className="text-sm font-bold">A</span>
+                  </div>
+                  <span className="text-[15px] text-gray-800 leading-relaxed font-medium">
+                    {currentQuestion.optionA.text}
+                  </span>
+                </div>
+              </button>
+
+              <div className="flex items-center justify-center py-3">
+                <span className="text-4xl text-gray-300 tracking-[0.15em]" style={{ fontWeight: 900 }}>VS</span>
               </div>
-              <span className="text-[15px] text-gray-800 leading-relaxed">
-                {currentQuestion.optionB.text}
-              </span>
+
+              <button
+                onClick={() => handleAnswer(currentQuestion.optionB.value, 'B')}
+                disabled={selected !== null}
+                className={`w-full p-6 text-left border-2 rounded-2xl transition-all duration-300 ${
+                  selected === 'B'
+                    ? 'border-green-500 bg-green-50 scale-[1.02]'
+                    : selected === 'A'
+                    ? 'border-gray-100 bg-gray-50 opacity-50'
+                    : 'border-gray-200 hover:border-green-400 hover:bg-green-50/30 active:scale-[0.98]'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5 transition-colors duration-300 ${
+                    selected === 'B'
+                      ? 'bg-green-500 text-white'
+                      : 'border-2 border-gray-300 text-gray-400'
+                  }`}>
+                    <span className="text-sm font-bold">B</span>
+                  </div>
+                  <span className="text-[15px] text-gray-800 leading-relaxed font-medium">
+                    {currentQuestion.optionB.text}
+                  </span>
+                </div>
+              </button>
             </div>
-          </button>
-        </div>
+          </motion.div>
+        </AnimatePresence>
 
         {/* Previous */}
         {currentQuestionIndex > 0 && (
           <button
             onClick={handlePrevious}
-            className="w-full text-sm text-gray-400 hover:text-gray-900 transition-colors"
+            className="w-full text-sm text-gray-400 hover:text-gray-900 transition-colors mt-8"
           >
             ← 이전 질문
           </button>
@@ -299,7 +215,7 @@ export default function TestTakePage() {
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center space-y-3">
           <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-200 border-t-gray-600 mx-auto"></div>
-          <p className="text-sm text-gray-400">테스트를 준비하는 중...</p>
+          <p className="text-sm text-gray-400">준비 중...</p>
         </div>
       </div>
     }>

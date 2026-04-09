@@ -1,24 +1,24 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "기후시민 본능을 깨우세요",
-  description: "당신 안의 '기후 시민' - 기후시민 성향 테스트 & 선언하기",
+  title: "나는 어떤 기후시민일까?",
+  description: "4문항 밸런스게임으로 나의 기후시민 유형 알아보기",
   openGraph: {
-    title: "기후시민 본능을 깨우세요",
-    description: "당신 안의 '기후 시민' - 기후시민 성향 테스트 & 선언하기",
+    title: "나는 어떤 기후시민일까?",
+    description: "4문항 밸런스게임으로 나의 기후시민 유형 알아보기",
     images: [
       {
         url: "/og-test.jpg",
         width: 1024,
         height: 1024,
-        alt: "기후시민 본능을 깨우세요 - 선언하러 가기",
+        alt: "나는 어떤 기후시민일까? - 밸런스게임",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "기후시민 본능을 깨우세요",
-    description: "당신 안의 '기후 시민' - 기후시민 성향 테스트 & 선언하기",
+    title: "나는 어떤 기후시민일까?",
+    description: "4문항 밸런스게임으로 나의 기후시민 유형 알아보기",
     images: ["/og-test.jpg"],
   },
 };

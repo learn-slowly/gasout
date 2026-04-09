@@ -1,67 +1,56 @@
-// 기후시민 MBTI 테스트 타입 정의
+// 기후시민 밸런스게임 테스트 타입 정의
 
-export type MBTIDimension = 'E' | 'I' | 'S' | 'N' | 'T' | 'F' | 'J' | 'P';
-export type MBTIType =
-  | 'ENFP' | 'ENFJ' | 'ENTP' | 'ENTJ'
-  | 'INFP' | 'INFJ' | 'INTP' | 'INTJ'
-  | 'ESFP' | 'ESFJ' | 'ESTP' | 'ESTJ'
-  | 'ISFP' | 'ISFJ' | 'ISTP' | 'ISTJ';
+// 축1: 실천 방식
+export type Axis1 = 'personal' | 'structural';
+// 축2: 관심 동기
+export type Axis2 = 'emotional' | 'rational';
+
+// 4유형
+export type ClimateType =
+  | 'earth-healer'      // 지구 감성 보살 (개인실천 + 감성)
+  | 'data-doer'         // 생활 데이터 실천러 (개인실천 + 이성)
+  | 'crying-fighter'    // 울면서 싸우는 투사 (구조변화 + 감성)
+  | 'system-analyst';   // 시스템 분석가 (구조변화 + 이성)
 
 export interface Question {
   id: number;
-  dimension: 'E/I' | 'S/N' | 'T/F' | 'J/P';
+  axis: 'axis1' | 'axis2';
   question: string;
   optionA: {
     text: string;
-    value: MBTIDimension;
+    value: 'personal' | 'structural' | 'emotional' | 'rational';
   };
   optionB: {
     text: string;
-    value: MBTIDimension;
+    value: 'personal' | 'structural' | 'emotional' | 'rational';
   };
-}
-
-export interface MiniFact {
-  id: number;
-  title: string;
-  content: string;
-  link?: string;
 }
 
 export interface TestAnswer {
   questionId: number;
-  answer: MBTIDimension;
-}
-
-export interface CompatiblePartner {
-  type: MBTIType;
-  typeName: string;
-  emoji: string;
-  description: string;
-  together: string;
-  activity: string;
+  answer: 'personal' | 'structural' | 'emotional' | 'rational';
 }
 
 export interface TestResult {
-  type: MBTIType;
+  type: ClimateType;
   typeName: string;
   emoji: string;
   quote: string;
+  shareQuote: string;
   description: string;
-  characteristics: string[];
-  strengths: string;
-  recommendedActions: string[];
-  compatibleTypes?: string[];
-  // 기후동지
-  bestPartner?: CompatiblePartner;
-  heartPartner?: CompatiblePartner;
-  synergyPartner?: CompatiblePartner;
+  axis1Label: string;
+  axis2Label: string;
+  color: {
+    main: string;
+    dark: string;
+    gradient: string;
+  };
 }
 
 export interface TestResponse {
   id: string;
   sessionId: string;
-  resultType: MBTIType;
+  resultType: ClimateType;
   answers: TestAnswer[];
   utmSource?: string;
   utmMedium?: string;
@@ -82,20 +71,3 @@ export interface ClimateDeclaration {
   consentMarketing: boolean;
   createdAt: string;
 }
-
-export interface Section {
-  title: string;
-  content: React.ReactNode;
-  sources?: string[];
-}
-
-export interface FactDetail {
-  id: number;
-  emoji: string;
-  pageTitle: string;
-  subtitle: string;
-  sections: Section[];
-  sources: string[];
-  closingMessage: string;
-}
-

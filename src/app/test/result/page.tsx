@@ -3,14 +3,93 @@
 import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { testResults } from "@/data/climateResults";
-import { TestResult, MBTIType } from "@/types/climateTest";
+import { TestResult, ClimateType } from "@/types/climateTest";
 import { initKakao, shareToKakao } from "@/lib/kakao";
+import { motion } from "framer-motion";
 
 interface Stats {
   totalTests: number;
   totalDeclarations: number;
   sameTypeCount: number;
   sameTypePercentage: number;
+}
+
+function ResultCard({ result }: { result: TestResult }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="relative mx-auto w-full max-w-[320px]"
+    >
+      <div
+        className={`relative rounded-2xl bg-gradient-to-b ${result.color.gradient} p-[2px] shadow-2xl`}
+      >
+        <div className="rounded-2xl bg-gradient-to-b from-black/20 to-black/40 backdrop-blur-sm">
+          {/* 코너 장식 */}
+          <div className="absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 border-white/30 rounded-tl-lg" />
+          <div className="absolute top-3 right-3 w-6 h-6 border-t-2 border-r-2 border-white/30 rounded-tr-lg" />
+          <div className="absolute bottom-3 left-3 w-6 h-6 border-b-2 border-l-2 border-white/30 rounded-bl-lg" />
+          <div className="absolute bottom-3 right-3 w-6 h-6 border-b-2 border-r-2 border-white/30 rounded-br-lg" />
+
+          <div className="px-8 pt-8 pb-10">
+            {/* 상단: 기후시민선언 */}
+            <div className="text-center mb-2">
+              <span className="text-[10px] font-medium tracking-[0.2em] text-white/50 uppercase">
+                기후시민선언
+              </span>
+            </div>
+
+            {/* 축 배지 */}
+            <div className="flex justify-center gap-2 mb-8">
+              <span className="text-[11px] font-semibold text-white/70 bg-white/10 px-3 py-1 rounded-full">
+                {result.axis1Label}
+              </span>
+              <span className="text-[11px] font-semibold text-white/70 bg-white/10 px-3 py-1 rounded-full">
+                {result.axis2Label}
+              </span>
+            </div>
+
+            {/* 아이콘 */}
+            <motion.div
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="text-center mb-6"
+            >
+              <span className="text-6xl">{result.emoji}</span>
+            </motion.div>
+
+            {/* 구분선 */}
+            <div className="flex items-center gap-3 mb-5">
+              <div className="flex-1 h-[1px] bg-white/20" />
+              <div className="w-1.5 h-1.5 rotate-45 bg-white/30" />
+              <div className="flex-1 h-[1px] bg-white/20" />
+            </div>
+
+            {/* 유형 이름 */}
+            <h2 className="text-center text-2xl font-black text-white tracking-tight mb-2">
+              {result.typeName}
+            </h2>
+
+            {/* 짧은 구분선 */}
+            <div className="w-8 h-[2px] bg-white/30 mx-auto mb-5" />
+
+            {/* 설명 */}
+            <p className="text-center text-[13px] text-white/70 leading-relaxed mb-6">
+              {result.description}
+            </p>
+
+            {/* 공유 문구 */}
+            <div className="text-center">
+              <p className="text-[13px] text-white/50 italic">
+                &ldquo;{result.shareQuote}&rdquo;
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
 }
 
 function ResultContent() {
@@ -22,7 +101,7 @@ function ResultContent() {
   const [alreadyDeclared, setAlreadyDeclared] = useState(false);
 
   useEffect(() => {
-    const type = searchParams.get("type") as MBTIType;
+    const type = searchParams.get("type") as ClimateType;
     const sessionId = searchParams.get("session");
     const declared = searchParams.get("declared");
 
@@ -53,7 +132,7 @@ function ResultContent() {
     return () => clearTimeout(timer);
   }, []);
 
-  const fetchStats = async (type: MBTIType) => {
+  const fetchStats = async (type: ClimateType) => {
     try {
       const response = await fetch(`/api/climate-test/stats?type=${type}`);
       if (response.ok) setStats(await response.json());
@@ -67,8 +146,8 @@ function ResultContent() {
       const response = await fetch(`/api/climate-test/result?session=${sessionId}`);
       if (response.ok) {
         const data = await response.json();
-        if (data.resultType && testResults[data.resultType]) {
-          setResult(testResults[data.resultType]);
+        if (data.resultType && testResults[data.resultType as ClimateType]) {
+          setResult(testResults[data.resultType as ClimateType]);
         }
       }
     } catch (error) {
@@ -82,14 +161,14 @@ function ResultContent() {
     const type = result?.type || "";
     const typeName = result?.typeName || "";
     const emoji = result?.emoji || "";
-    const quote = result?.quote || "";
+    const shareQuote = result?.shareQuote || "";
     const url = `${window.location.origin}/test/result?type=${type}`;
 
     switch (platform) {
       case "kakao":
         const success = shareToKakao({
-          title: `${emoji} 나의 기후행동 스타일: ${typeName}`,
-          description: `"${quote}"\n\n16가지 기후시민 유형 중 나는 어떤 타입?\n3분이면 알 수 있어요!`,
+          title: `${emoji} 나의 기후시민 유형: ${typeName}`,
+          description: `"${shareQuote}"\n\n4문항 밸런스게임으로 나의 기후시민 유형 알아보기!`,
           linkUrl: url,
           buttonText: '나도 테스트하기',
           imageUrl: `${window.location.origin}/test.jpg`,
@@ -105,8 +184,8 @@ function ResultContent() {
       default:
         if (navigator.share) {
           navigator.share({
-            title: `나의 기후행동 스타일: ${typeName}`,
-            text: `나의 기후행동 스타일은 "${typeName}"이에요!`,
+            title: `나의 기후시민 유형: ${typeName}`,
+            text: `"${shareQuote}" — 나의 기후시민 유형은 ${typeName}!`,
             url: url,
           }).catch(() => {
             navigator.clipboard.writeText(url);
@@ -159,25 +238,12 @@ function ResultContent() {
     <div className="min-h-screen bg-white px-5 py-16">
       <div className="max-w-lg mx-auto">
 
-        {/* Header */}
-        <div className="text-center mb-10">
-          <div className="text-5xl mb-4">{result.emoji}</div>
-          <div className="inline-block text-xs font-bold text-green-700 bg-green-50 px-3 py-1 rounded-full mb-3">
-            {result.type}
-          </div>
-          <h1 className="text-3xl font-black tracking-tight text-gray-900 mb-4">
-            {result.typeName}
-          </h1>
-          <p className="text-[15px] text-gray-500 italic leading-relaxed">
-            &ldquo;{result.quote}&rdquo;
-          </p>
+        {/* 결과 카드 */}
+        <div className="mb-12">
+          <ResultCard result={result} />
         </div>
 
-        <p className="text-[15px] text-gray-600 leading-relaxed mb-10">
-          {result.description}
-        </p>
-
-        {/* CTA */}
+        {/* CTA: 기후시민 선언 */}
         {alreadyDeclared ? (
           <div className="rounded-xl bg-green-700 p-6 text-center mb-10">
             <h2 className="text-lg font-bold text-white mb-2">
@@ -209,25 +275,6 @@ function ResultContent() {
           </div>
         )}
 
-        {/* Characteristics */}
-        <div className="mb-10">
-          <h2 className="text-sm font-semibold text-gray-900 mb-4">당신의 특징</h2>
-          <ul className="space-y-3">
-            {result.characteristics.map((char, index) => (
-              <li key={index} className="flex items-start gap-3">
-                <span className="text-green-500 mt-0.5 shrink-0">&#8226;</span>
-                <span className="text-sm text-gray-600 leading-relaxed">{char}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Strengths */}
-        <div className="rounded-xl bg-gray-50 border border-gray-100 p-5 mb-10">
-          <h2 className="text-sm font-semibold text-gray-900 mb-2">당신의 강점</h2>
-          <p className="text-sm text-gray-600 leading-relaxed">{result.strengths}</p>
-        </div>
-
         {/* Stats */}
         {stats && (
           <div className="mb-10">
@@ -248,74 +295,6 @@ function ResultContent() {
             </div>
           </div>
         )}
-
-        {/* Recommended actions */}
-        <div className="mb-10">
-          <h2 className="text-sm font-semibold text-gray-900 mb-4">추천 기후행동</h2>
-          <div className="space-y-3">
-            {result.recommendedActions.map((action, index) => (
-              <div key={index} className="flex items-start gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
-                <div className="shrink-0 w-6 h-6 bg-green-700 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                  {index + 1}
-                </div>
-                <p className="text-sm text-gray-600 leading-relaxed">{action}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Partners */}
-        {(result.bestPartner || result.heartPartner || result.synergyPartner) && (
-          <div className="mb-10">
-            <h2 className="text-sm font-semibold text-gray-900 mb-4">나와 잘 맞는 기후동지</h2>
-            <div className="space-y-3">
-              {result.bestPartner && (
-                <PartnerCard
-                  label="최고의 파트너"
-                  partner={result.bestPartner}
-                />
-              )}
-              {result.heartPartner && (
-                <PartnerCard
-                  label="마음이 통하는 파트너"
-                  partner={result.heartPartner}
-                />
-              )}
-              {result.synergyPartner && (
-                <PartnerCard
-                  label="시너지 파트너"
-                  partner={result.synergyPartner}
-                />
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* LNG Facts */}
-        <div className="rounded-xl bg-gray-50 border border-gray-100 p-5 mb-10">
-          <h2 className="text-sm font-semibold text-gray-900 mb-4">LNG의 진실</h2>
-
-          <div className="space-y-3 text-sm text-gray-600 mb-4">
-            <div className="flex items-start gap-2">
-              <span className="text-gray-300 mt-0.5 shrink-0">&#8226;</span>
-              기후위기 시대, 에너지 전환은 필수
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-gray-300 mt-0.5 shrink-0">&#8226;</span>
-              지역 주민이 배제되지 않는 정의로운 전환이 중요
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-gray-300 mt-0.5 shrink-0">&#8226;</span>
-              정부의 LNG 확대는 한계
-            </div>
-          </div>
-
-          <div className="border-t border-gray-200 pt-3 space-y-2 text-sm text-gray-500">
-            <p><span className="font-semibold text-gray-700">화석연료:</span> LNG는 화석연료로 탄소중립 역행</p>
-            <p><span className="font-semibold text-gray-700">경제적 손실:</span> 장기적 가동률이 매우 낮아져 세금 부담으로 이어짐</p>
-            <p><span className="font-semibold text-gray-700">구조적 불평등:</span> 지역은 피해, 혜택은 외부인 구조 개선 필요</p>
-          </div>
-        </div>
 
         {/* Share */}
         <div className="text-center mb-6">
@@ -343,36 +322,6 @@ function ResultContent() {
           다시 테스트하기
         </button>
       </div>
-    </div>
-  );
-}
-
-function PartnerCard({ label, partner }: { label: string; partner: { emoji: string; type: string; typeName: string; description: string; together: string; activity: string } }) {
-  return (
-    <div className="rounded-xl bg-gray-50 border border-gray-100 p-4">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-xl">{partner.emoji}</span>
-        <div>
-          <span className="text-xs text-gray-400">{label}</span>
-          <h3 className="text-sm font-bold text-gray-900">
-            {partner.type} - {partner.typeName}
-          </h3>
-        </div>
-      </div>
-      <ul className="space-y-1.5 text-sm text-gray-600">
-        <li className="flex items-start gap-2">
-          <span className="text-gray-300 mt-0.5 shrink-0">&#8226;</span>
-          {partner.description}
-        </li>
-        <li className="flex items-start gap-2">
-          <span className="text-gray-300 mt-0.5 shrink-0">&#8226;</span>
-          함께하면: {partner.together}
-        </li>
-        <li className="flex items-start gap-2">
-          <span className="text-gray-300 mt-0.5 shrink-0">&#8226;</span>
-          추천 활동: {partner.activity}
-        </li>
-      </ul>
     </div>
   );
 }
