@@ -188,12 +188,11 @@ function DeclareForm() {
 
           <div>
             <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-2">
-              이메일 <span className="text-red-500">*</span>
+              이메일
             </label>
             <input
               id="email"
               type="email"
-              required
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               className="w-full h-12 px-4 text-base text-gray-900 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-green-500 focus:bg-white transition-colors placeholder:text-gray-400"
@@ -219,11 +218,12 @@ function DeclareForm() {
 
           <div>
             <label htmlFor="phone" className="block text-sm font-semibold text-gray-900 mb-2">
-              전화번호
+              전화번호 <span className="text-red-500">*</span>
             </label>
             <input
               id="phone"
               type="tel"
+              required
               placeholder="010-0000-0000"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}

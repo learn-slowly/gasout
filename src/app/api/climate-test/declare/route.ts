@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
     console.log("[Declare API] Received data:", { name, email, region, sessionId, testType });
 
-    if (!name || !email || !consentPrivacy) {
+    if (!name || !phone || !consentPrivacy) {
       return NextResponse.json(
         { error: "필수 항목을 입력해주세요." },
         { status: 400 }
@@ -58,9 +58,9 @@ export async function POST(request: NextRequest) {
       session_id: sessionId || null,
       result_type: resultType,
       name,
-      email,
+      email: email || null,
       region: region || null,
-      phone: phone || null,
+      phone,
       consent_privacy: consentPrivacy,
       consent_marketing: consentMarketing || false,
     };
