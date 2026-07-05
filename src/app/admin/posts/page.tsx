@@ -28,17 +28,8 @@ export default function PostsList() {
   const router = useRouter();
 
   useEffect(() => {
-    checkAuth();
     loadPosts();
   }, []);
-
-  const checkAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      router.push("/admin/login");
-      return;
-    }
-  };
 
   const loadPosts = async () => {
     try {

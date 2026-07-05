@@ -122,7 +122,7 @@ export default function EditPlantPage({ params }: { params: { id: string } }) {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await fetch("/api/admin/logout", { method: "POST" });
     router.push("/admin/login");
   };
 

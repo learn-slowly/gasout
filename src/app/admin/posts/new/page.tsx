@@ -28,17 +28,8 @@ export default function NewPost() {
   const router = useRouter();
 
   useEffect(() => {
-    checkAuth();
     loadPlants();
   }, []);
-
-  const checkAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      router.push("/admin/login");
-      return;
-    }
-  };
 
   const loadPlants = async () => {
     const { data, error } = await supabase
@@ -66,19 +57,12 @@ export default function NewPost() {
     }
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/admin/login");
-        return;
-      }
-
       const { error } = await supabase
         .from("activity_posts")
         .insert({
           title: title.trim(),
           content: content.trim(),
           plant_id: selectedPlantId,
-          author_id: user.id,
           youtube_url: youtubeUrl.trim() || null,
         });
 

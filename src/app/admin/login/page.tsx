@@ -2,14 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default function AdminLogin() {
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -19,35 +17,18 @@ export default function AdminLogin() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ password }),
       });
-
-      if (error) {
-        setError("로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.");
-        return;
+      if (res.ok) {
+        router.push("/admin/dashboard");
+      } else {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error ?? "로그인에 실패했습니다.");
       }
-
-      if (data.user) {
-        // 관리자 권한 확인 (간단한 체크)
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", data.user.id)
-          .single();
-
-        if (profile?.role === "admin") {
-          router.push("/admin/dashboard");
-        } else {
-          setError("관리자 권한이 없습니다.");
-          await supabase.auth.signOut();
-        }
-      }
-    } catch (err) {
-      setError("로그인 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
@@ -72,18 +53,6 @@ export default function AdminLogin() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-xs font-medium text-gray-700">이메일</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@example.com"
-                  className="h-10 text-sm bg-white text-gray-900 placeholder:text-gray-500 border-gray-300"
-                  required
-                />
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-xs font-medium text-gray-700">비밀번호</Label>
                 <Input

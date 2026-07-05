@@ -39,17 +39,8 @@ export default function EditPost({ params }: { params: { id: string } }) {
   const router = useRouter();
 
   useEffect(() => {
-    checkAuth();
     loadData();
   }, [params.id]);
-
-  const checkAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      router.push("/admin/login");
-      return;
-    }
-  };
 
   const loadData = async () => {
     try {

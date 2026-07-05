@@ -32,29 +32,8 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    checkAuth();
     loadData();
   }, []);
-
-  const checkAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      router.push("/admin/login");
-      return;
-    }
-
-    // 관리자 권한 확인
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (profile?.role !== "admin") {
-      router.push("/admin/login");
-      return;
-    }
-  };
 
   const loadData = async () => {
     try {
@@ -103,7 +82,7 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await fetch("/api/admin/logout", { method: "POST" });
     router.push("/admin/login");
   };
 
@@ -503,38 +482,6 @@ export default function AdminDashboard() {
                     새 발전소 추가
                   </Button>
                 </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card hover:bg-slate-800/80 group">
-            <CardHeader className="pb-4 border-b border-white/5">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-purple-500/20 rounded-lg">
-                  <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                  </svg>
-                </div>
-                <CardTitle className="text-xl text-white">사용자 관리</CardTitle>
-              </div>
-              <CardDescription className="text-slate-400">관리자 계정과 권한을 관리하세요</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="space-y-3">
-                <Link href="/admin/users">
-                  <Button className="w-full bg-purple-600 hover:bg-purple-500 text-white h-11 font-medium transition-colors">
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                    </svg>
-                    사용자 목록
-                  </Button>
-                </Link>
-                <Button variant="outline" className="w-full bg-white/5 border-white/10 text-slate-500 h-11 cursor-not-allowed" disabled>
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                  권한 관리 (준비중)
-                </Button>
               </div>
             </CardContent>
           </Card>
