@@ -7,13 +7,6 @@ let L: any;
 if (typeof window !== "undefined") {
   L = require("leaflet");
 }
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 interface NewsMarkerProps {
   map: L.Map;
   onNewsClick?: (news: any) => void;
@@ -75,31 +68,22 @@ export default function NewsMarker({
 
   const loadNewsData = async () => {
     try {
-      let query = supabase
-        .from('articles')
-        .select('*')
-        .eq('status', 'approved')
-        .not('latitude', 'is', null)
-        .not('longitude', 'is', null)
-        .order('published_at', { ascending: false })
-        .limit(50); // 성능을 위해 최대 50개로 제한
-
-      // 필터 적용
+      // 필터 적용, 성능을 위해 최대 50개로 제한
+      const params = new URLSearchParams({ has_coords: '1', limit: '50' });
       if (newsFilter?.locationType) {
-        query = query.eq('location_type', newsFilter.locationType);
+        params.set('location_type', newsFilter.locationType);
       }
-
       if (newsFilter?.powerPlantId) {
-        query = query.eq('power_plant_id', newsFilter.powerPlantId);
+        params.set('power_plant_id', newsFilter.powerPlantId);
       }
 
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Error loading news data:', error);
+      const res = await fetch(`/api/articles?${params}`);
+      if (!res.ok) {
+        console.error('Error loading news data:', res.status);
         return [];
       }
 
+      const { articles: data } = await res.json();
       return data || [];
     } catch (error) {
       console.error('Error loading news data:', error);

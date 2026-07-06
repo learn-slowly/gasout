@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import type { GasPlant } from "@/types/gasPlant";
 import type { GasTerminal } from "@/types/gasTerminal";
 import { KOREAN_REGIONS, extractRegion } from "@/lib/regions";
@@ -222,41 +221,25 @@ export default function IntegratedGasMap({
   useEffect(() => {
     async function loadData() {
       try {
-        if (!supabase) {
-          console.error('Supabase client is not initialized');
-          setLoading(false);
-          return;
-        }
+        // 발전소·터미널 데이터 로드 - 좌표가 있는 항목만 조회
+        const [plantRes, terminalRes] = await Promise.all([
+          fetch('/api/gas-plants?with_coords=1'),
+          fetch('/api/gas-terminals?with_coords=1'),
+        ]);
 
-        // 발전소 데이터 로드 - 좌표가 있는 항목만 조회
-        let plantQuery = supabase
-          .from('gas_plants')
-          .select('*')
-          .not('latitude', 'is', null)
-          .not('longitude', 'is', null);
-
-        const { data: plantData, error: plantError } = await plantQuery;
-
-        if (plantError) {
-          console.error('Error loading gas plants:', plantError);
+        if (!plantRes.ok) {
+          console.error('Error loading gas plants:', plantRes.status);
         } else {
+          const { plants: plantData } = await plantRes.json();
           const loadedCount = plantData?.length || 0;
           console.log(`IntegratedGasMap: Loaded ${loadedCount} plants with coordinates`);
           setPlants((plantData || []) as GasPlant[]);
         }
 
-        // 터미널 데이터 로드 - 좌표가 있는 항목만 조회
-        let terminalQuery = supabase
-          .from('gas_terminals')
-          .select('*')
-          .not('latitude', 'is', null)
-          .not('longitude', 'is', null);
-
-        const { data: terminalData, error: terminalError } = await terminalQuery;
-
-        if (terminalError) {
-          console.error('Error loading gas terminals:', terminalError);
+        if (!terminalRes.ok) {
+          console.error('Error loading gas terminals:', terminalRes.status);
         } else {
+          const { terminals: terminalData } = await terminalRes.json();
           const loadedCount = terminalData?.length || 0;
           console.log(`IntegratedGasMap: Loaded ${loadedCount} terminals with coordinates`);
           setTerminals((terminalData || []) as GasTerminal[]);

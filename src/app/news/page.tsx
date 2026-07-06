@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -80,14 +79,16 @@ export default function NewsPage() {
                 setPage(1);
             }
 
-            let query = supabase
-                .from('articles')
-                .select('*', { count: 'exact' })
-                .eq('status', 'approved')
-                .order('published_at', { ascending: false });
+            const currentPage = reset ? 1 : (targetPage ?? page);
+            const from = (currentPage - 1) * ITEMS_PER_PAGE;
+            const to = from + ITEMS_PER_PAGE - 1;
 
-            if (filterType !== 'all') query = query.eq('location_type', filterType);
-            if (tagFilter !== 'all') query = query.contains('tags', [tagFilter]);
+            const params = new URLSearchParams();
+            params.set('count', '1');
+            params.set('limit', String(ITEMS_PER_PAGE));
+            params.set('offset', String(from));
+            if (filterType !== 'all') params.set('location_type', filterType);
+            if (tagFilter !== 'all') params.set('tag', tagFilter);
 
             if (periodFilter !== 'all') {
                 const startDate = new Date();
@@ -96,17 +97,14 @@ export default function NewsPage() {
                     case '1month': startDate.setMonth(startDate.getMonth() - 1); break;
                     case '3months': startDate.setMonth(startDate.getMonth() - 3); break;
                 }
-                query = query.gte('published_at', startDate.toISOString());
+                params.set('since', startDate.toISOString());
             }
 
-            if (searchTerm) query = query.ilike('title', `%${searchTerm}%`);
+            if (searchTerm) params.set('search', searchTerm);
 
-            const currentPage = reset ? 1 : (targetPage ?? page);
-            const from = (currentPage - 1) * ITEMS_PER_PAGE;
-            const to = from + ITEMS_PER_PAGE - 1;
-
-            const { data, error, count } = await query.range(from, to);
-            if (error) throw error;
+            const res = await fetch(`/api/articles?${params}`);
+            if (!res.ok) throw new Error('기사 조회 실패');
+            const { articles: data, count } = await res.json();
 
             if (reset) {
                 setNews(data || []);

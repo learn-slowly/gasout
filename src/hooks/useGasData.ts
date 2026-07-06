@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
 import type { GasPlant } from '@/types/gasPlant';
 import type { GasTerminal } from '@/types/gasTerminal';
 
@@ -27,18 +26,19 @@ export function useGasData() {
     useEffect(() => {
         async function loadData() {
             try {
-                if (!supabase) {
-                    setLoading(false);
-                    return;
-                }
-
                 const [plantRes, terminalRes] = await Promise.all([
-                    supabase.from('gas_plants').select('*').order('plant_name'),
-                    supabase.from('gas_terminals').select('*').order('terminal_name')
+                    fetch('/api/gas-plants'),
+                    fetch('/api/gas-terminals'),
                 ]);
 
-                if (plantRes.data) setPlants(plantRes.data as GasPlant[]);
-                if (terminalRes.data) setTerminals(terminalRes.data as GasTerminal[]);
+                if (plantRes.ok) {
+                    const { plants } = await plantRes.json();
+                    if (plants) setPlants(plants as GasPlant[]);
+                }
+                if (terminalRes.ok) {
+                    const { terminals } = await terminalRes.json();
+                    if (terminals) setTerminals(terminals as GasTerminal[]);
+                }
             } catch (error) {
                 console.error('Error loading data:', error);
             } finally {
