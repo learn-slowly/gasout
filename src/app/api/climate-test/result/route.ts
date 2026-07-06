@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { getSql } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,13 +13,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { data, error } = await supabase
-      .from("climate_test_responses")
-      .select("result_type")
-      .eq("session_id", sessionId)
-      .single();
+    const sql = getSql();
+    const rows = await sql`
+      SELECT result_type FROM climate_test_responses WHERE session_id = ${sessionId}`;
 
-    if (error || !data) {
+    if (rows.length === 0) {
       return NextResponse.json(
         { error: "Result not found" },
         { status: 404 }
@@ -32,7 +25,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      resultType: data.result_type,
+      resultType: rows[0].result_type,
     });
   } catch (error) {
     console.error("Error fetching result:", error);
