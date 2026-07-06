@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,42 +36,25 @@ export default function AdminDashboard() {
 
   const loadData = async () => {
     try {
-      // 통계 데이터 로드
-      const [plantsResult, postsResult, operatingResult, recentPostsResult, pendingArticlesResult] = await Promise.all([
-        supabase.from("power_plants").select("id", { count: "exact" }),
-        supabase.from("activity_posts").select("id", { count: "exact" }),
-        supabase.from("power_plants").select("id", { count: "exact" }).eq("status", "운영중"),
-        supabase.from("activity_posts").select("id", { count: "exact" }).gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
-        supabase.from("articles").select("id", { count: "exact" }).eq("status", "pending")
-      ]);
-
-      // 최근 게시물 로드
-      const { data: recentPostsData } = await supabase
-        .from("activity_posts")
-        .select(`
-          id,
-          title,
-          created_at,
-          power_plants!inner(name)
-        `)
-        .order("created_at", { ascending: false })
-        .limit(5);
+      const res = await fetch("/api/admin/stats");
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const data = await res.json();
 
       setStats({
-        totalPlants: plantsResult.count || 0,
-        totalPosts: postsResult.count || 0,
-        recentPosts: recentPostsResult.count || 0,
-        operatingPlants: operatingResult.count || 0,
-        pendingArticles: pendingArticlesResult.count || 0,
+        totalPlants: data.totalPlants || 0,
+        totalPosts: data.totalPosts || 0,
+        recentPosts: data.recentPosts || 0,
+        operatingPlants: data.operatingPlants || 0,
+        pendingArticles: data.pendingArticles || 0,
       });
 
       setRecentPosts(
-        recentPostsData?.map(post => ({
+        (data.recentPostList ?? []).map((post: RecentPost) => ({
           id: post.id,
           title: post.title,
           created_at: post.created_at,
-          plant_name: (post.power_plants as any).name
-        })) || []
+          plant_name: post.plant_name,
+        }))
       );
     } catch (error) {
       console.error("Error loading dashboard data:", error);

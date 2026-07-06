@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,9 +15,7 @@ type Post = {
   content: string;
   created_at: string;
   youtube_url: string | null;
-  power_plants: {
-    name: string;
-  } | { name: string }[];
+  plant_name: string;
 };
 
 export default function PostsList() {
@@ -33,22 +30,12 @@ export default function PostsList() {
 
   const loadPosts = async () => {
     try {
-      const { data, error } = await supabase
-        .from("activity_posts")
-        .select(`
-          id,
-          title,
-          content,
-          created_at,
-          youtube_url,
-          power_plants!inner(name)
-        `)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Error loading posts:", error);
+      const res = await fetch("/api/admin/posts");
+      if (!res.ok) {
+        console.error("Error loading posts:", res.status);
         return;
       }
+      const { posts: data } = await res.json();
 
       setPosts(data || []);
     } catch (error) {
@@ -64,12 +51,9 @@ export default function PostsList() {
     }
 
     try {
-      const { error } = await supabase
-        .from("activity_posts")
-        .delete()
-        .eq("id", postId);
+      const res = await fetch(`/api/admin/posts/${postId}`, { method: "DELETE" });
 
-      if (error) {
+      if (!res.ok) {
         alert("게시물 삭제에 실패했습니다.");
         return;
       }
@@ -82,12 +66,7 @@ export default function PostsList() {
   };
 
   // Helper to get power plant name safely
-  const getPowerPlantName = (post: Post) => {
-    if (Array.isArray(post.power_plants)) {
-      return post.power_plants[0]?.name || '알 수 없음';
-    }
-    return post.power_plants?.name || '알 수 없음';
-  };
+  const getPowerPlantName = (post: Post) => post.plant_name || '알 수 없음';
 
   const filteredPosts = posts.filter(post =>
     post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,13 +34,10 @@ export default function PlantsPage() {
 
   const loadPlants = async () => {
     try {
-      const { data, error } = await supabase
-        .from("power_plants")
-        .select("*")
-        .order("name");
-
-      if (error) throw error;
-      setPlants(data || []);
+      const res = await fetch("/api/power-plants");
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const { plants } = await res.json();
+      setPlants(plants || []);
     } catch (error) {
       console.error("Error loading plants:", error);
     } finally {

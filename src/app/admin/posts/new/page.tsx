@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,15 +31,12 @@ export default function NewPost() {
   }, []);
 
   const loadPlants = async () => {
-    const { data, error } = await supabase
-      .from("power_plants")
-      .select("id, name, status")
-      .order("name");
-
-    if (error) {
-      console.error("Error loading plants:", error);
+    const res = await fetch("/api/power-plants");
+    if (!res.ok) {
+      console.error("Error loading plants:", res.status);
       return;
     }
+    const { plants: data } = await res.json();
 
     setPlants(data || []);
   };
@@ -57,16 +53,18 @@ export default function NewPost() {
     }
 
     try {
-      const { error } = await supabase
-        .from("activity_posts")
-        .insert({
+      const res = await fetch("/api/admin/posts", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
           title: title.trim(),
           content: content.trim(),
           plant_id: selectedPlantId,
           youtube_url: youtubeUrl.trim() || null,
-        });
+        }),
+      });
 
-      if (error) {
+      if (!res.ok) {
         setError("게시물 저장에 실패했습니다. 다시 시도해주세요.");
         return;
       }

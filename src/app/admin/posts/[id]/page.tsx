@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,13 +44,13 @@ export default function EditPost({ params }: { params: { id: string } }) {
   const loadData = async () => {
     try {
       // 게시물 데이터 로드
-      const { data: postData, error: postError } = await supabase
-        .from("activity_posts")
-        .select("*")
-        .eq("id", params.id)
-        .single();
-
-      if (postError || !postData) {
+      const postRes = await fetch(`/api/admin/posts/${params.id}`);
+      if (!postRes.ok) {
+        setError("게시물을 찾을 수 없습니다.");
+        return;
+      }
+      const { post: postData } = await postRes.json();
+      if (!postData) {
         setError("게시물을 찾을 수 없습니다.");
         return;
       }
@@ -63,10 +62,8 @@ export default function EditPost({ params }: { params: { id: string } }) {
       setYoutubeUrl(postData.youtube_url || "");
 
       // 발전소 목록 로드
-      const { data: plantsData } = await supabase
-        .from("power_plants")
-        .select("id, name, status")
-        .order("name");
+      const plantsRes = await fetch("/api/power-plants");
+      const { plants: plantsData } = await plantsRes.json();
 
       setPlants(plantsData || []);
     } catch (error) {
@@ -87,18 +84,18 @@ export default function EditPost({ params }: { params: { id: string } }) {
     }
 
     try {
-      const { error } = await supabase
-        .from("activity_posts")
-        .update({
+      const res = await fetch(`/api/admin/posts/${params.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
           title: title.trim(),
           content: content.trim(),
           plant_id: selectedPlantId,
           youtube_url: youtubeUrl.trim() || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", params.id);
+        }),
+      });
 
-      if (error) {
+      if (!res.ok) {
         setError("게시물 수정에 실패했습니다. 다시 시도해주세요.");
         return;
       }

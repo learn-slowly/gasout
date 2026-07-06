@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,9 +39,10 @@ export default function NewPlantPage() {
     setError("");
 
     try {
-      const { error } = await supabase
-        .from("power_plants")
-        .insert([{
+      const res = await fetch("/api/admin/plants", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
           name: formData.name,
           address: formData.address,
           latitude: parseFloat(formData.latitude),
@@ -54,9 +54,10 @@ export default function NewPlantPage() {
           operator: formData.operator,
           permit_date: formData.permit_date || null,
           description: formData.description
-        }]);
+        }),
+      });
 
-      if (error) throw error;
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
       router.push("/admin/plants");
     } catch (err) {
