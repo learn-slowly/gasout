@@ -31,8 +31,8 @@ export async function GET(request: NextRequest) {
     conditions.push('latitude IS NOT NULL AND longitude IS NOT NULL');
   }
 
-  const limit = Math.min(Number(p.get('limit') ?? 20) || 20, 100);
-  const offset = Math.max(Number(p.get('offset') ?? 0) || 0, 0);
+  const limit = Math.min(Math.max(Math.trunc(Number(p.get('limit') ?? 20)) || 20, 1), 100);
+  const offset = Math.max(Math.trunc(Number(p.get('offset') ?? 0)) || 0, 0);
   const where = conditions.join(' AND ');
 
   try {
