@@ -7,9 +7,23 @@ let L: any;
 if (typeof window !== "undefined") {
   L = require("leaflet");
 }
+
+interface Article {
+  id: string;
+  latitude: number;
+  longitude: number;
+  location_type: 'national' | 'regional' | 'power_plant';
+  title: string;
+  content?: string;
+  published_at: string;
+  si_do?: string;
+  si_gun_gu?: string;
+  url: string;
+}
+
 interface NewsMarkerProps {
   map: L.Map;
-  onNewsClick?: (news: any) => void;
+  onNewsClick?: (news: Article) => void;
   showNewsMarkers?: boolean;
   newsFilter?: {
     locationType?: 'national' | 'regional' | 'power_plant';
@@ -24,7 +38,7 @@ export default function NewsMarker({
   newsFilter 
 }: NewsMarkerProps) {
   const markersRef = useRef<L.Marker[]>([]);
-  const newsDataRef = useRef<any[]>([]);
+  const newsDataRef = useRef<Article[]>([]);
 
   useEffect(() => {
     if (!map || !showNewsMarkers) return;
@@ -66,7 +80,7 @@ export default function NewsMarker({
     }
   };
 
-  const loadNewsData = async () => {
+  const loadNewsData = async (): Promise<Article[]> => {
     try {
       // 필터 적용, 성능을 위해 최대 50개로 제한
       const params = new URLSearchParams({ has_coords: '1', limit: '50' });
@@ -91,7 +105,7 @@ export default function NewsMarker({
     }
   };
 
-  const createNewsMarker = (news: any) => {
+  const createNewsMarker = (news: Article) => {
     // 뉴스 타입별 아이콘 색상
     const getNewsIconColor = (locationType: string) => {
       switch (locationType) {
