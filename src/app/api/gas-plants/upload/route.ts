@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 업로드 결과 확인
-    const [{ count }] = (await sql`SELECT count(*)::int AS count FROM gas_plants`) as Record<string, number>[];
+    const [{ count }] = await sql`SELECT count(*)::int AS count FROM gas_plants`;
 
     return NextResponse.json({
       success: true,

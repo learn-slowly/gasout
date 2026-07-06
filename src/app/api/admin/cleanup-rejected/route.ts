@@ -36,9 +36,9 @@ export async function GET() {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     const sql = getSql();
-    const [{ count }] = (await sql`
+    const [{ count }] = await sql`
       SELECT count(*)::int AS count FROM articles
-      WHERE status = 'rejected' AND updated_at < ${thirtyDaysAgo.toISOString()}`) as Record<string, number>[];
+      WHERE status = 'rejected' AND updated_at < ${thirtyDaysAgo.toISOString()}`;
 
     return NextResponse.json({
       success: true,

@@ -16,8 +16,8 @@ export async function GET(request: NextRequest) {
     const sql = getSql();
     let rows: { result_type: string }[] = [];
     try {
-      rows = await sql`
-        SELECT result_type FROM climate_test_responses WHERE session_id = ${sessionId}`;
+      rows = (await sql`
+        SELECT result_type FROM climate_test_responses WHERE session_id = ${sessionId}`) as { result_type: string }[];
     } catch (e) {
       console.error("climate-test result 조회 실패:", e);
       rows = [];

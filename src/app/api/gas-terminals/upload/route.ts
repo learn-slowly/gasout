@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const [{ count }] = (await sql`SELECT count(*)::int AS count FROM gas_terminals`) as Record<string, number>[];
+    const [{ count }] = await sql`SELECT count(*)::int AS count FROM gas_terminals`;
 
     return NextResponse.json({
       success: true,

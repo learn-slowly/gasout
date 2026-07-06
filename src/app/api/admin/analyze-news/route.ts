@@ -30,8 +30,8 @@ export async function POST(request: Request) {
             : await sql`SELECT id, title, content FROM articles WHERE ai_score IS NULL LIMIT 1`;
 
         if (!articles || articles.length === 0) {
-            const [{ total }] = (await sql`SELECT count(*)::int AS total FROM articles`) as Record<string, number>[];
-            const [{ pending }] = (await sql`SELECT count(*)::int AS pending FROM articles WHERE ai_score IS NULL`) as Record<string, number>[];
+            const [{ total }] = await sql`SELECT count(*)::int AS total FROM articles`;
+            const [{ pending }] = await sql`SELECT count(*)::int AS pending FROM articles WHERE ai_score IS NULL`;
             return NextResponse.json({
                 message: "No new articles to analyze",
                 debug_info: { total, pending }

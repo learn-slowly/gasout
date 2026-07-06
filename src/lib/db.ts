@@ -1,14 +1,13 @@
-import { neon } from '@neondatabase/serverless';
+import 'server-only';
+import { neon, type NeonQueryFunction } from '@neondatabase/serverless';
 
-type Sql = ReturnType<typeof neon>;
-
-let _sql: Sql | null = null;
+let _sql: NeonQueryFunction<false, false> | null = null;
 
 /**
  * Neon 서버리스 드라이버 싱글톤.
  * 서버 코드(API 라우트, 서버 컴포넌트)에서만 import할 것.
  */
-export function getSql(): Sql {
+export function getSql(): NeonQueryFunction<false, false> {
   if (!_sql) {
     const url = process.env.DATABASE_URL;
     if (!url) {
