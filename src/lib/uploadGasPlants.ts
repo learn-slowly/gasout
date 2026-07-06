@@ -1,61 +1,38 @@
 /**
- * LNG 가스발전소 데이터를 Supabase에 업로드하는 유틸리티
+ * LNG 가스발전소 데이터를 데이터베이스에 업로드하는 유틸리티
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { getSql } from '@/lib/db';
 import type { GasPlant } from '@/types/gasPlant';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-
 export async function uploadGasPlantsToSupabase(plants: GasPlant[]): Promise<{ success: number; failed: number }> {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error('Supabase URL과 Service Role Key가 설정되지 않았습니다.');
-  }
-
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const sql = getSql();
 
   let success = 0;
   let failed = 0;
 
-  // 배치 크기 설정 (한 번에 업로드할 레코드 수)
-  const batchSize = 50;
-  const total = plants.length;
-
-  for (let i = 0; i < total; i += batchSize) {
-    const batch = plants.slice(i, i + batchSize);
-    
+  for (const p of plants) {
     try {
-      const { error } = await supabase
-        .from('gas_plants')
-        .upsert(batch, { onConflict: 'id' });
-      
-      if (error) {
-        console.error(`배치 ${Math.floor(i / batchSize) + 1} 업로드 실패:`, error);
-        // 개별 레코드 업로드 시도
-        for (const plant of batch) {
-          try {
-            const { error: singleError } = await supabase
-              .from('gas_plants')
-              .upsert(plant, { onConflict: 'id' });
-            
-            if (singleError) {
-              console.error(`${plant.plant_name} 업로드 실패:`, singleError);
-              failed++;
-            } else {
-              success++;
-            }
-          } catch (err) {
-            console.error(`${plant.plant_name} 업로드 실패:`, err);
-            failed++;
-          }
-        }
-      } else {
-        success += batch.length;
-      }
+      await sql`
+        INSERT INTO gas_plants
+          (id, type, owner, plant_name, unit_number, location, capacity_mw, status,
+           operation_start, closure_planned, note, latitude, longitude, geocoded)
+        VALUES
+          (${p.id}, ${p.type}, ${p.owner}, ${p.plant_name}, ${p.unit_number ?? null},
+           ${p.location ?? null}, ${p.capacity_mw}, ${p.status ?? null},
+           ${p.operation_start ?? null}, ${p.closure_planned ?? null}, ${p.note ?? null},
+           ${p.latitude ?? null}, ${p.longitude ?? null}, ${p.geocoded ?? false})
+        ON CONFLICT (id) DO UPDATE SET
+          type = EXCLUDED.type, owner = EXCLUDED.owner, plant_name = EXCLUDED.plant_name,
+          unit_number = EXCLUDED.unit_number, location = EXCLUDED.location,
+          capacity_mw = EXCLUDED.capacity_mw, status = EXCLUDED.status,
+          operation_start = EXCLUDED.operation_start, closure_planned = EXCLUDED.closure_planned,
+          note = EXCLUDED.note, latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude,
+          geocoded = EXCLUDED.geocoded, updated_at = now()`;
+      success++;
     } catch (err) {
-      console.error(`배치 ${Math.floor(i / batchSize) + 1} 업로드 실패:`, err);
-      failed += batch.length;
+      console.error(`${p.plant_name} 업로드 실패:`, err);
+      failed++;
     }
   }
 
@@ -70,9 +47,8 @@ export async function loadGasPlantsFromJson(filePath: string): Promise<GasPlant[
 
   const fs = await import('fs/promises');
   const path = await import('path');
-  
+
   const fullPath = path.join(process.cwd(), filePath);
   const fileContent = await fs.readFile(fullPath, 'utf-8');
   return JSON.parse(fileContent);
 }
-

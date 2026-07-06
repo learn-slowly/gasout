@@ -4,27 +4,15 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSql } from '@/lib/db';
 import fs from 'fs/promises';
 import path from 'path';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-// 환경 변수 이름 확인: SUPABASE_SERVICE_ROLE_KEY 또는 SUPABASE_SERVICE_KEY
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || '';
-
 export async function POST(request: NextRequest) {
   try {
-    // 환경 변수 확인
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      return NextResponse.json(
-        { error: 'Supabase 설정이 완료되지 않았습니다.' },
-        { status: 500 }
-      );
-    }
-
     // 파일 경로 확인
     const dataFilePath = path.join(process.cwd(), 'data', 'gas_plants_with_coords.json');
-    
+
     // 파일 읽기 (NaN 값을 null로 변환)
     let fileContent = await fs.readFile(dataFilePath, 'utf-8');
     // NaN 값을 null로 변환 (JSON 표준에 맞게)
@@ -32,7 +20,7 @@ export async function POST(request: NextRequest) {
     fileContent = fileContent.replace(/:\s*NaN([,\]\}])/g, ': null$1');
     fileContent = fileContent.replace(/:\s*Infinity([,\]\}])/g, ': null$1');
     fileContent = fileContent.replace(/:\s*-Infinity([,\]\}])/g, ': null$1');
-    
+
     let plants;
     try {
       plants = JSON.parse(fileContent);
@@ -54,10 +42,10 @@ export async function POST(request: NextRequest) {
       }
       throw new Error(`JSON 파싱 실패: ${parseError.message}. 파일에 유효하지 않은 값(NaN 등)이 있을 수 있습니다.`);
     }
-    
+
     // NaN 값이 있는 경우 추가로 정리 + 좌표가 없으면 주소로 geocoding 시도
     const { geocodeKoreanAddress } = await import('@/lib/geocoding');
-    
+
     const cleanedPlants = await Promise.all(plants.map(async (plant: any) => {
       const cleaned: any = {};
       for (const [key, value] of Object.entries(plant)) {
@@ -68,14 +56,14 @@ export async function POST(request: NextRequest) {
           cleaned[key] = value;
         }
       }
-      
+
       // 좌표가 없고 주소가 있으면 geocoding 시도
       if ((!cleaned.latitude || !cleaned.longitude || cleaned.latitude === null || cleaned.longitude === null || cleaned.latitude === 0 || cleaned.longitude === 0) && cleaned.location) {
         console.log(`Geocoding attempt for ${cleaned.plant_name} at ${cleaned.location}`);
         try {
           // 약간의 지연을 추가하여 API rate limit 방지
           await new Promise(resolve => setTimeout(resolve, 1000));
-          
+
           const geocodeResult = await geocodeKoreanAddress(cleaned.location);
           if ('latitude' in geocodeResult && !('error' in geocodeResult)) {
             cleaned.latitude = geocodeResult.latitude;
@@ -89,70 +77,49 @@ export async function POST(request: NextRequest) {
           console.error(`✗ Geocoding error for ${cleaned.plant_name}:`, error);
         }
       }
-      
+
       return cleaned;
     }));
 
-    // Supabase 클라이언트 생성
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const sql = getSql();
 
     let success = 0;
     let failed = 0;
     const errors: string[] = [];
 
-    // 배치 크기 설정
-    const batchSize = 50;
-    const total = cleanedPlants.length;
-
-    for (let i = 0; i < total; i += batchSize) {
-      const batch = cleanedPlants.slice(i, i + batchSize);
-      
+    for (const p of cleanedPlants) {
       try {
-        const { error } = await supabase
-          .from('gas_plants')
-          .upsert(batch, { onConflict: 'id' });
-        
-        if (error) {
-          console.error(`배치 ${Math.floor(i / batchSize) + 1} 업로드 실패:`, error);
-          errors.push(`배치 ${Math.floor(i / batchSize) + 1}: ${error.message}`);
-          
-          // 개별 레코드 업로드 시도
-          for (const plant of batch) {
-            try {
-              const { error: singleError } = await supabase
-                .from('gas_plants')
-                .upsert(plant, { onConflict: 'id' });
-              
-              if (singleError) {
-                failed++;
-                errors.push(`${plant.plant_name}: ${singleError.message}`);
-              } else {
-                success++;
-              }
-            } catch (err: any) {
-              failed++;
-              errors.push(`${plant.plant_name}: ${err.message}`);
-            }
-          }
-        } else {
-          success += batch.length;
-        }
+        await sql`
+          INSERT INTO gas_plants
+            (id, type, owner, plant_name, unit_number, location, capacity_mw, status,
+             operation_start, closure_planned, note, latitude, longitude, geocoded)
+          VALUES
+            (${p.id}, ${p.type}, ${p.owner}, ${p.plant_name}, ${p.unit_number ?? null},
+             ${p.location ?? null}, ${p.capacity_mw}, ${p.status ?? null},
+             ${p.operation_start ?? null}, ${p.closure_planned ?? null}, ${p.note ?? null},
+             ${p.latitude ?? null}, ${p.longitude ?? null}, ${p.geocoded ?? false})
+          ON CONFLICT (id) DO UPDATE SET
+            type = EXCLUDED.type, owner = EXCLUDED.owner, plant_name = EXCLUDED.plant_name,
+            unit_number = EXCLUDED.unit_number, location = EXCLUDED.location,
+            capacity_mw = EXCLUDED.capacity_mw, status = EXCLUDED.status,
+            operation_start = EXCLUDED.operation_start, closure_planned = EXCLUDED.closure_planned,
+            note = EXCLUDED.note, latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude,
+            geocoded = EXCLUDED.geocoded, updated_at = now()`;
+        success++;
       } catch (err: any) {
-        console.error(`배치 ${Math.floor(i / batchSize) + 1} 업로드 실패:`, err);
-        failed += batch.length;
-        errors.push(`배치 ${Math.floor(i / batchSize) + 1}: ${err.message}`);
+        console.error(`${p.plant_name} 업로드 실패:`, err);
+        failed++;
+        errors.push(`${p.plant_name}: ${err.message}`);
       }
     }
 
     // 업로드 결과 확인
-    const { count, error: verifyError } = await supabase
-      .from('gas_plants')
-      .select('*', { count: 'exact', head: true });
+    const [{ count }] = (await sql`SELECT count(*)::int AS count FROM gas_plants`) as Record<string, number>[];
 
     return NextResponse.json({
       success: true,
       summary: {
-        total: total,
+        total: cleanedPlants.length,
         success,
         failed,
         totalInDatabase: count || 0,
@@ -167,4 +134,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
