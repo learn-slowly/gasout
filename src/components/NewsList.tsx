@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
 import NewsCard from "./NewsCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,11 +13,6 @@ import {
   MapPin,
   Building
 } from "lucide-react";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 interface NewsListProps {
   locationType?: 'national' | 'regional' | 'power_plant';
@@ -50,43 +44,35 @@ export default function NewsList({
 
   const loadArticles = async () => {
     try {
-      let query = supabase
-        .from('articles')
-        .select('*')
-        .eq('status', 'approved') // 승인된 기사만 표시
-        .order('published_at', { ascending: false });
+      // 승인된 기사만 표시 (API에서 status='approved' 고정)
+      const params = new URLSearchParams({ count: '1' });
 
       // 위치 타입 필터
       if (locationType) {
-        query = query.eq('location_type', locationType);
+        params.set('location_type', locationType);
       }
 
       // 발전소 ID 필터
       if (powerPlantId) {
-        query = query.eq('power_plant_id', powerPlantId);
+        params.set('power_plant_id', powerPlantId);
       }
 
       // 개수 제한
       if (limit) {
-        query = query.limit(limit);
+        params.set('limit', String(limit));
       }
 
-      const { data, error } = await data;
-
-      if (error) throw error;
+      const res = await fetch(`/api/articles?${params}`);
+      if (!res.ok) throw new Error('기사 조회 실패');
+      const { articles: data, count } = await res.json();
 
       setArticles(data || []);
 
-      // 통계 계산
+      // 통계 계산 (전체 카운트는 API의 count 값 사용)
       if (showStats) {
-        const { data: statsData } = await supabase
-          .from('articles')
-          .select('status')
-          .eq('status', 'approved');
-
         setStats({
-          total: statsData?.length || 0,
-          approved: statsData?.length || 0,
+          total: count ?? 0,
+          approved: count ?? 0,
           pending: 0,
           rejected: 0
         });

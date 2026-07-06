@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getSql } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,25 +28,23 @@ type ActivityPost = {
   youtube_url: string | null;
 };
 
-export default async function PowerPlantDetail({ params }: { params: { id: string } }) {
-  const { data: plant, error: plantError } = await supabase
-    .from("power_plants")
-    .select("*")
-    .eq("id", params.id)
-    .single();
+export default async function PowerPlantDetail({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const sql = getSql();
 
-  if (plantError || !plant) {
+  const plants = await sql`SELECT * FROM power_plants WHERE id = ${id}`;
+  const plant = plants[0] ?? null;
+
+  if (!plant) {
     notFound();
   }
 
-  const { data: posts, error: postsError } = await supabase
-    .from("activity_posts")
-    .select("id,title,content,created_at,youtube_url")
-    .eq("plant_id", params.id)
-    .order("created_at", { ascending: false })
-    .limit(10);
+  const posts = await sql`
+    SELECT id, title, content, created_at, youtube_url
+    FROM activity_posts WHERE plant_id = ${id}
+    ORDER BY created_at DESC LIMIT 10`;
 
-  const powerPlant = plant as PowerPlant & { 
+  const powerPlant = plant as PowerPlant & {
     classification?: string;
     plant_unit?: string;
     commissioning_date?: string;

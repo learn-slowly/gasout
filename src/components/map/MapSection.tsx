@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 
 type Marker = { 
   id: string; 
@@ -38,17 +37,15 @@ export default function MapSection({ statusFilter, plantTypeFilter }: Props) {
     let mounted = true;
     (async () => {
       try {
-        const { data, error } = await supabase
-          .from("power_plants")
-          .select("id,name,latitude,longitude,status,capacity_mw,operator,plant_type,fuel_type")
-          .not("latitude", "is", null)
-          .not("longitude", "is", null);
-        
-        if (error) {
-          console.error("Supabase error:", error);
+        const res = await fetch("/api/power-plants?with_coords=1");
+
+        if (!res.ok) {
+          console.error("API error:", res.status);
           return;
         }
-        
+
+        const { plants: data } = await res.json();
+
         if (!mounted) return;
         
         const pts: Marker[] = (data ?? []).map((p: any) => ({

@@ -1,17 +1,8 @@
 
 import OpenAI from "openai";
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { getSql } from "@/lib/db";
 
-// Supabase Admin Client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!supabaseServiceKey) {
-    console.error("CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing in server environment.");
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey || "");
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || "",
 });
@@ -20,9 +11,6 @@ export async function POST(request: Request) {
     try {
         if (!process.env.OPENAI_API_KEY) {
             return NextResponse.json({ error: "Configuration Error: OPENAI_API_KEY is missing" }, { status: 500 });
-        }
-        if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-            return NextResponse.json({ error: "Configuration Error: SUPABASE_SERVICE_ROLE_KEY is missing. Check Vercel Env Vars." }, { status: 500 });
         }
 
         // 요청 body에서 articleId 확인
@@ -34,28 +22,16 @@ export async function POST(request: Request) {
             // body가 없으면 null로 처리
         }
 
-        let query = supabase
-            .from("articles")
-            .select("id, title, content")
-            .is("ai_score", null);
+        const sql = getSql();
 
-        if (targetArticleId) {
-            // 특정 기사 분석
-            query = query.eq("id", targetArticleId);
-        } else {
-            // 일반 분석 (1개만)
-            query = query.limit(1);
-        }
-
-        const { data: articles, error: fetchError } = await query;
-
-        if (fetchError) {
-            return NextResponse.json({ error: fetchError.message }, { status: 500 });
-        }
+        // 미분석 기사 조회 (특정 기사 or 1개)
+        const articles = targetArticleId
+            ? await sql`SELECT id, title, content FROM articles WHERE ai_score IS NULL AND id = ${targetArticleId}`
+            : await sql`SELECT id, title, content FROM articles WHERE ai_score IS NULL LIMIT 1`;
 
         if (!articles || articles.length === 0) {
-            const { count: total } = await supabase.from("articles").select("*", { count: 'exact', head: true });
-            const { count: pending } = await supabase.from("articles").select("*", { count: 'exact', head: true }).is("ai_score", null);
+            const [{ total }] = await sql`SELECT count(*)::int AS total FROM articles`;
+            const [{ pending }] = await sql`SELECT count(*)::int AS pending FROM articles WHERE ai_score IS NULL`;
             return NextResponse.json({
                 message: "No new articles to analyze",
                 debug_info: { total, pending }
@@ -92,7 +68,7 @@ export async function POST(request: Request) {
 
             try {
                 console.log(`Analyzing article ${article.id} with OpenAI GPT-4o-mini`);
-                
+
                 const completion = await openai.chat.completions.create({
                     model: "gpt-4o-mini",
                     messages: [
@@ -117,23 +93,17 @@ export async function POST(request: Request) {
                 // 태그가 없거나 빈 배열이면 null로 설정
                 const tags = (analysis.tags && analysis.tags.length > 0) ? analysis.tags : null;
 
-                const { error: updateError } = await supabase
-                    .from("articles")
-                    .update({
-                        ai_score: analysis.relevance_score,
-                        is_relevant: analysis.is_relevant,
-                        ai_summary: analysis.summary,
-                        tags: tags,
-                        ai_analyzed_at: new Date().toISOString(),
-                        ai_model_version: "gpt-4o-mini"
-                    })
-                    .eq("id", article.id);
+                await sql`
+                  UPDATE articles SET
+                    ai_score = ${analysis.relevance_score},
+                    is_relevant = ${analysis.is_relevant},
+                    ai_summary = ${analysis.summary},
+                    tags = ${tags},
+                    ai_analyzed_at = ${new Date().toISOString()},
+                    ai_model_version = ${"gpt-4o-mini"}
+                  WHERE id = ${article.id}`;
 
-                if (updateError) {
-                    throw new Error(`Supabase update failed: ${updateError.message}`);
-                } else {
-                    results.push({ id: article.id, model: "gpt-4o-mini", ...analysis });
-                }
+                results.push({ id: article.id, model: "gpt-4o-mini", ...analysis });
             } catch (err: any) {
                 console.error(`Failed to analyze article ${article.id}:`, err);
                 errors.push({ id: article.id, title: article.title, error: err.message || String(err) });

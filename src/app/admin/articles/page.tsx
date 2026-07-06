@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,11 +26,6 @@ import {
   Save,
   X
 } from "lucide-react";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 // HTML 엔티티 디코딩 함수
 function decodeHtmlEntities(text: string): string {
@@ -198,26 +192,21 @@ export default function ArticlesPage() {
 
   const loadArticles = async () => {
     try {
-      // Supabase는 기본적으로 1000개 제한이 있으므로, 
-      // 모든 기사를 가져오기 위해 페이지네이션 사용
+      // 기사 수가 많으므로(수천 건) 페이지네이션으로 전체를 가져온다.
       let allArticles: Article[] = [];
-      let from = 0;
+      let offset = 0;
       const pageSize = 1000;
       let hasMore = true;
 
       while (hasMore) {
-        const { data, error } = await supabase
-          .from('articles')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .range(from, from + pageSize - 1);
+        const res = await fetch(`/api/admin/articles?limit=${pageSize}&offset=${offset}`);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const { articles: pageArticles } = await res.json();
 
-        if (error) throw error;
-        
-        if (data && data.length > 0) {
-          allArticles = [...allArticles, ...data];
-          from += pageSize;
-          hasMore = data.length === pageSize;
+        if (pageArticles && pageArticles.length > 0) {
+          allArticles = [...allArticles, ...pageArticles];
+          offset += pageSize;
+          hasMore = pageArticles.length === pageSize;
         } else {
           hasMore = false;
         }
@@ -235,15 +224,12 @@ export default function ArticlesPage() {
   const loadPowerPlants = async () => {
     setLoadingPlants(true);
     try {
-      const { data, error } = await supabase
-        .from('power_plants')
-        .select('id, name, plant_type, fuel_type, operator, status')
-        .order('name');
-
-      if (error) throw error;
+      const res = await fetch('/api/power-plants');
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const { plants } = await res.json();
 
       // GT/ST 그룹화
-      const groupedPlants = groupPowerPlants(data || []);
+      const groupedPlants = groupPowerPlants(plants || []);
       setPowerPlants(groupedPlants);
       setFilteredPowerPlants(groupedPlants);
     } catch (error) {
@@ -313,12 +299,13 @@ export default function ArticlesPage() {
 
   const updateArticleStatus = async (id: string, status: 'approved' | 'rejected') => {
     try {
-      const { error } = await supabase
-        .from('articles')
-        .update({ status })
-        .eq('id', id);
+      const res = await fetch(`/api/admin/articles/${id}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
 
-      if (error) throw error;
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
       // 로컬 상태 업데이트
       setArticles(prev =>
@@ -368,9 +355,10 @@ export default function ArticlesPage() {
     if (!editingArticle) return;
 
     try {
-      const { error } = await supabase
-        .from('articles')
-        .update({
+      const res = await fetch(`/api/admin/articles/${editingArticle.id}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
           title: editForm.title,
           content: editForm.content,
           location_type: editForm.location_type,
@@ -379,10 +367,10 @@ export default function ArticlesPage() {
           eup_myeon_dong: editForm.eup_myeon_dong,
           power_plant_id: editForm.power_plant_id || null,
           status: 'approved' // 편집 후 자동 승인
-        })
-        .eq('id', editingArticle.id);
+        }),
+      });
 
-      if (error) throw error;
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
       // 로컬 상태 업데이트
       setArticles(prev =>

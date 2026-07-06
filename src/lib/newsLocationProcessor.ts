@@ -1,11 +1,11 @@
 // 뉴스 위치 처리 및 분류 시스템
-import { createClient } from '@supabase/supabase-js';
+import { getSql, buildSetClause } from '@/lib/db';
 import { geocodeKoreanAddress, extractLocationFromNewsContent, classifyNewsByLocation } from './geocoding';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
+const ALLOWED_LOCATION = [
+  'location_type', 'address_full', 'si_do', 'si_gun_gu', 'eup_myeon_dong',
+  'latitude', 'longitude', 'power_plant_id',
+];
 
 export interface NewsLocationData {
   id: string;
@@ -24,18 +24,16 @@ export interface NewsLocationData {
 // 뉴스에서 위치 정보 추출 및 분류
 export async function processNewsLocation(articleId: string): Promise<NewsLocationData | null> {
   try {
+    const sql = getSql();
+
     // 뉴스 데이터 가져오기
-    const { data: article, error } = await supabase
-      .from('articles')
-      .select('*')
-      .eq('id', articleId)
-      .single();
-    
-    if (error || !article) {
-      console.error('Error fetching article:', error);
+    const [article] = await sql`SELECT * FROM articles WHERE id = ${articleId}`;
+
+    if (!article) {
+      console.error('Error fetching article: not found');
       return null;
     }
-    
+
     // 이미 위치 정보가 있는 경우
     if (article.latitude && article.longitude) {
       return {
@@ -52,20 +50,20 @@ export async function processNewsLocation(articleId: string): Promise<NewsLocati
         confidence: 1.0
       };
     }
-    
+
     // 뉴스 내용에서 위치 키워드 추출
     const extractedLocations = extractLocationFromNewsContent(
-      article.content || '', 
+      article.content || '',
       article.title
     );
-    
+
     if (extractedLocations.length === 0) {
       // 위치 정보를 찾을 수 없는 경우 전국 뉴스로 분류
       await updateArticleLocation(articleId, {
         location_type: 'national',
         confidence: 0.1
       });
-      
+
       return {
         id: article.id,
         title: article.title,
@@ -74,14 +72,14 @@ export async function processNewsLocation(articleId: string): Promise<NewsLocati
         confidence: 0.1
       };
     }
-    
+
     // 가장 관련성 높은 위치로 지오코딩 시도
     let bestLocation: any = null;
     let bestConfidence = 0;
-    
+
     for (const location of extractedLocations) {
       const geocodingResult = await geocodeKoreanAddress(location);
-      
+
       if ('latitude' in geocodingResult) {
         if (geocodingResult.confidence > bestConfidence) {
           bestLocation = geocodingResult;
@@ -89,21 +87,21 @@ export async function processNewsLocation(articleId: string): Promise<NewsLocati
         }
       }
     }
-    
+
     if (bestLocation) {
       // 발전소와의 연관성 확인
       const powerPlantId = await findRelatedPowerPlant(
-        bestLocation.latitude, 
+        bestLocation.latitude,
         bestLocation.longitude
       );
-      
+
       const locationType = classifyNewsByLocation(
         bestLocation.address.si_do,
         bestLocation.address.si_gun_gu,
         bestLocation.address.eup_myeon_dong,
         powerPlantId
       );
-      
+
       // 데이터베이스 업데이트
       await updateArticleLocation(articleId, {
         si_do: bestLocation.address.si_do,
@@ -115,7 +113,7 @@ export async function processNewsLocation(articleId: string): Promise<NewsLocati
         power_plant_id: powerPlantId,
         confidence: bestConfidence
       });
-      
+
       return {
         id: article.id,
         title: article.title,
@@ -130,13 +128,13 @@ export async function processNewsLocation(articleId: string): Promise<NewsLocati
         confidence: bestConfidence
       };
     }
-    
+
     // 지오코딩 실패 시 전국 뉴스로 분류
     await updateArticleLocation(articleId, {
       location_type: 'national',
       confidence: 0.1
     });
-    
+
     return {
       id: article.id,
       title: article.title,
@@ -144,7 +142,7 @@ export async function processNewsLocation(articleId: string): Promise<NewsLocati
       location_type: 'national',
       confidence: 0.1
     };
-    
+
   } catch (error) {
     console.error('Error processing news location:', error);
     return null;
@@ -152,16 +150,15 @@ export async function processNewsLocation(articleId: string): Promise<NewsLocati
 }
 
 // 뉴스 위치 정보 업데이트
-async function updateArticleLocation(articleId: string, locationData: any) {
+async function updateArticleLocation(articleId: string, locationData: Record<string, unknown>) {
   try {
-    const { error } = await supabase
-      .from('articles')
-      .update(locationData)
-      .eq('id', articleId);
-    
-    if (error) {
-      console.error('Error updating article location:', error);
-    }
+    const sql = getSql();
+    const { set, params } = buildSetClause(locationData, ALLOWED_LOCATION);
+    if (!set) return;
+    await sql.query(
+      `UPDATE articles SET ${set}, updated_at = now() WHERE id = $${params.length + 1}`,
+      [...params, articleId]
+    );
   } catch (error) {
     console.error('Error updating article location:', error);
   }
@@ -170,35 +167,34 @@ async function updateArticleLocation(articleId: string, locationData: any) {
 // 좌표 근처의 발전소 찾기 (반경 10km)
 async function findRelatedPowerPlant(latitude: number, longitude: number): Promise<string | null> {
   try {
-    const { data, error } = await supabase
-      .from('power_plants')
-      .select('id, name, latitude, longitude')
-      .not('latitude', 'is', null)
-      .not('longitude', 'is', null);
-    
-    if (error || !data) {
+    const sql = getSql();
+    const data = await sql`
+      SELECT id, name, latitude, longitude FROM power_plants
+      WHERE latitude IS NOT NULL AND longitude IS NOT NULL`;
+
+    if (!data) {
       return null;
     }
-    
+
     // 가장 가까운 발전소 찾기 (간단한 거리 계산)
     let closestPlant = null;
     let minDistance = Infinity;
-    
+
     for (const plant of data) {
       const distance = calculateDistance(
         latitude, longitude,
         Number(plant.latitude), Number(plant.longitude)
       );
-      
+
       // 10km 이내의 발전소만 고려
       if (distance <= 10 && distance < minDistance) {
         minDistance = distance;
         closestPlant = plant;
       }
     }
-    
+
     return closestPlant?.id || null;
-    
+
   } catch (error) {
     console.error('Error finding related power plant:', error);
     return null;
@@ -224,27 +220,16 @@ export async function getNewsByLocation(
   limit: number = 10
 ) {
   try {
-    let query = supabase
-      .from('articles')
-      .select('*')
-      .eq('status', 'approved')
-      .eq('location_type', locationType)
-      .order('published_at', { ascending: false })
-      .limit(limit);
-    
-    if (powerPlantId) {
-      query = query.eq('power_plant_id', powerPlantId);
-    }
-    
-    const { data, error } = await query;
-    
-    if (error) {
-      console.error('Error fetching news by location:', error);
-      return [];
-    }
-    
+    const sql = getSql();
+    const data = powerPlantId
+      ? await sql`SELECT * FROM articles WHERE status = 'approved' AND location_type = ${locationType}
+                  AND power_plant_id = ${powerPlantId}
+                  ORDER BY published_at DESC LIMIT ${limit}`
+      : await sql`SELECT * FROM articles WHERE status = 'approved' AND location_type = ${locationType}
+                  ORDER BY published_at DESC LIMIT ${limit}`;
+
     return data || [];
-    
+
   } catch (error) {
     console.error('Error fetching news by location:', error);
     return [];
@@ -259,18 +244,16 @@ export async function getNewsByCoordinates(
   limit: number = 10
 ) {
   try {
-    const { data, error } = await supabase
-      .from('articles')
-      .select('*')
-      .eq('status', 'approved')
-      .not('latitude', 'is', null)
-      .not('longitude', 'is', null)
-      .order('published_at', { ascending: false });
-    
-    if (error || !data) {
+    const sql = getSql();
+    const data = await sql`
+      SELECT * FROM articles WHERE status = 'approved'
+      AND latitude IS NOT NULL AND longitude IS NOT NULL
+      ORDER BY published_at DESC`;
+
+    if (!data) {
       return [];
     }
-    
+
     // 반경 내 뉴스 필터링
     const nearbyNews = data.filter(article => {
       const distance = calculateDistance(
@@ -279,9 +262,9 @@ export async function getNewsByCoordinates(
       );
       return distance <= radiusKm;
     });
-    
+
     return nearbyNews.slice(0, limit);
-    
+
   } catch (error) {
     console.error('Error fetching news by coordinates:', error);
     return [];

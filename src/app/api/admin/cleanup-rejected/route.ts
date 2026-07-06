@@ -1,10 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { getSql } from '@/lib/db';
 
 export async function POST() {
   try {
@@ -12,20 +7,11 @@ export async function POST() {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const { data: deletedArticles, error } = await supabase
-      .from('articles')
-      .delete()
-      .eq('status', 'rejected')
-      .lt('updated_at', thirtyDaysAgo.toISOString())
-      .select('id');
-
-    if (error) {
-      console.error('Error deleting rejected articles:', error);
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      );
-    }
+    const sql = getSql();
+    const deletedArticles = await sql`
+      DELETE FROM articles
+      WHERE status = 'rejected' AND updated_at < ${thirtyDaysAgo.toISOString()}
+      RETURNING id`;
 
     const deletedCount = deletedArticles?.length || 0;
 
@@ -49,19 +35,10 @@ export async function GET() {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const { count, error } = await supabase
-      .from('articles')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'rejected')
-      .lt('updated_at', thirtyDaysAgo.toISOString());
-
-    if (error) {
-      console.error('Error counting rejected articles:', error);
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      );
-    }
+    const sql = getSql();
+    const [{ count }] = await sql`
+      SELECT count(*)::int AS count FROM articles
+      WHERE status = 'rejected' AND updated_at < ${thirtyDaysAgo.toISOString()}`;
 
     return NextResponse.json({
       success: true,

@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import { Newspaper } from "lucide-react";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 
 interface NewsFeedProps {
     initialNews?: any[];

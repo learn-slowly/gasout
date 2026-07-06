@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,11 +26,6 @@ function stripHtmlTags(html: string): string {
   return doc.body.textContent || '';
 }
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 interface NationalNewsPanelProps {
   isVisible: boolean;
   onToggle: () => void;
@@ -55,19 +49,13 @@ export default function NationalNewsPanel({
   const loadNationalNews = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('articles')
-        .select('*')
-        .eq('status', 'approved')
-        .eq('location_type', 'national')
-        .order('published_at', { ascending: false })
-        .limit(10);
-
-      if (error) {
-        console.error('Error loading national news:', error);
+      const res = await fetch('/api/articles?location_type=national&limit=10');
+      if (!res.ok) {
+        console.error('Error loading national news:', res.status);
         return;
       }
 
+      const { articles: data } = await res.json();
       setNationalNews(data || []);
     } catch (error) {
       console.error('Error loading national news:', error);

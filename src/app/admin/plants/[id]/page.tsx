@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,13 +56,9 @@ export default function EditPlantPage({ params }: { params: { id: string } }) {
 
   const loadPlant = async () => {
     try {
-      const { data, error } = await supabase
-        .from("power_plants")
-        .select("*")
-        .eq("id", params.id)
-        .single();
-
-      if (error) throw error;
+      const res = await fetch(`/api/power-plants/${params.id}`);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const { plant: data } = await res.json();
 
       setPlant(data);
       setFormData({
@@ -93,9 +88,10 @@ export default function EditPlantPage({ params }: { params: { id: string } }) {
     setError("");
 
     try {
-      const { error } = await supabase
-        .from("power_plants")
-        .update({
+      const res = await fetch(`/api/admin/plants/${params.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
           name: formData.name,
           address: formData.address,
           latitude: parseFloat(formData.latitude),
@@ -107,10 +103,10 @@ export default function EditPlantPage({ params }: { params: { id: string } }) {
           operator: formData.operator,
           permit_date: formData.permit_date || null,
           description: formData.description
-        })
-        .eq("id", params.id);
+        }),
+      });
 
-      if (error) throw error;
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
       router.push("/admin/plants");
     } catch (err) {
@@ -122,7 +118,7 @@ export default function EditPlantPage({ params }: { params: { id: string } }) {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await fetch("/api/admin/logout", { method: "POST" });
     router.push("/admin/login");
   };
 

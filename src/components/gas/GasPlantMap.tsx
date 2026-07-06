@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import type { GasPlant } from "@/types/gasPlant";
 
 import "leaflet/dist/leaflet.css";
@@ -89,33 +88,16 @@ export default function GasPlantMap({
   useEffect(() => {
     async function loadPlants() {
       try {
-        // Supabase 연결 확인
-        if (!supabase) {
-          console.error('Supabase client is not initialized');
-          setLoading(false);
-          return;
-        }
+        const res = await fetch('/api/gas-plants?with_coords=1');
 
-        let query = supabase
-          .from('gas_plants')
-          .select('*')
-          .not('latitude', 'is', null)
-          .not('longitude', 'is', null);
-
-        const { data, error } = await query;
-
-        if (error) {
-          console.error('Error loading gas plants:', {
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-            code: error.code,
-            fullError: JSON.stringify(error, Object.getOwnPropertyNames(error))
-          });
+        if (!res.ok) {
+          console.error('Error loading gas plants:', res.status);
           setPlants([]);
           setLoading(false);
           return;
         }
+
+        const { plants: data } = await res.json();
 
         const loadedCount = data?.length || 0;
         console.log(`GasPlantMap: Loaded ${loadedCount} plants with coordinates`);

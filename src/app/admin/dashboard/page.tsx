@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,68 +31,30 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    checkAuth();
     loadData();
   }, []);
 
-  const checkAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      router.push("/admin/login");
-      return;
-    }
-
-    // 관리자 권한 확인
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (profile?.role !== "admin") {
-      router.push("/admin/login");
-      return;
-    }
-  };
-
   const loadData = async () => {
     try {
-      // 통계 데이터 로드
-      const [plantsResult, postsResult, operatingResult, recentPostsResult, pendingArticlesResult] = await Promise.all([
-        supabase.from("power_plants").select("id", { count: "exact" }),
-        supabase.from("activity_posts").select("id", { count: "exact" }),
-        supabase.from("power_plants").select("id", { count: "exact" }).eq("status", "운영중"),
-        supabase.from("activity_posts").select("id", { count: "exact" }).gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
-        supabase.from("articles").select("id", { count: "exact" }).eq("status", "pending")
-      ]);
-
-      // 최근 게시물 로드
-      const { data: recentPostsData } = await supabase
-        .from("activity_posts")
-        .select(`
-          id,
-          title,
-          created_at,
-          power_plants!inner(name)
-        `)
-        .order("created_at", { ascending: false })
-        .limit(5);
+      const res = await fetch("/api/admin/stats");
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const data = await res.json();
 
       setStats({
-        totalPlants: plantsResult.count || 0,
-        totalPosts: postsResult.count || 0,
-        recentPosts: recentPostsResult.count || 0,
-        operatingPlants: operatingResult.count || 0,
-        pendingArticles: pendingArticlesResult.count || 0,
+        totalPlants: data.totalPlants || 0,
+        totalPosts: data.totalPosts || 0,
+        recentPosts: data.recentPosts || 0,
+        operatingPlants: data.operatingPlants || 0,
+        pendingArticles: data.pendingArticles || 0,
       });
 
       setRecentPosts(
-        recentPostsData?.map(post => ({
+        (data.recentPostList ?? []).map((post: RecentPost) => ({
           id: post.id,
           title: post.title,
           created_at: post.created_at,
-          plant_name: (post.power_plants as any).name
-        })) || []
+          plant_name: post.plant_name,
+        }))
       );
     } catch (error) {
       console.error("Error loading dashboard data:", error);
@@ -103,7 +64,7 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await fetch("/api/admin/logout", { method: "POST" });
     router.push("/admin/login");
   };
 
@@ -503,38 +464,6 @@ export default function AdminDashboard() {
                     새 발전소 추가
                   </Button>
                 </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card hover:bg-slate-800/80 group">
-            <CardHeader className="pb-4 border-b border-white/5">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-purple-500/20 rounded-lg">
-                  <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                  </svg>
-                </div>
-                <CardTitle className="text-xl text-white">사용자 관리</CardTitle>
-              </div>
-              <CardDescription className="text-slate-400">관리자 계정과 권한을 관리하세요</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="space-y-3">
-                <Link href="/admin/users">
-                  <Button className="w-full bg-purple-600 hover:bg-purple-500 text-white h-11 font-medium transition-colors">
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                    </svg>
-                    사용자 목록
-                  </Button>
-                </Link>
-                <Button variant="outline" className="w-full bg-white/5 border-white/10 text-slate-500 h-11 cursor-not-allowed" disabled>
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                  권한 관리 (준비중)
-                </Button>
               </div>
             </CardContent>
           </Card>

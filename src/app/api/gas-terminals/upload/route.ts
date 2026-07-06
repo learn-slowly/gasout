@@ -4,37 +4,27 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSql } from '@/lib/db';
 import fs from 'fs/promises';
 import path from 'path';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || '';
-
 export async function POST(request: NextRequest) {
   try {
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      return NextResponse.json(
-        { error: 'Supabase 설정이 완료되지 않았습니다.' },
-        { status: 500 }
-      );
-    }
-
     const dataFilePath = path.join(process.cwd(), 'data', 'gas_terminals.json');
-    
+
     // 파일 읽기 (NaN 값을 null로 변환)
     let fileContent = await fs.readFile(dataFilePath, 'utf-8');
     fileContent = fileContent.replace(/:\s*NaN([,\]\}])/g, ': null$1');
     fileContent = fileContent.replace(/:\s*Infinity([,\]\}])/g, ': null$1');
     fileContent = fileContent.replace(/:\s*-Infinity([,\]\}])/g, ': null$1');
-    
+
     let terminals;
     try {
       terminals = JSON.parse(fileContent);
     } catch (parseError: any) {
       throw new Error(`JSON 파싱 실패: ${parseError.message}`);
     }
-    
+
     // NaN 값 정리
     const cleanedTerminals = terminals.map((terminal: any) => {
       const cleaned: any = {};
@@ -48,62 +38,45 @@ export async function POST(request: NextRequest) {
       return cleaned;
     });
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const sql = getSql();
 
     let success = 0;
     let failed = 0;
     const errors: string[] = [];
 
-    const batchSize = 50;
-    const total = cleanedTerminals.length;
-
-    for (let i = 0; i < total; i += batchSize) {
-      const batch = cleanedTerminals.slice(i, i + batchSize);
-      
+    for (const t of cleanedTerminals) {
       try {
-        const { error } = await supabase
-          .from('gas_terminals')
-          .upsert(batch, { onConflict: 'id' });
-        
-        if (error) {
-          console.error(`배치 ${Math.floor(i / batchSize) + 1} 업로드 실패:`, error);
-          errors.push(`배치 ${Math.floor(i / batchSize) + 1}: ${error.message}`);
-          
-          for (const terminal of batch) {
-            try {
-              const { error: singleError } = await supabase
-                .from('gas_terminals')
-                .upsert(terminal, { onConflict: 'id' });
-              
-              if (singleError) {
-                failed++;
-                errors.push(`${terminal.terminal_name}: ${singleError.message}`);
-              } else {
-                success++;
-              }
-            } catch (err: any) {
-              failed++;
-              errors.push(`${terminal.terminal_name}: ${err.message}`);
-            }
-          }
-        } else {
-          success += batch.length;
-        }
+        await sql`
+          INSERT INTO gas_terminals
+            (id, type, category, owner, terminal_name, tank_number, location, capacity_kl,
+             capacity_mtpa, status, operation_start, closure_planned, latitude, longitude, geocoded)
+          VALUES
+            (${t.id}, ${t.type}, ${t.category ?? null}, ${t.owner}, ${t.terminal_name}, ${t.tank_number ?? null},
+             ${t.location ?? null}, ${t.capacity_kl ?? null}, ${t.capacity_mtpa ?? null}, ${t.status ?? null},
+             ${t.operation_start ?? null}, ${t.closure_planned ?? null},
+             ${t.latitude ?? null}, ${t.longitude ?? null}, ${t.geocoded ?? false})
+          ON CONFLICT (id) DO UPDATE SET
+            type = EXCLUDED.type, category = EXCLUDED.category, owner = EXCLUDED.owner,
+            terminal_name = EXCLUDED.terminal_name, tank_number = EXCLUDED.tank_number,
+            location = EXCLUDED.location, capacity_kl = EXCLUDED.capacity_kl,
+            capacity_mtpa = EXCLUDED.capacity_mtpa, status = EXCLUDED.status,
+            operation_start = EXCLUDED.operation_start, closure_planned = EXCLUDED.closure_planned,
+            latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude,
+            geocoded = EXCLUDED.geocoded, updated_at = now()`;
+        success++;
       } catch (err: any) {
-        console.error(`배치 ${Math.floor(i / batchSize) + 1} 업로드 실패:`, err);
-        failed += batch.length;
-        errors.push(`배치 ${Math.floor(i / batchSize) + 1}: ${err.message}`);
+        console.error(`${t.terminal_name} 업로드 실패:`, err);
+        failed++;
+        errors.push(`${t.terminal_name}: ${err.message}`);
       }
     }
 
-    const { count } = await supabase
-      .from('gas_terminals')
-      .select('*', { count: 'exact', head: true });
+    const [{ count }] = await sql`SELECT count(*)::int AS count FROM gas_terminals`;
 
     return NextResponse.json({
       success: true,
       summary: {
-        total: total,
+        total: cleanedTerminals.length,
         success,
         failed,
         totalInDatabase: count || 0,
@@ -118,4 +91,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
